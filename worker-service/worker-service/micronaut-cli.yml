@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: pl.worker.service
+testFramework: junit
+sourceLanguage: java
+buildTool: maven
+features: [app-name, discovery-client, discovery-eureka, http-client, http-client-test, java, java-application, junit, logback, management, maven, maven-enforcer-plugin, micronaut-aot, micronaut-http-validation, micronaut-processing-compiler-args, netty-server, properties, readme, serialization-jackson, shade, static-resources]

@@ -1,0 +1,20 @@
+micronaut:
+  application:
+    name: worker-service
+  server:
+    port: 8081
+  router:
+    static-resources:
+      default:
+        enabled: false
+
+eureka:
+  client:
+    registration:
+      enabled: true
+    defaultZone: "http://localhost:8761/eureka"
+
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
