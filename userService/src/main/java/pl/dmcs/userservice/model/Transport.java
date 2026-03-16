@@ -21,6 +21,7 @@ public class Transport {
     @JoinColumn(name = "courier_id", nullable = false)
     private User courier;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransportType transportType;
 
