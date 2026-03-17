@@ -1,4 +1,4 @@
--- 1. WEEIA PŁ (Baza wypadowa / pierwszy klient)
+-- 1. WEEIA PŁ
 INSERT INTO orders (id, customer_id, status, weight)
 VALUES ('11111111-1111-1111-1111-111111111111', 'c1111111-1111-1111-1111-111111111111', 'NEW', 15.5) ON CONFLICT (id) DO NOTHING;
 
