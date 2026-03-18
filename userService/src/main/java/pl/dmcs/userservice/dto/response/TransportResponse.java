@@ -1,36 +1,26 @@
-package pl.dmcs.userservice.model;
+package pl.dmcs.userservice.dto.response;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import pl.dmcs.userservice.model.TransportType;
+import java.util.UUID;
 
-@Entity
-@Table(name = "transports")
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transport extends ControlledEntity {
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "courier_id", nullable = false)
-    private User courier;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+@Builder
+public class TransportResponse {
+    private UUID id;
+    private UUID courierId;
     private TransportType transportType;
-
     private String brand;
     private String model;
-
     private String fuelType;
-
     private Double trunkVolume;
     private Double cargoCapacity;
-
     private Double consumption;
-
     private String licensePlate;
     private String color;
 }
