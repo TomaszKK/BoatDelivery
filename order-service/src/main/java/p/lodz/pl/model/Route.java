@@ -12,11 +12,11 @@ import java.util.UUID;
 @Table(name = "routes")
 public class Route extends ControlledEntity {
 
-    @Column(name = "driver_id")
-    public UUID driverId;
+    @Column(name = "courier_id")
+    public UUID courierId;
 
-    @Column(name = "vehicle_id")
-    public UUID vehicleId;
+    @Column(name = "transport_id")
+    public UUID transportId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
