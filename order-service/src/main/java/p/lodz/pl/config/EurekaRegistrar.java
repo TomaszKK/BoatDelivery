@@ -15,7 +15,7 @@ public class EurekaRegistrar {
 
     private final HttpClient client = HttpClient.newHttpClient();
     private final String appName = "ORDER-SERVICE";
-    private final String instanceId = "localhost:order-service:8081";
+    private final String instanceId = "localhost:order-service:8082";
     private final String eurekaUrl = "http://localhost:8761/eureka/apps/" + appName;
 
     void onStart(@Observes StartupEvent ev) {
@@ -29,7 +29,7 @@ public class EurekaRegistrar {
                     "secureVipAddress": "order-service",
                     "ipAddr": "127.0.0.1",
                     "status": "UP",
-                    "port": {"$": 8081, "@enabled": "true"},
+                    "port": {"$": 8082, "@enabled": "true"},
                     "dataCenterInfo": {
                       "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
                       "name": "MyOwn"
