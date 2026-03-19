@@ -36,7 +36,7 @@ userService/
 - **Port**: 5432
 - **Database**: user_service_db
 - **User**: postgres
-- **Password**: password
+- **Password**: postgres
 
 ### Migracje (Flyway)
 ```
