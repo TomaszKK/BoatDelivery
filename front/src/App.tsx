@@ -1,15 +1,23 @@
-import { Button } from "@/components/ui/button"
+import { ThemeProvider } from "@/context/ThemeProvider";
+import { BrowserRouter as Router } from "react-router-dom";
+import { RoutesComponent } from "@/router";
+import { Toaster } from "@/components/ui/sonner";
+import { LoadingSpinner } from "@/components/ui/loaderComponent";
+import { OrderStateProvider } from "./context/OrderContext";
 
-function App() {
+
+const App = () => {
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-zinc-50">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-zinc-900">Hi!</h1>
-        <p className="text-zinc-500">React + Tailwind + shadcn/ui init</p>
-        <Button>Test shadcn/ui component</Button>
-      </div>
-    </div>
-  )
-}
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <OrderStateProvider>
+      <Router>
+        <LoadingSpinner />
+        <RoutesComponent />
+        <Toaster />
+      </Router>
+      </OrderStateProvider>
+    </ThemeProvider>
+  );
+};
 
-export default App
+export default App;
