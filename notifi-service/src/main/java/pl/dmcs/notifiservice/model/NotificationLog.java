@@ -1,46 +1,38 @@
 package pl.dmcs.notifiservice.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "notification_logs")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class NotificationLog {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "order_id", nullable = false)
-    private String orderId;
+    private UUID orderId;
 
     @Column(name = "recipient_email", nullable = false)
     private String recipientEmail;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private String status; // Do wpisania SUCCESS lub ERROR
+    private NotificationStatus status;
 
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    public NotificationLog() {}
-
-    // Przykladowy konstruktor do logowania wysylki w bazie danych
-    public NotificationLog(String orderId, String recipientEmail, String status, String errorMessage) {
-        this.orderId = orderId;
-        this.recipientEmail = recipientEmail;
-        this.status = status;
-        this.errorMessage = errorMessage;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public Long getId() { return id; }
-    public String getOrderId() { return orderId; }
-    public String getRecipientEmail() { return recipientEmail; }
-    public String getStatus() { return status; }
-    public String getErrorMessage() { return errorMessage; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
 }

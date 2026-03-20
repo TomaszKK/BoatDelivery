@@ -5,52 +5,52 @@ import org.springframework.stereotype.Service;
 import pl.dmcs.notifiservice.config.RabbitMQConfig;
 import pl.dmcs.notifiservice.dto.OrderEvent;
 import pl.dmcs.notifiservice.model.NotificationLog;
+import pl.dmcs.notifiservice.model.NotificationStatus;
 import pl.dmcs.notifiservice.repository.NotificationLogRepository;
-import pl.dmcs.notifiservice.controller.NotificationController; // Dodany import
 
 @Service
 public class EmailNotificationListener {
 
     private final EmailSenderService emailSenderService;
     private final NotificationLogRepository logRepository;
-    private final NotificationController notificationController;
+    private final SseNotificationService sseNotificationService;
 
     public EmailNotificationListener(
             EmailSenderService emailSenderService,
             NotificationLogRepository logRepository,
-            NotificationController notificationController) {
+            SseNotificationService sseNotificationService) {
         this.emailSenderService = emailSenderService;
         this.logRepository = logRepository;
-        this.notificationController = notificationController;
+        this.sseNotificationService = sseNotificationService;
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_NAME)
     public void handleOrderCreatedEvent(OrderEvent event) {
-        String status = "SUCCESS";
+        NotificationStatus status = NotificationStatus.SUCCESS;
         String errorMessage = null;
 
         try {
             emailSenderService.sendOrderConfirmation(
                     event.customerEmail(),
-                    event.orderId(),
+                    event.orderId().toString(),
                     event.status()
             );
 
-            String frontendMessage = "Nowe zamówienie: " + event.orderId() + " (" + event.status() + ")";
-            notificationController.pushNotificationToFrontend(frontendMessage);
+            String frontendMessage = "Nowe zamówienie: " + event.orderId().toString() + " (" + event.status() + ")";
+            sseNotificationService.pushNotificationToFrontend(frontendMessage);
 
         } catch (Exception e) {
-            status = "ERROR";
+            status = NotificationStatus.ERROR;
             errorMessage = e.getMessage();
-            System.err.println("Błąd układu wykonawczego dla zamówienia " + event.orderId() + ": " + errorMessage);
+            System.err.println("Błąd układu wykonawczego: " + errorMessage);
         } finally {
-            // Zapis logow wysylkowych do bazy danych
-            NotificationLog dbLog = new NotificationLog(
-                    event.orderId(),
-                    event.customerEmail(),
-                    status,
-                    errorMessage
-            );
+            NotificationLog dbLog = NotificationLog.builder()
+                    .orderId(event.orderId())
+                    .recipientEmail(event.customerEmail())
+                    .status(status)
+                    .errorMessage(errorMessage)
+                    .build();
+
             logRepository.save(dbLog);
         }
     }

@@ -44,7 +44,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
 5. Wklej Payload:
    ```json
    {
-     "orderId": "ZAM-TEST-001",
+     "orderId": "123e4567-e89b-12d3-a456-426614174000",
      "customerEmail": "test@boatdelivery.pl",
      "status": "NEW"
    }
