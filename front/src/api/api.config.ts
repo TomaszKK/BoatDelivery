@@ -36,7 +36,7 @@ apiWithEtag.interceptors.request.use((config) => {
 });
 apiWithEtag.interceptors.response.use((response) => {
   if (response.headers.etag) {
-      localStorage.setItem("etag", response.headers.etag.slice(3, -1));
-    }
+    localStorage.setItem("etag", response.headers.etag.slice(3, -1));
+  }
   return response;
 });
