@@ -1,9 +1,29 @@
+app:
+  security:
+    enabled: false
+
 server:
   port: 8080
 
 spring:
   application:
     name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8080/realms/boat-delivery-realm/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8060/realms/boat-delivery-realm
+        registration:
+          spring-gateway-client:
+            provider: keycloak
+            client-id: auth-gateway
+            client-secret: V5JXUTu8QVsXcRfo6jEdw5qbyjLltI6K
+            authorization-grant-type: authorization_code
+            scope: openid, profile, email, phone
   cloud:
     gateway:
       server:
@@ -14,6 +34,8 @@ spring:
                 allowedOrigins: "http://localhost:5173"
                 allowedMethods: "*"
                 allowedHeaders: "*"
+          default-filters:
+            - TokenRelay
           routes:
             # Routing do serwisu user-service
             - id: user-service-route
