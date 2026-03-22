@@ -36,20 +36,24 @@ spring:
                 allowedHeaders: "*"
           default-filters:
             - TokenRelay
+
           routes:
-            # Routing do serwisu user-service
             - id: user-service-route
               uri: lb://user-service
               predicates:
-                - Path=/api/user/**, /api/transport/**
+                - Path=/api/user/**,/api/transport/**
 
-            # Routing do serwisu order-service
             - id: order-service-route
               uri: lb://order-service
               predicates:
-                - Path=/api/orders/**
+                - Path=/api/orders,/api/orders/**
+
+            - id: notification-service-route
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://localhost:8761/eureka/
