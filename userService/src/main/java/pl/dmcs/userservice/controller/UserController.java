@@ -3,6 +3,8 @@ package pl.dmcs.userservice.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import pl.dmcs.userservice.dto.request.UpdateUserRequest;
 import pl.dmcs.userservice.dto.request.UserRequest;
@@ -27,6 +29,12 @@ public class UserController {
     public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
         this.userMapper = userMapper;
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+        User user = userService.syncUserFromJwt(jwt);
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping

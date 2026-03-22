@@ -14,7 +14,6 @@ import java.util.UUID;
 public abstract class ControlledEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(columnDefinition = "uuid", updatable = false, nullable = false)
     private UUID id;
 

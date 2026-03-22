@@ -1,27 +1,40 @@
 package pl.dmcs.userservice.service;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import pl.dmcs.userservice.dto.request.JwtUserSyncRequest;
 import pl.dmcs.userservice.dto.request.UpdateUserRequest;
 import pl.dmcs.userservice.dto.request.UserRequest;
+import pl.dmcs.userservice.exception.InvalidOperationException;
 import pl.dmcs.userservice.exception.ResourceNotFoundException;
 import pl.dmcs.userservice.mapper.UserMapper;
 import pl.dmcs.userservice.model.User;
+import pl.dmcs.userservice.model.UserType;
 import pl.dmcs.userservice.repository.UserRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final Validator validator;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, Validator validator) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.validator = validator;
     }
 
     public List<User> getAllUsers() {
@@ -56,5 +69,67 @@ public class UserService {
     public void deleteUser(UUID id) {
         getUserById(id);
         userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public User syncUserFromJwt(Jwt jwt) {
+        if (jwt == null) {
+            throw new InvalidOperationException("JWT nie może być null");
+        }
+
+        String subject = jwt.getSubject();
+        if (subject == null || subject.isEmpty()) {
+            throw new InvalidOperationException("JWT subject nie może być pusty");
+        }
+
+        UUID keycloakId;
+        try {
+            keycloakId = UUID.fromString(subject);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidOperationException("Nieprawidłowy format JWT subject: " + subject);
+        }
+
+        return userRepository.findById(keycloakId)
+                .orElseGet(() -> {
+                    // Log all claims from JWT for debugging
+                    logger.info("=== JWT Claims Debug ===");
+                    logger.info("Subject: {}", jwt.getSubject());
+                    jwt.getClaims().forEach((key, value) ->
+                        logger.info("Claim [{}]: {}", key, value)
+                    );
+                    logger.info("======================");
+
+                    String phoneNumber = jwt.getClaimAsString("phone_number");
+                    logger.info("Extracted phone_number: {}", phoneNumber);
+
+                    JwtUserSyncRequest syncRequest = JwtUserSyncRequest.builder()
+                            .id(keycloakId)
+                            .email(jwt.getClaimAsString("email"))
+                            .firstName(jwt.getClaimAsString("given_name"))
+                            .lastName(jwt.getClaimAsString("family_name"))
+                            .phoneNumber(phoneNumber)
+                            .userType(UserType.CUSTOMER)
+                            .build();
+
+                    Set<ConstraintViolation<JwtUserSyncRequest>> violations = validator.validate(syncRequest);
+                    if (!violations.isEmpty()) {
+                        String messages = violations.stream()
+                                .map(ConstraintViolation::getMessage)
+                                .reduce((a, b) -> a + ", " + b)
+                                .orElse("Błąd walidacji danych z JWT");
+                        throw new InvalidOperationException(messages);
+                    }
+
+                    User newUser = userMapper.toEntity(syncRequest);
+                    newUser.setCreatedBy("keycloak-client");
+
+                    try {
+                        return userRepository.save(newUser);
+                    } catch (DataIntegrityViolationException e) {
+                        throw new InvalidOperationException("Nie można utworzyć użytkownika: " + e.getMessage());
+                    } catch (Exception e) {
+                        throw new InvalidOperationException("Błąd przy tworzeniu użytkownika: " + e.getMessage());
+                    }
+                });
     }
 }
