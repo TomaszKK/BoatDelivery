@@ -33,7 +33,7 @@ public class EmailNotificationListener {
             emailSenderService.sendOrderConfirmation(
                     event.customerEmail(),
                     event.orderId().toString(),
-                    event.status()
+                    event.status().toString()
             );
 
             String frontendMessage = "Nowe zamówienie: " + event.orderId().toString() + " (" + event.status() + ")";
