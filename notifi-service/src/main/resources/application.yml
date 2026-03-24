@@ -21,18 +21,26 @@ spring:
     password: admin
 
   mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: bc3e8215d80eca
-    password: a41815901856e0
+    host: smtp.gmail.com
+    port: 587
+    username: kiladotestu@gmail.com
+    password: ${SMTP_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+  mvc:
+    servlet:
+      load-on-startup: 1
+
+smsapi:
+  token: ${SMSAPI_TOKEN}
+  sender: Test # JUDASZE Z SMSAPI NIE POWALAJA ZMIENIC NAZWY BEZ AKTYWAKCJI KONTA FIRMOWEGO!!!!!!!!
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
