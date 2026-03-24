@@ -21,16 +21,23 @@ spring:
     password: admin
 
   mail:
-    host: sandbox.smtp.mailtrap.io
-    port: 2525
-    username: bc3e8215d80eca
-    password: a41815901856e0
+    host: smtp.gmail.com
+    port: 587
+    username: kiladotestu@gmail.com
+    password: prawdziwe_haslo_do_testow_lokalnych
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
+  mvc:
+    servlet:
+      load-on-startup: 1
+
+smsapi:
+  token: ${SMSAPI_TOKEN:brak_tokenu}
+  sender: Test # JUDASZE Z SMSAPI NIE POWALAJA ZMIENIC NAZWY BEZ AKTYWACJI KONTA FIRMOWEGO!!!!!!!!
 
 eureka:
   client:
