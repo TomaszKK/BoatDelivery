@@ -35,7 +35,7 @@ public class SecurityConfig {
         // Przepuszczamy każdy ruch bez sprawdzania czegokolwiek
         http.authorizeExchange(auth -> auth.anyExchange().permitAll())
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .cors(Customizer.withDefaults()); // Pozostawiamy CORS dla frontendu
+                .cors(Customizer.withDefaults());
 
         return http.build();
     }
