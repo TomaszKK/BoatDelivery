@@ -4,6 +4,7 @@ import io.quarkus.runtime.StartupEvent;
 import io.quarkus.scheduler.Scheduled;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,40 +14,59 @@ import java.net.http.HttpResponse;
 @ApplicationScoped
 public class EurekaRegistrar {
 
-    private final HttpClient client = HttpClient.newHttpClient();
+    @ConfigProperty(name = "eureka.client.serviceUrl.defaultZone", defaultValue = "http://localhost:8761/eureka")
+    String eurekaBaseUrl;
+
+    @ConfigProperty(name = "app.host.name", defaultValue = "localhost")
+    String hostName;
+
+    @ConfigProperty(name = "quarkus.http.port", defaultValue = "8082")
+    int port;
+
     private final String appName = "ORDER-SERVICE";
-    private final String instanceId = "localhost:order-service:8082";
-    private final String eurekaUrl = "http://localhost:8761/eureka/apps/" + appName;
+    private final HttpClient client = HttpClient.newHttpClient();
+
+    private String getInstanceId() {
+        return hostName + ":" + appName.toLowerCase() + ":" + port;
+    }
+
+    private String getEurekaAppsUrl() {
+        return eurekaBaseUrl + "/apps/" + appName;
+    }
 
     void onStart(@Observes StartupEvent ev) {
         String json = """
                 {
                   "instance": {
                     "instanceId": "%s",
-                    "hostName": "localhost",
+                    "hostName": "%s",
                     "app": "%s",
                     "vipAddress": "order-service",
                     "secureVipAddress": "order-service",
-                    "ipAddr": "127.0.0.1",
+                    "ipAddr": "%s",
                     "status": "UP",
-                    "port": {"$": 8082, "@enabled": "true"},
+                    "port": {"$": %d, "@enabled": "true"},
                     "dataCenterInfo": {
                       "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
                       "name": "MyOwn"
                     }
                   }
                 }
-                """.formatted(instanceId, appName);
+                """.formatted(getInstanceId(), hostName, appName, hostName, port);
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(eurekaUrl))
+                    .uri(URI.create(getEurekaAppsUrl()))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .build();
 
-            client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("Registered to Eureka");
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 204) {
+                System.out.println("Registered to Eureka at " + eurekaBaseUrl + " as " + hostName);
+            } else {
+                System.err.println("Failed to register. HTTP Status: " + response.statusCode());
+            }
         } catch (Exception e) {
             System.err.println("There was an error with registering: " + e.getMessage());
         }
@@ -56,7 +76,7 @@ public class EurekaRegistrar {
     void sendHeartbeat() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(eurekaUrl + "/" + instanceId))
+                    .uri(URI.create(getEurekaAppsUrl() + "/" + getInstanceId()))
                     .PUT(HttpRequest.BodyPublishers.noBody())
                     .build();
 
@@ -67,7 +87,7 @@ public class EurekaRegistrar {
                 onStart(null);
             }
         } catch (Exception e) {
-            System.err.println("There was an error: " + e.getMessage());
+            System.err.println("There was an error sending heartbeat: " + e.getMessage());
         }
     }
 }
