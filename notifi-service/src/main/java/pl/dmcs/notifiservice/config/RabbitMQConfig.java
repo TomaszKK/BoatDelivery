@@ -13,7 +13,7 @@ public class RabbitMQConfig {
     public static final String QUEUE_NAME = "notification.email.queue";
     public static final String EXCHANGE_NAME = "boatdelivery.exchange";
 
-    // Klucz routingu
+    // Klucz routingu, obojetnie co bedzie po order.[costam]
     public static final String ROUTING_KEY = "order.#";
 
     @Bean
