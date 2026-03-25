@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static p.lodz.pl.util.Util.generateTrackingNumber;
+
 @ApplicationScoped
 public class OrderService {
 
@@ -26,6 +28,8 @@ public class OrderService {
     public OrderResponseDTO createOrder(OrderRequestDTO requestDTO) {
         Order order = orderMapper.toEntity(requestDTO);
         order.status = OrderStatus.ORDER_CREATED;
+
+        order.trackingNumber = generateTrackingNumber();
 
         order.persist();
         return orderMapper.toDto(order);

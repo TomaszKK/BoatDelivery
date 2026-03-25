@@ -11,6 +11,9 @@ import java.util.UUID;
 @Table(name = "orders")
 public class Order extends ControlledEntity {
 
+    @Column(name = "tracking_number", unique = true, nullable = false, updatable = false, length = 15)
+    public String trackingNumber;
+
     @Column(name = "customer_id", nullable = false)
     public UUID customerId;
 

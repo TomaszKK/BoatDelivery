@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.*;
 public class OrderControllerIT {
 
     private static final UUID EXISTING_ORDER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
+    private static final String EXISTING_TRACKING_NUMBER = "BD-TEST-0001"; // Założyłem, że taki ustawiłeś w import.sql
     private static final UUID NON_EXISTING_ORDER_ID = UUID.fromString("99999999-9999-9999-9999-999999999999");
     private static final UUID TEST_CUSTOMER_ID = UUID.fromString("c9999999-9999-9999-9999-999999999999");
 
@@ -42,7 +43,7 @@ public class OrderControllerIT {
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body("id", equalTo(EXISTING_ORDER_ID.toString()))
+                .body("trackingNumber", equalTo(EXISTING_TRACKING_NUMBER))
                 .body("status", equalTo("ORDER_CREATED"));
     }
 
@@ -88,7 +89,8 @@ public class OrderControllerIT {
                 .post("/api/orders")
                 .then()
                 .statusCode(201)
-                .body("id", notNullValue())
+                .body("trackingNumber", notNullValue())
+                .body("trackingNumber", startsWith("BD-"))
                 .body("status", equalTo("ORDER_CREATED"))
                 .body("weight", equalTo(12.5F))
                 .body("pickupLocation.streetAddress", equalTo("Wólczańska 215"))
@@ -125,7 +127,7 @@ public class OrderControllerIT {
                 .put("/api/orders/{id}")
                 .then()
                 .statusCode(200)
-                .body("id", equalTo(EXISTING_ORDER_ID.toString()))
+                .body("trackingNumber", equalTo(EXISTING_TRACKING_NUMBER))
                 .body("weight", equalTo(99.9F))
                 .body("pickupLocation.streetAddress", equalTo("Updated Pickup"))
                 .body("deliveryLocation.streetAddress", equalTo("Updated Delivery"));
@@ -141,7 +143,7 @@ public class OrderControllerIT {
                 .patch("/api/orders/{id}/status")
                 .then()
                 .statusCode(200)
-                .body("id", equalTo(EXISTING_ORDER_ID.toString()))
+                .body("trackingNumber", equalTo(EXISTING_TRACKING_NUMBER))
                 .body("status", equalTo("ORDER_RECEIVED_FROM_CUSTOMER"));
     }
 
@@ -155,44 +157,23 @@ public class OrderControllerIT {
                 .then()
                 .statusCode(400)
                 .body("error", equalTo("Bad Request"))
-                .body("message", containsString("Order status cannot be null"));
+                .body("message", containsString("Order status cannot be null")); // Upewnij się, że tak jest sformułowany ExceptionMapper
     }
 
     @Test
     @DisplayName("DELETE /api/orders/{id} - Should successfully delete an order (204 No Content)")
     public void shouldDeleteOrder() {
-        LocationDTO tempLocation = new LocationDTO(
-                new BigDecimal("51.0"),
-                new BigDecimal("20.0"),
-                "To be deleted", "00-000", "City"
-        );
-
-        OrderRequestDTO tempRequest = new OrderRequestDTO(
-                TEST_CUSTOMER_ID,
-                BigDecimal.ONE,
-                BigDecimal.ONE,
-                tempLocation,
-                tempLocation
-        );
-
-        String tempOrderId = given()
-                .contentType(ContentType.JSON)
-                .body(tempRequest)
-                .when()
-                .post("/api/orders")
-                .then()
-                .statusCode(201)
-                .extract().path("id");
+        UUID orderIdToDelete = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
         given()
-                .pathParam("id", tempOrderId)
+                .pathParam("id", orderIdToDelete)
                 .when()
                 .delete("/api/orders/{id}")
                 .then()
                 .statusCode(204);
 
         given()
-                .pathParam("id", tempOrderId)
+                .pathParam("id", orderIdToDelete)
                 .when()
                 .get("/api/orders/{id}")
                 .then()

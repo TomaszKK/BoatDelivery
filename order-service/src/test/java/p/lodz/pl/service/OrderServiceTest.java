@@ -31,6 +31,7 @@ public class OrderServiceTest {
         UUID orderId = UUID.randomUUID();
         Order mockOrder = new Order();
         mockOrder.id = orderId;
+        mockOrder.trackingNumber = "trackingNumber";
         mockOrder.status = OrderStatus.ORDER_CREATED;
         mockOrder.weight = new BigDecimal("10.5");
 
@@ -40,7 +41,7 @@ public class OrderServiceTest {
         OrderResponseDTO result = orderService.getOrderById(orderId);
 
         Assertions.assertNotNull(result, "Result should not be null");
-        Assertions.assertEquals(orderId, result.id(), "ID should match");
+        Assertions.assertEquals("trackingNumber", result.trackingNumber(), "Tracking number should match");
         Assertions.assertEquals(OrderStatus.ORDER_CREATED, result.status(), "Status should be ORDER_CREATED");
         Assertions.assertEquals(new BigDecimal("10.5"), result.weight(), "Weight should match");
     }
@@ -101,7 +102,6 @@ public class OrderServiceTest {
         Assertions.assertEquals(OrderStatus.ORDER_CREATED, result.status(), "Status should be ORDER_CREATED");
         Assertions.assertEquals(new BigDecimal("10.5"), result.weight(), "Weight should match");
     }
-
 
     @Test
     @DisplayName("changeOrderStatus - Should throw BadRequestException when trying to set null status")

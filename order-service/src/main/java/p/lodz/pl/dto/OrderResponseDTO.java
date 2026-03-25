@@ -7,7 +7,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record OrderResponseDTO(
-        UUID id,
+        String trackingNumber,
         UUID customerId,
         OrderStatus status,
         BigDecimal weight,
