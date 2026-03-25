@@ -1,4 +1,4 @@
-import { apiForAnon, apiForAuthenticated, apiWithEtag } from "./api.config";
+import { apiForAnon } from "./api.config";
 import type { ApiResponseType } from "@/types/ApiResponseType";
 import type { OrderResponseDTO } from "@/types/OrderType";
 
