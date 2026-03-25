@@ -113,6 +113,7 @@ services:
         condition: service_healthy
 
   front:
+#   OPTION 1: DEV MODE
     image: node:25.8.1
     working_dir: /app
     volumes:
@@ -123,6 +124,14 @@ services:
     depends_on:
       gateway:
         condition: service_started
+#     OPTION 2: PROD MODE
+#     build: ./front
+#     container_name: front-app
+#     ports:
+#       - "5173:80"
+#     depends_on:
+#       gateway:
+#         condition: service_started
 
 volumes:
   postgres_data:
