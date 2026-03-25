@@ -5,6 +5,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import p.lodz.pl.dto.OrderRequestDTO;
+import p.lodz.pl.dto.OrderResponseDTO;
+import p.lodz.pl.model.enums.OrderStatus;
 import p.lodz.pl.service.OrderService;
 
 import java.util.UUID;
@@ -39,6 +41,16 @@ public class OrderController {
     @Path("/{id}")
     public Response updateOrder(@PathParam("id") UUID id, OrderRequestDTO requestDTO) {
         return Response.ok(orderService.updateOrder(id, requestDTO)).build();
+    }
+
+    @PATCH
+    @Path("/{id}/status")
+    public Response changeOrderStatus(
+            @PathParam("id") UUID id,
+            @QueryParam("newStatus") OrderStatus newStatus) {
+
+        OrderResponseDTO updatedOrder = orderService.changeOrderStatus(id, newStatus);
+        return Response.ok(updatedOrder).build();
     }
 
     @DELETE
