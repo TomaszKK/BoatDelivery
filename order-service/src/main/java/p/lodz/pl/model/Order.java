@@ -11,12 +11,15 @@ import java.util.UUID;
 @Table(name = "orders")
 public class Order extends ControlledEntity {
 
+    @Column(name = "tracking_number", unique = true, nullable = false, updatable = false, length = 15)
+    public String trackingNumber;
+
     @Column(name = "customer_id", nullable = false)
     public UUID customerId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    public OrderStatus status = OrderStatus.NEW;
+    public OrderStatus status = OrderStatus.ORDER_CREATED;
 
     public BigDecimal weight;
     public BigDecimal volume;
@@ -27,6 +30,12 @@ public class Order extends ControlledEntity {
     @Column(name = "time_window_end")
     public Instant timeWindowEnd;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    public DeliveryLocation deliveryLocation;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "pickup_location_id", referencedColumnName = "id")
+    public Location pickupLocation;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "delivery_location_id", referencedColumnName = "id")
+    public Location deliveryLocation;
+
 }
