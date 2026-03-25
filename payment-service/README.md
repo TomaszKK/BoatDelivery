@@ -11,10 +11,11 @@ Mikroserwis odpowiedzialny za procesowanie płatności w ekosystemie przy użyci
 * Stripe CLI (Konteneryzacja dla środowiska deweloperskiego)
 
 ## Wymagania uruchomieniowe
-Do pełnego uruchomienia i testowania serwisu lokalnie wymagane są:
+Do pełnego uruchomienia i testowania serwisu lokalnie (z zamknięciem obwodu Webhook) wymagane są:
 1. Instancja RabbitMQ (domyślnie port 5672).
 2. Instancja bazy PostgreSQL.
-3. Plik konfiguracyjny `.env` w katalogu podpiętym pod Docker Compose (zawierający klucz testowy Stripe).
+3. Kontener Stripe CLI (działający jako tunel przekierowujący zdarzenia z chmury Stripe na Twój `localhost`).
+4. Plik konfiguracyjny `.env` w katalogu podpiętym pod Docker Compose (zawierający klucz testowy Stripe `STRIPE_SECRET_KEY`).
 
 ### Zmienne Środowiskowe (Environment Variables)
 Serwis wymaga wstrzyknięcia następujących kluczy (np. przez konfigurację Run/Debug w IntelliJ):

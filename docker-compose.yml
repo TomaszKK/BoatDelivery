@@ -24,7 +24,6 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
-<<<<<<< Updated upstream
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 5s
@@ -138,17 +137,16 @@ services:
 
 volumes:
   postgres_data:
-=======
 
-  stripe-cli:
-    image: stripe/stripe-cli:latest
-    container_name: stripe-cli-forwarder
-    env_file:
+stripe-cli:
+  image: stripe/stripe-cli:latest
+  container_name: stripe-cli-forwarder
+  env_file:
       - ./payment-service/.env
-    environment:
+  environment:
       - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
-    command: listen --forward-to http://host.docker.internal:8084/api/payments/webhook
-    extra_hosts:
+  command: listen --forward-to http://host.docker.internal:8084/api/payments/webhook
+  extra_hosts:
       - "host.docker.internal:host-gateway"
-    restart: unless-stopped
->>>>>>> Stashed changes
+  git crestart: unless-stopped
+
