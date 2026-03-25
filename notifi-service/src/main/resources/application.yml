@@ -24,7 +24,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: kiladotestu@gmail.com
-    password: ${SMTP_PASSWORD}
+    password: prawdziwe_haslo_do_testow_lokalnych
     properties:
       mail:
         smtp:
@@ -36,11 +36,10 @@ spring:
       load-on-startup: 1
 
 smsapi:
-  token: ${SMSAPI_TOKEN}
-  sender: Test # JUDASZE Z SMSAPI NIE POWALAJA ZMIENIC NAZWY BEZ AKTYWAKCJI KONTA FIRMOWEGO!!!!!!!!
+  token: ${SMSAPI_TOKEN:brak_tokenu}
+  sender: Test # JUDASZE Z SMSAPI NIE POWALAJA ZMIENIC NAZWY BEZ AKTYWACJI KONTA FIRMOWEGO!!!!!!!!
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
-
