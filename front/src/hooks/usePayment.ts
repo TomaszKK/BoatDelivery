@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createPaymentSession } from '@/api/paymentApi';
+import { api } from '@/api/api';
 
 export const usePayment = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -10,10 +10,10 @@ export const usePayment = () => {
     setError(null);
 
     try {
-      const data = await createPaymentSession(orderId, amount, customerEmail);
+      const response = await api.createPaymentSession(orderId, amount, customerEmail);
 
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      if (response.data && response.data.checkoutUrl) {
+        window.location.href = response.data.checkoutUrl;
       } else {
         throw new Error("Brak linku do płatności w odpowiedzi.");
       }
