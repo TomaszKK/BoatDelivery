@@ -38,83 +38,77 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
 [
   {
     "eventType": "ORDER_CREATED",
-    "orderId": "11111111-2222-3333-4444-555555555555",
+    "orderId": "UUID",
     "trackingNumber": "BD-ABCD-001",
-    "targetAudience": [
-      "CUSTOMER"
-    ],
+    "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
     "firstName": "Jan",
     "lastName": "Kowalski"
   },
+  
   {
     "eventType": "ROUTE_ASSIGNED_DELIVERY",
-    "orderId": "11111111-2222-3333-4444-555555555555",
+    "orderId": "UUID",
     "trackingNumber": "BD-ABCD-001",
-    "targetAudience": [
-      "COURIER"
-    ],
+    "targetAudience": ["COURIER"],
     "courierEmail": "kurier.tomasz@boatdelivery.pl",
     "totalDistanceKm": 45.5,
     "estimatedDurationMin": 120
   },
+  
   {
     "eventType": "IN_TRANSIT_FOR_PACKAGE",
-    "orderId": "11111111-2222-3333-4444-555555555555",
+    "orderId": "UUID",
     "trackingNumber": "BD-ABCD-001",
-    "targetAudience": [
-      "CUSTOMER"
-    ],
+    "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
+    "pickupAddress": "DwaJeden 37",
+    "courierPhone": "48123456789",
     "firstName": "Jan"
   },
+  
   {
     "eventType": "ORDER_RECEIVED_FROM_CUSTOMER",
-    "orderId": "11111111-2222-3333-4444-555555555555",
+    "orderId": "UUID",
     "trackingNumber": "BD-ABCD-001",
-    "targetAudience": [
-      "CUSTOMER"
-    ],
+    "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
     "firstName": "Jan"
   },
+ 
   {
     "eventType": "IN_TRANSIT_TO_CUSTOMER",
-    "orderId": "11111111-2222-3333-4444-555555555555",
+    "orderId": "UUID",
     "trackingNumber": "BD-ABCD-001",
-    "targetAudience": [
-      "CUSTOMER"
-    ],
+    "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
     "customerPhone": "+48123456789",
     "courierPhone": "+48321123321",
     "firstName": "Anna",
     "deliveryAddress": "ul. Piotrkowska 1, 90-000 Łódź"
   },
+  
   {
     "eventType": "DELIVERY_COMPLETED",
-    "orderId": "11111111-2222-3333-4444-555555555555",
-    "trackingNumber": "QST-26-001",
-    "targetAudience": [
-      "CUSTOMER"
-    ],
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER"],
     "customerEmail": "odbiorca@mail.pl",
     "firstName": "Anna"
   },
+  
   {
     "eventType": "ORDER_CANCELED",
-    "orderId": "11111111-2222-3333-4444-555555555555",
+    "orderId": "UUID",
     "trackingNumber": "BD-ABCD-001",
-    "targetAudience": [
-      "CUSTOMER",
-      "COURIER"
-    ],
+    "targetAudience": ["CUSTOMER", "COURIER"],
     "courierEmail": "kurier@boatdelivery.pl",
     "customerEmail": "klient@mail.pl",
     "courierPhone": "+48123456789",
     "firstName": "Anna",
     "deliveryAddress": "ul. Piotrkowska 1, 90-000 Łódź"
   }
+
 ]
 ```
 6. Kliknij Publish message.
