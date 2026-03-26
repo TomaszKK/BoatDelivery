@@ -22,8 +22,8 @@ public class NotificationLog {
     @Column(name = "order_id", nullable = false)                            // Id zamowienia systemowe
     private UUID orderId;
 
-    @Column(name = "reference_number", nullable = false)                    // Numer zamowienia paczki dla klienta
-    private String referenceNumber;
+    @Column(name = "tracking_number", nullable = false)                    // Numer zamowienia paczki dla klienta
+    private String trackingNumber;
 
     @Column(name = "recipient_email", nullable = false)                     // Adres email odbiorcy
     private String recipientEmail;

@@ -7,7 +7,7 @@ import java.util.UUID;
 public record OrderEvent(
         String eventType,            // Statusy paczek
         UUID orderId,                // Numer zlecenia w systemie
-        String referenceNumber,      // Numer paczki dla klienta
+        String trackingNumber,      // Numer paczki dla klienta
         List<String> targetAudience, // CUSTOMOER LUB COURIER
         BigDecimal totalDistanceKm,  // Dystans w kilometrach trasy kuriera
         Integer estimatedDurationMin,// Czas trasy kuriera w minetach?

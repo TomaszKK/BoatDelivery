@@ -22,8 +22,8 @@ public class SmsLog {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    @Column(name = "reference_number", nullable = false)
-    private String referenceNumber;
+    @Column(name = "tracking_number", nullable = false)
+    private String trackingNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)

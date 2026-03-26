@@ -19,20 +19,11 @@ Rozproszony układ wykonawczy do obsługi powiadomień asynchronicznych w archit
 
 ##  Uruchomienie lokalne
 
-1. Upewnij się, że infrastruktura Dockera (RabbitMQ, Postgres, API Gateway, Eureka) jest uruchomiona.
-2. Skonfiguruj zmienne środowiskowe dla SMTP (Mailtrap) w `application.yml`:
-   ```yaml
-   spring:
-     mail:
-       host: sandbox.smtp.mailtrap.io
-       port: 2525
-       username: <TWÓJ_USER>
-       password: <TWOJE_HASŁO>
-3. Uruchom aplikację z poziomu IDE lub Mavena
+Upewnij się, że infrastruktura Dockera (RabbitMQ, Postgres, API Gateway, Eureka) jest uruchomiona.
 
 🛠## 🛠️ Testowanie systemu (Manual Override)
 
-Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order Service), wykonaj bezpośredni wtrysk danych do brokera:
+Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order Service), wykonaj bezpośrednie wstrzykiwanie danych do brokera:
 
 ### 1. Przez panel RabbitMQ
 1. Wejdź na `http://localhost:15672` (admin / admin).
@@ -42,77 +33,82 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
     * **Routing key:** `order.created`
     * **Headers:** `content_type` = `application/json`
 5. Wklej któryś PayLoad (zależny od statusu paczki jaki oczekujesz):
+
 ```json
 [
   {
-  "eventType": "ORDER_CREATED",
-  "orderId": "11111111-2222-3333-4444-555555555555",
-  "referenceNumber": "QST-26-001",
-  "targetAudience": ["CUSTOMER"],
-  "customerEmail": "klient@mail.pl",
-  "firstName": "Jan",
-  "lastName": "Kowalski"
-},
-
-{
-  "eventType": "ROUTE_ASSIGNED_DELIVERY",
-  "orderId": "11111111-2222-3333-4444-555555555555",
-  "referenceNumber": "QST-26-001",
-  "targetAudience": ["COURIER"],
-  "courierEmail": "kurier.tomasz@boatdelivery.pl",
-  "totalDistanceKm": 45.5,
-  "estimatedDurationMin": 120
-},
-
-{
-  "eventType": "IN_TRANSIT_FOR_PACKAGE",
-  "orderId": "11111111-2222-3333-4444-555555555555",
-  "referenceNumber": "QST-26-001",
-  "targetAudience": ["CUSTOMER"],
-  "customerEmail": "klient@mail.pl",
-  "firstName": "Jan"
-},
-
-{
-  "eventType": "ORDER_RECEIVED_FROM_CUSTOMER",
-  "orderId": "11111111-2222-3333-4444-555555555555",
-  "referenceNumber": "QST-26-001",
-  "targetAudience": ["CUSTOMER"],
-  "customerEmail": "klient@mail.pl",
-  "firstName": "Jan"
-},
-
-{
-"eventType": "IN_TRANSIT_TO_CUSTOMER",
-"orderId": "11111111-2222-3333-4444-555555555555",
-"referenceNumber": "QST-26-001",
-"targetAudience": ["CUSTOMER"],
-"customerEmail": "klient@mail.pl",
-"customerPhone": "+48123456789",
-"firstName": "Anna",
-"deliveryAddress": "ul. Piotrkowska 1, 90-000 Łódź"
-},
-
-{
-  "eventType": "DELIVERY_COMPLETED",
-  "orderId": "11111111-2222-3333-4444-555555555555",
-  "referenceNumber": "QST-26-001",
-  "targetAudience": ["CUSTOMER"],
-  "customerEmail": "odbiorca@mail.pl",
-  "firstName": "Anna"
+    "eventType": "ORDER_CREATED",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER"],
+    "customerEmail": "klient@mail.pl",
+    "firstName": "Jan",
+    "lastName": "Kowalski"
   },
-
+  
   {
-  "eventType": "ORDER_CANCELED",
-  "orderId": "11111111-2222-3333-4444-555555555555",
-  "referenceNumber": "QST-26-001",
-  "targetAudience": ["CUSTOMER", "COURIER"],
-  "courierEmail": "kurier@boatdelivery.pl",
-  "customerEmail": "klient@mail.pl",
-  "courierPhone": "+48123456789",
-  "firstName": "Anna",
-  "deliveryAddress": "ul. Piotrkowska 1, 90-000 Łódź"
+    "eventType": "ROUTE_ASSIGNED_DELIVERY",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["COURIER"],
+    "courierEmail": "kurier.tomasz@boatdelivery.pl",
+    "totalDistanceKm": 45.5,
+    "estimatedDurationMin": 120
+  },
+  
+  {
+    "eventType": "IN_TRANSIT_FOR_PACKAGE",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER"],
+    "customerEmail": "klient@mail.pl",
+    "pickupAddress": "DwaJeden 37",
+    "courierPhone": "48123456789",
+    "firstName": "Jan"
+  },
+  
+  {
+    "eventType": "ORDER_RECEIVED_FROM_CUSTOMER",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER"],
+    "customerEmail": "klient@mail.pl",
+    "firstName": "Jan"
+  },
+ 
+  {
+    "eventType": "IN_TRANSIT_TO_CUSTOMER",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER"],
+    "customerEmail": "klient@mail.pl",
+    "customerPhone": "+48123456789",
+    "courierPhone": "+48321123321",
+    "firstName": "Anna",
+    "deliveryAddress": "ul. Piotrkowska 1, 90-000 Łódź"
+  },
+  
+  {
+    "eventType": "DELIVERY_COMPLETED",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER"],
+    "customerEmail": "odbiorca@mail.pl",
+    "firstName": "Anna"
+  },
+  
+  {
+    "eventType": "ORDER_CANCELED",
+    "orderId": "UUID",
+    "trackingNumber": "BD-ABCD-001",
+    "targetAudience": ["CUSTOMER", "COURIER"],
+    "courierEmail": "kurier@boatdelivery.pl",
+    "customerEmail": "klient@mail.pl",
+    "courierPhone": "+48123456789",
+    "firstName": "Anna",
+    "deliveryAddress": "ul. Piotrkowska 1, 90-000 Łódź"
   }
+
 ]
 ```
 6. Kliknij Publish message.

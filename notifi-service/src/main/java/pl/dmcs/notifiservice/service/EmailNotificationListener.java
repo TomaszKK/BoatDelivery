@@ -49,30 +49,30 @@ public class EmailNotificationListener {
 
                 switch (event.eventType()) {
                     case "ORDER_CREATED" -> {
-                        generatedEmailContent = emailSenderService.sendOrderCreatedEmail(event.customerEmail(), event.referenceNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Utworzono zlecenie nadania paczki: " + event.referenceNumber());
+                        generatedEmailContent = emailSenderService.sendOrderCreatedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
+                        sseNotificationService.pushNotificationToFrontend("Utworzono zlecenie nadania paczki: " + event.trackingNumber());
                     }
                     case "IN_TRANSIT_FOR_PACKAGE" -> {
-                        generatedEmailContent = emailSenderService.sendInTransitForPackageEmail(event.customerEmail(), event.referenceNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Kurier jedzie po odbiór: " + event.referenceNumber());
+                        generatedEmailContent = emailSenderService.sendInTransitForPackageEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.pickupAddress(), event.courierPhone());
+                        sseNotificationService.pushNotificationToFrontend("Kurier jedzie po odbiór: " + event.trackingNumber());
                     }
                     case "ORDER_RECEIVED_FROM_CUSTOMER" -> {
-                        generatedEmailContent = emailSenderService.sendOrderReceivedEmail(event.customerEmail(), event.referenceNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Kurier odebrał paczkę: " + event.referenceNumber());
+                        generatedEmailContent = emailSenderService.sendOrderReceivedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
+                        sseNotificationService.pushNotificationToFrontend("Kurier odebrał paczkę: " + event.trackingNumber());
                     }
                     case "IN_TRANSIT_TO_CUSTOMER" -> {
-                        generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.referenceNumber(), event.firstName(), event.deliveryAddress());
-                        sseNotificationService.pushNotificationToFrontend("Paczka w drodze do doręczenia: " + event.referenceNumber());
+                        generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.deliveryAddress(), event.courierPhone());
+                        sseNotificationService.pushNotificationToFrontend("Paczka w drodze do doręczenia: " + event.trackingNumber());
 
-                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.referenceNumber(), event.courierPhone());
-                        dispatchAndLogSms(event.orderId(), event.referenceNumber(), event.customerPhone(), smsMsg);
+                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.trackingNumber(), event.courierPhone());
+                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.customerPhone(), smsMsg);
                     }
                     case "DELIVERY_COMPLETED" -> {
-                        generatedEmailContent = emailSenderService.sendDeliveryCompletedEmail(event.customerEmail(), event.referenceNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Paczka dostarczona: " + event.referenceNumber());
+                        generatedEmailContent = emailSenderService.sendDeliveryCompletedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
+                        sseNotificationService.pushNotificationToFrontend("Paczka dostarczona: " + event.trackingNumber());
                     }
                     case "ORDER_CANCELED" -> {
-                        generatedEmailContent = emailSenderService.sendCancellationEmail(event.customerEmail(), event.referenceNumber(), event.firstName());
+                        generatedEmailContent = emailSenderService.sendCancellationEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                     }
                 }
             }
@@ -93,12 +93,12 @@ public class EmailNotificationListener {
                     }
                     case "ORDER_CANCELED" -> {
 
-                        String courierEmailContent = emailSenderService.sendCourierCancellationEmail(event.courierEmail(), event.referenceNumber(), event.deliveryAddress());
+                        String courierEmailContent = emailSenderService.sendCourierCancellationEmail(event.courierEmail(), event.trackingNumber(), event.deliveryAddress());
                         generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + "MAIL KURIERA:\n" + courierEmailContent;
-                        sseNotificationService.pushNotificationToFrontend("UWAGA! Anulacja paczki " + event.referenceNumber() + " - zmiana w trasie.");
+                        sseNotificationService.pushNotificationToFrontend("UWAGA! Anulacja paczki " + event.trackingNumber() + " - zmiana w trasie.");
 
-                        String smsMsg = String.format("Zlecenie %s anulowane! Pomiń adres: %s.", event.referenceNumber(), event.deliveryAddress());
-                        dispatchAndLogSms(event.orderId(), event.referenceNumber(), event.courierPhone(), smsMsg);
+                        String smsMsg = String.format("Zlecenie %s anulowane! Pomiń adres: %s.", event.trackingNumber(), event.deliveryAddress());
+                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.courierPhone(), smsMsg);
                     }
                 }
             }
@@ -114,7 +114,7 @@ public class EmailNotificationListener {
             NotificationLog dbLog = NotificationLog.builder()
                     .orderId(event.orderId())
                     .recipientEmail(logRecipientEmail)
-                    .referenceNumber(event.referenceNumber())
+                    .trackingNumber(event.trackingNumber())
                     .messageContent(generatedEmailContent)
                     .status(status)
                     .errorMessage(errorMessage)
@@ -126,9 +126,9 @@ public class EmailNotificationListener {
             System.err.println("KRYTYCZNY BŁĄD BAZY DANYCH: " + dbEx.getMessage());
         }
     }
-    private void dispatchAndLogSms(UUID orderId, String refNumber, String phone, String message) {
+    private void dispatchAndLogSms(UUID orderId, String trackNumber, String phone, String message) {
         if (phone == null || phone.isBlank()) {
-            System.out.println("Zignorowano wysyłkę SMS - brak numeru telefonu dla zamówienia: " + refNumber);
+            System.out.println("Zignorowano wysyłkę SMS - brak numeru telefonu dla zamówienia: " + trackNumber);
             return;
         }
 
@@ -146,7 +146,7 @@ public class EmailNotificationListener {
                 // Zapis logow sms
                 SmsLog smsLog = SmsLog.builder()
                         .orderId(orderId)
-                        .referenceNumber(refNumber)
+                        .trackingNumber(trackNumber)
                         .recipientNumber(phone)
                         .messageContent(message)
                         .status(smsStatus)
