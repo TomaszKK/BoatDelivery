@@ -8,7 +8,7 @@ import pl.dmcs.paymentservice.service.PaymentService;
 
 @RestController
 @RequestMapping("/api/payments")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // do zmiany w produkcji na origins = "http://localhost:5173"
 public class PaymentController {
 
     private final PaymentService paymentService;

@@ -5,6 +5,6 @@ import java.util.UUID;
 
 public record PaymentEvent(
         UUID orderId,
-        String status, // PAID, FAILED
+        PaymentStatus status,
         BigDecimal amount
 ) {}

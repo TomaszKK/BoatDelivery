@@ -18,6 +18,10 @@ spring:
     username: admin
     password: admin
 
+  app:
+    frontend:
+      url: http://localhost:5173
+
 eureka:
   client:
     service-url:
@@ -28,3 +32,4 @@ eureka:
 stripe:
   secret-key: ${STRIPE_SECRET_KEY}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+

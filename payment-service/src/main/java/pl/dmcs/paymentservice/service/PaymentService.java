@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.dmcs.paymentservice.dto.PaymentRequest;
-import pl.dmcs.paymentservice.model.PaymentStatus;
 import pl.dmcs.paymentservice.model.PaymentTransaction;
 import pl.dmcs.paymentservice.repository.PaymentTransactionRepository;
 import com.stripe.exception.EventDataObjectDeserializationException;
@@ -21,14 +20,13 @@ import java.math.BigDecimal;
 public class PaymentService {
 
     private final PaymentTransactionRepository transactionRepository;
+    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
 
     @Value("${stripe.webhook-secret}")
     private String webhookSecret;
 
-    // Przykladowe przekierowanie po oplaeniu udany lub nie
-    private static final String FRONTEND_SUCCESS_URL = "http://localhost:3000/payment/success";
-    private static final String FRONTEND_CANCEL_URL = "http://localhost:3000/payment/cancel";
-    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
 
     public PaymentService(PaymentTransactionRepository transactionRepository, org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate) {
         this.transactionRepository = transactionRepository;
@@ -41,14 +39,15 @@ public class PaymentService {
             throw new IllegalStateException("Transakcja dla tego zamówienia już istnieje!");
         }
 
-        // Stripe przyjmuje kwoty w groszach
         long amountInCents = request.amount().multiply(new BigDecimal("100")).longValue();
 
-        // Stripe checkoout
+        String successUrl = frontendUrl + "/payment/success";
+        String cancelUrl = frontendUrl + "/payment/cancel";
+
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl(FRONTEND_SUCCESS_URL)
-                .setCancelUrl(FRONTEND_CANCEL_URL)
+                .setSuccessUrl(successUrl)
+                .setCancelUrl(cancelUrl)
                 .setCustomerEmail(request.customerEmail())
                 .putMetadata("order_id", request.orderId().toString())
                 .addLineItem(
@@ -71,18 +70,16 @@ public class PaymentService {
 
         Session session = Session.create(params);
 
-        // Zapisanie transakcji ze statusem PENDING do bazy danych
         PaymentTransaction transaction = PaymentTransaction.builder()
                 .orderId(request.orderId())
                 .stripeSessionId(session.getId())
                 .amount(request.amount())
                 .currency("PLN")
-                .status(PaymentStatus.PENDING)
+                .status(pl.dmcs.paymentservice.model.PaymentStatus.PENDING)
                 .build();
 
         transactionRepository.save(transaction);
 
-        // Adres URL platnosci
         return session.getUrl();
     }
 
@@ -100,7 +97,6 @@ public class PaymentService {
 
             Session session;
             try {
-                // Zabezpieczona proba wymuszenia parsowania
                 session = (Session) event.getDataObjectDeserializer().deserializeUnsafe();
             } catch (EventDataObjectDeserializationException e) {
                 System.err.println("Krytyczny blad deserializacji Stripe: " + e.getMessage());
@@ -111,12 +107,10 @@ public class PaymentService {
                 String sessionId = session.getId();
                 System.out.println("System rozpoznal sesje z Webhooka: " + sessionId);
 
-                // Szukamy transakcji w naszej bazie
                 PaymentTransaction transaction = transactionRepository.findByStripeSessionId(sessionId)
                         .orElseThrow(() -> new RuntimeException("Nie znaleziono transakcji o ID: " + sessionId));
 
-                // Aktualizacja statusu na oplacony
-                transaction.setStatus(PaymentStatus.COMPLETED);
+                transaction.setStatus(pl.dmcs.paymentservice.model.PaymentStatus.COMPLETED);
                 transactionRepository.save(transaction);
 
                 System.out.println("=========================================");
@@ -126,7 +120,11 @@ public class PaymentService {
                 System.out.println("=========================================");
 
                 pl.dmcs.paymentservice.dto.PaymentEvent eventMsg =
-                        new pl.dmcs.paymentservice.dto.PaymentEvent(transaction.getOrderId(), "PAID", transaction.getAmount());
+                        new pl.dmcs.paymentservice.dto.PaymentEvent(
+                                transaction.getOrderId(),
+                                pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
+                                transaction.getAmount()
+                        );
 
                 rabbitTemplate.convertAndSend(
                         pl.dmcs.paymentservice.config.RabbitMQConfig.EXCHANGE_NAME,

@@ -135,18 +135,32 @@ services:
 #       gateway:
 #         condition: service_started
 
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    expose:
+      - "8084"
+    env_file:
+      - ./payment-service/.env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe-cli-forwarder
+    env_file:
+      - ./payment-service/.env.docker
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+    command: listen --forward-to http://payment-service:8084/api/payments/webhook
+    depends_on:
+      - payment-service
+    restart: unless-stopped
+
 volumes:
   postgres_data:
-
-stripe-cli:
-  image: stripe/stripe-cli:latest
-  container_name: stripe-cli-forwarder
-  env_file:
-      - ./payment-service/.env
-  environment:
-      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
-  command: listen --forward-to http://host.docker.internal:8084/api/payments/webhook
-  extra_hosts:
-      - "host.docker.internal:host-gateway"
-  git crestart: unless-stopped
-
