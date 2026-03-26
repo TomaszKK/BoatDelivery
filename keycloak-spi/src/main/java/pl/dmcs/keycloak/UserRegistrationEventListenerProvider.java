@@ -40,13 +40,32 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
             UserModel user = session.users().getUserById(realm, userId);
 
             if (user != null) {
-                log.infof("Nowy uzytkownik zarejestrowany: %s. Wysylam do UserService...", userId);
-                sendUserToMicroservice(user);
+                log.infof("Nowy uzytkownik zarejestrowany: %s.", userId);
+
+                // 1. ODCZYTUJEMY TYP KONTA Z FORMULARZA
+                String accountType = user.getFirstAttribute("ACCOUNT_TYPE");
+                if (accountType == null || accountType.isBlank()) {
+                    log.warn("Brak atrybutu ACCOUNT_TYPE. Ustawiam domyslnie na CUSTOMER.");
+                    accountType = "CUSTOMER";
+                }
+
+                // 2. NADAJEMY ROLĘ W KEYCLOAKU
+                // (Role CUSTOMER i COURIER musza wczesniej zostac utworzone w panelu Keycloaka!)
+                org.keycloak.models.RoleModel roleToAssign = realm.getRole(accountType);
+                if (roleToAssign != null) {
+                    user.grantRole(roleToAssign);
+                    log.infof("Sukces: Nadano role %s uzytkownikowi %s", roleToAssign.getName(), user.getUsername());
+                } else {
+                    log.errorf("Krytyczny blad: Rola %s nie istnieje w realmie!", accountType);
+                }
+
+                // 3. WYSYŁAMY DO MIKROSERWISU
+                sendUserToMicroservice(user, accountType); // Zmodyfikuj metode, by przyjmowala accountType
             }
         }
     }
 
-    private void sendUserToMicroservice(UserModel user) {
+    private void sendUserToMicroservice(UserModel user, String accountType) {
         try {
             String firstName = user.getFirstName() != null ? user.getFirstName() : "";
             String lastName = user.getLastName() != null ? user.getLastName() : "";
@@ -55,7 +74,7 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
             String phoneAttr = user.getFirstAttribute("phoneNumber");
             String phoneNumber = phoneAttr != null ? phoneAttr : "";
 
-            UserPayload payload = new UserPayload(user.getId(), email, firstName, lastName, phoneNumber);
+            UserPayload payload = new UserPayload(user.getId(), email, firstName, lastName, phoneNumber, accountType);
             String jsonPayload = gson.toJson(payload);
 
             String secret = System.getenv("WEBHOOK_KEYCLOAK_SECRET");
@@ -96,13 +115,15 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
         private final String firstName;
         private final String lastName;
         private final String phoneNumber;
+        private final String userType;
 
-        public UserPayload(String id, String email, String firstName, String lastName, String phoneNumber) {
+        public UserPayload(String id, String email, String firstName, String lastName, String phoneNumber, String userType) {
             this.id = id;
             this.email = email;
             this.firstName = firstName;
             this.lastName = lastName;
             this.phoneNumber = phoneNumber;
+            this.userType = userType;
         }
 
         public String getId() {
@@ -123,6 +144,10 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
 
         public String getPhoneNumber() {
             return phoneNumber;
+        }
+
+        public String getUserType() {
+            return userType;
         }
     }
 
@@ -150,10 +175,11 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
                     }
 
                     UserModel user = session.users().getUserById(realm, userId);
+                    String accountType = "ADMIN";
 
                     if (user != null) {
                         log.infof("Nowy uzytkownik utworzony przez admina: %s. Wysylam do UserService...", userId);
-                        sendUserToMicroservice(user);
+                        sendUserToMicroservice(user, accountType);
                     } else {
                         log.warnf("Nie znaleziono usera z ID: %s", userId);
                     }

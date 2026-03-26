@@ -49,6 +49,7 @@ services:
     volumes:
       - ./docker/keycloak/imports:/opt/keycloak/data/import
       - ./docker/keycloak/providers:/opt/keycloak/providers
+      - ./docker/keycloak/themes/boat-theme:/opt/keycloak/themes/boat-theme
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
