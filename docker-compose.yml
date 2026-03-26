@@ -45,15 +45,26 @@ services:
     image: quay.io/keycloak/keycloak:26.5.6
     command: start-dev --import-realm
     ports:
-      - "8060:8080"
+      - "8060:8060"
     volumes:
       - ./docker/keycloak/imports:/opt/keycloak/data/import
-      - ./keycloak-spi/target:/opt/keycloak/providers
+      - ./docker/keycloak/providers:/opt/keycloak/providers
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"           # Włącza nasłuchiwanie na HTTP (nie tylko HTTPS)
+      KC_HOSTNAME_STRICT: "false"       # Pozwala Keycloakowi akceptować localhost i nazwy serwisów dockera
+      KC_HOSTNAME_STRICT_HTTPS: "false" # Pozwala na panel admina po HTTP
+      KC_HTTP_RELATIVE_PATH: "/"
+      KC_HOSTNAME: localhost
+      KC_HTTP_PORT: 8060
+      KC_EVENTS_ENABLED: "true"         # Włącza zapisywanie eventów
+      KC_EVENTS_LISTENERS: "userservice-sync-listener"  # Rejestruje nasz custom listener
+      KC_ADMIN_EVENTS_ENABLED: "true"   # Włącza zapisywanie admin eventów
+      KC_ADMIN_EVENTS_DETAILS_ENABLED: "true"  # Włącza szczegóły admin eventów
+      WEBHOOK_KEYCLOAK_SECRET: c8d904f5-5322-4d56-affb-fe63b9c436fb
     healthcheck:
-      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/8080'"]
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/8060'"]
       interval: 10s
       timeout: 5s
       retries: 15
