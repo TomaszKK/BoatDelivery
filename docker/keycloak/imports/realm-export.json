@@ -663,22 +663,28 @@
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
-      "clientAuthenticatorType": "client-secret",
+      "clientAuthenticatorType": "client-secret-basic",
       "secret": "ENabIdvbZEy9a7stSPjhFlbeWpPQLpZj",
       "redirectUris": [
-        "http://localhost:8080/login/oauth2/code/*"
+        "http://localhost:8080/login/oauth2/code/*",
+        "http://localhost:5173",
+        "http://localhost:5173/*",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5173/*"
       ],
       "webOrigins": [
-        "http://localhost:8080"
+        "http://localhost:8080",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
       ],
       "notBefore": 0,
       "bearerOnly": false,
       "consentRequired": false,
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
+      "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "publicClient": false,
+      "publicClient": true,
       "frontchannelLogout": true,
       "protocol": "openid-connect",
       "attributes": {
@@ -688,7 +694,7 @@
         "client.secret.creation.time": "1774020712",
         "backchannel.logout.session.required": "true",
         "standard.token.exchange.enabled": "false",
-        "post.logout.redirect.uris": "+",
+        "post.logout.redirect.uris": "http://localhost:5173/",
         "frontchannel.logout.session.required": "true",
         "oauth2.device.authorization.grant.enabled": "false",
         "display.on.consent.screen": "false",
@@ -705,11 +711,11 @@
         "profile",
         "roles",
         "basic",
-        "email"
+        "email",
+        "phone"
       ],
       "optionalClientScopes": [
         "address",
-        "phone",
         "offline_access",
         "microprofile-jwt"
       ]
