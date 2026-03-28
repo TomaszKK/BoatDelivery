@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Pathnames } from "@/router/pathnames";
 import { ModeToggle } from "../ModeToggle";
 import { AuthButtons } from "../auth/AuthButtons";
+import { BdLogo } from "@/components/ui/BdLogo.tsx";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +32,7 @@ import {
   UserIcon,
   LanguagesIcon,
   MenuIcon,
-  MapIcon,
+  //MapIcon,
   TruckIcon,
   PackageSearchIcon,
   PackageIcon,
@@ -174,7 +175,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               }
               className="text-primary flex items-center gap-2 text-2xl font-bold tracking-tight transition-opacity hover:opacity-80"
             >
-              <MapIcon className="h-6 w-6" />
+              <BdLogo className="h-20 w-20" />
               BoatDelivery
             </a>
           </div>
