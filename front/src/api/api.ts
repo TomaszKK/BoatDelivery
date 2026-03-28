@@ -1,4 +1,4 @@
-import { apiForAnon } from "./api.config";
+import { apiForAuthenticated } from "./api.config";
 import type { ApiResponseType } from "@/types/ApiResponseType";
 import type { OrderResponseDTO } from "@/types/OrderType";
 
@@ -7,11 +7,11 @@ export interface PaymentSessionResponse {
 }
 
 export const api = {
-  getOrders: () : ApiResponseType<OrderResponseDTO[]> => 
-    apiForAnon.get("/orders"),
+  getOrders: () : ApiResponseType<OrderResponseDTO[]> =>
+      apiForAuthenticated.get("/orders"),
 
   createPaymentSession: (orderId: string, amount: number, customerEmail: string) =>
-    apiForAnon.post<PaymentSessionResponse>("/payments/create-session", {
+      apiForAuthenticated.post<PaymentSessionResponse>("/payments/create-session", {
       orderId,
       amount,
       customerEmail

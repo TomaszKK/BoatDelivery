@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Pathnames } from "@/router/pathnames";
 import { ModeToggle } from "../ModeToggle";
+import { AuthButtons } from "../auth/AuthButtons";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -43,14 +44,13 @@ import {
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
-// MOCKED DATA - DO USUNIĘCIA I ZASTĄPIENIA PRAWDZIWYMI DANYMI Z AUTHSERVICE
+  // MOCKED DATA - DO USUNIĘCIA I ZASTĄPIENIA PRAWDZIWYMI DANYMI Z AUTHSERVICE
   const isLogged = true;
   const isCustomer = true;
   const isCourier = false;
   const isAdmin = false;
   const account = { username: "Piotr", role: "admin" };
 
-  const logOut = () => console.log("Wylogowano (Mock)");
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -160,21 +160,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
                     {!isLogged && (
                       <div className="flex flex-col gap-2 pt-4">
-                        <Button
-                          variant="outline"
-                          onClick={() =>
-                            (window.location.href = Pathnames.public.login)
-                          }
-                        >
-                          {t("login")}
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            (window.location.href = Pathnames.public.register)
-                          }
-                        >
-                          {t("register")}
-                        </Button>
+                        <AuthButtons />
                       </div>
                     )}
                   </nav>
@@ -335,71 +321,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
             <ModeToggle />
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant={isLogged ? "outline" : "default"}
-                  className="flex cursor-pointer gap-2"
-                >
-                  <UserIcon className="h-4 w-4" />
-                  {isLogged ? (
-                    <span className="hidden sm:inline">
-                      {account?.username}
-                    </span>
-                  ) : (
-                    t("login")
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {isLogged ? (
-                  <>
-                    <div className="text-muted-foreground px-2 py-1.5 text-sm">
-                      {t("role")}:{" "}
-                      <span className="text-foreground font-semibold">
-                        {t(account?.role || "")}
-                      </span>
-                    </div>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <a
-                        href={Pathnames.customer.profile}
-                        className="cursor-pointer"
-                      >
-                        {t("myProfile")}
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={logOut}
-                      className="text-destructive focus:text-destructive cursor-pointer"
-                    >
-                      <LogOutIcon className="mr-2 h-4 w-4" />
-                      {t("logOut")}
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <a
-                        href={Pathnames.public.login}
-                        className="cursor-pointer"
-                      >
-                        {t("login")}
-                      </a>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <a
-                        href={Pathnames.public.register}
-                        className="cursor-pointer"
-                      >
-                        {t("register")}
-                      </a>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <AuthButtons />
           </div>
         </div>
       </header>

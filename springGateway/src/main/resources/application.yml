@@ -10,61 +10,17 @@ spring:
     name: api-gateway
   security:
     oauth2:
-      client:
-        registration:
-          spring-gateway-client:
-            provider: keycloak
-            client-id: auth-gateway
-            client-secret: ENabIdvbZEy9a7stSPjhFlbeWpPQLpZj
-            client-authentication-method: client_secret_post
-            authorization-grant-type: authorization_code
-            scope: openid, profile, email, phone
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-        provider:
-          keycloak:
-            # Przeglądarka musi iść do localhost (to działa)
-            authorization-uri: http://localhost:8060/realms/boat-delivery-realm/protocol/openid-connect/auth
-            # Gateway musi iść do kontenera 'keycloak' (to naprawi błąd wymiany kodu)
-            token-uri: http://keycloak:8060/realms/boat-delivery-realm/protocol/openid-connect/token
-            user-info-uri: http://keycloak:8060/realms/boat-delivery-realm/protocol/openid-connect/userinfo
-            jwk-set-uri: http://keycloak:8060/realms/boat-delivery-realm/protocol/openid-connect/certs
-            user-name-attribute: preferred_username
-
       resourceserver:
         jwt:
           jwk-set-uri: http://keycloak:8060/realms/boat-delivery-realm/protocol/openid-connect/certs
-          # Zmieniamy na keycloak, żeby walidacja przeszła wewnątrz sieci Dockera
-#          issuer-uri: http://keycloak:8060/realms/boat-delivery-realm
-  cloud:
-    gateway:
-      server:
-        webflux:
-          default-filters:
-            - TokenRelay
-
-          routes:
-            - id: user-service-route
-              uri: lb://user-service
-              predicates:
-                - Path=/api/user/**,/api/transport/**
-
-            - id: order-service-route
-              uri: lb://order-service
-              predicates:
-                - Path=/api/orders,/api/orders/**
-
-            - id: notification-service-route
-              uri: lb://notification-service
-              predicates:
-                - Path=/api/notifications/**
-
-            - id: payment-service-route
-              uri: lb://payment-service
-              predicates:
-                - Path=/api/payments/**
-
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.web: TRACE
+    org.springframework.cloud.gateway: TRACE
