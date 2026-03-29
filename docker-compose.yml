@@ -21,6 +21,7 @@ services:
     container_name: rabbitmq
     ports:
       - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -167,8 +168,6 @@ services:
     container_name: stripe-cli-forwarder
     env_file:
       - ./payment-service/.env.docker
-    environment:
-      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
     command: listen --forward-to http://payment-service:8084/api/payments/webhook
     depends_on:
       - payment-service

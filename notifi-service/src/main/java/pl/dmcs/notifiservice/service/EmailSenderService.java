@@ -1,7 +1,10 @@
 package pl.dmcs.notifiservice.service;
 
-import org.springframework.mail.SimpleMailMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,14 +18,35 @@ public class EmailSenderService {
     }
 
     private void sendEmail(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(SENDER);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        mailSender.send(message);
-        System.out.println("Wysłano e-mail do: " + to + " | Temat: " + subject);
+            helper.setFrom(SENDER);
+            helper.setTo(to);
+            helper.setSubject(subject);
+
+            String htmlContent = """
+                <html>
+                <body style="font-family: Arial, sans-serif; color: #333;">
+                    <p>%s</p>
+                    <br/>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;"/>
+                    <img src='cid:logo' alt='BoatDelivery' style='max-width: 150px;'/>
+                </body>
+                </html>
+                """.formatted(text.replace("\n", "<br/>"));
+
+            helper.setText(htmlContent, true);
+
+            ClassPathResource logo = new ClassPathResource("logo.png");
+            helper.addInline("logo", logo, "image/png");
+
+            mailSender.send(message);
+            System.out.println("Wysłano e-mail do: " + to + " | Temat: " + subject);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Błąd podczas wysyłania e-maila", e);
+        }
     }
 
     // --- PROCES ODBIORU ---
