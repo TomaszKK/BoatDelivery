@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useOrderState } from "@/context/OrderContext";
 import { trackPromise } from "react-promise-tracker";
 
+import type { OrderRequestDTO } from "@/types/OrderType";
+
 export const useOrder = () => {
   const { t } = useTranslation();
   const { orders, setOrders } = useOrderState();
@@ -12,9 +14,9 @@ export const useOrder = () => {
   const getAllOrders = async () => {
     try {
       const response = await trackPromise(api.getOrders());
-      
+
       const data = response.data;
-            
+
       setOrders(data);
       return data;
     } catch (e) {
@@ -22,12 +24,38 @@ export const useOrder = () => {
         toast.error(
           e.response?.data?.message !== undefined
             ? t(`${e.response.data.message}`)
-            : t("getAllOrdersFail", "There was an error fetching orders.")
+            : t("orders.getAllFail"),
         );
       } else {
-        toast.error(t("getAllOrdersFail", "There was an error fetching orders."));
+        toast.error(t("orders.getAllFail"));
       }
       return e;
+    }
+  };
+
+  const createOrder = async (orderData: OrderRequestDTO) => {
+    try {
+      const response = await trackPromise(api.createOrder(orderData));
+
+      const newOrder = response.data;
+
+      setOrders([newOrder, ...(orders || [])]);
+
+      toast.success(t("orders.createSuccess"));
+
+      return newOrder;
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        toast.error(
+          e.response?.data?.message !== undefined
+            ? t(`${e.response.data.message}`)
+            : t("orders.createFail"),
+        );
+      } else {
+        toast.error(t("orders.createFail"));
+      }
+
+      throw e;
     }
   };
 
@@ -35,5 +63,6 @@ export const useOrder = () => {
     orders,
     setOrders,
     getAllOrders,
+    createOrder,
   };
 };

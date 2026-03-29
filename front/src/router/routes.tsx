@@ -1,4 +1,4 @@
-import { OrdersPage } from "@/pages/OrdersPage";
+import { MyOrdersPage } from "@/pages/MyOrdersPage";
 import { Pathnames } from "./pathnames";
 
 const PlaceholderPage = ({ title }: { title: string }) => (
@@ -43,7 +43,7 @@ export const customerRoutes: RouteType[] = [
   },
   {
     path: Pathnames.customer.orders,
-    Component: OrdersPage,
+    Component: MyOrdersPage,
   },
 ];
 

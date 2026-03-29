@@ -7,6 +7,6 @@ public record OrderRequestDTO(
         UUID customerId,
         BigDecimal weight,
         BigDecimal volume,
-        LocationDTO pickupLocation,
-        LocationDTO deliveryLocation
+        LocationRequestDTO pickupLocation,
+        LocationRequestDTO deliveryLocation
 ) {}

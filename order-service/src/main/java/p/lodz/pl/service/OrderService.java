@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
+import p.lodz.pl.dto.maps.HerePosition;
 import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.exception.ResourceNotFoundException;
 import p.lodz.pl.mapper.OrderMapper;
@@ -24,14 +25,24 @@ public class OrderService {
     @Inject
     OrderMapper orderMapper;
 
+    @Inject
+    LocationService locationService;
+
     @Transactional
-    public OrderResponseDTO createOrder(OrderRequestDTO requestDTO) {
+    public OrderResponseDTO createOrder(OrderRequestDTO requestDTO, HerePosition pickupPos, HerePosition deliveryPos) {
+
         Order order = orderMapper.toEntity(requestDTO);
         order.status = OrderStatus.ORDER_CREATED;
-
         order.trackingNumber = generateTrackingNumber();
 
+        order.pickupLocation.latitude = pickupPos.lat();
+        order.pickupLocation.longitude = pickupPos.lng();
+
+        order.deliveryLocation.latitude = deliveryPos.lat();
+        order.deliveryLocation.longitude = deliveryPos.lng();
+
         order.persist();
+
         return orderMapper.toDto(order);
     }
 

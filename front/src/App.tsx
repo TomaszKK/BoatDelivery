@@ -8,23 +8,23 @@ import { useNotifications } from "./hooks/useNotifications";
 
 // Komponent startujacy nasluch wyciszenia powiadomien
 const NotificationListener = () => {
-    useNotifications();
-    return null;
+  useNotifications();
+  return null;
 };
 
 const App = () => {
-    return (
-        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            <OrderStateProvider>
-                <Router>
-                    <NotificationListener />
-                    <LoadingSpinner />
-                    <RoutesComponent />
-                    <Toaster />
-                </Router>
-            </OrderStateProvider>
-        </ThemeProvider>
-    );
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <OrderStateProvider>
+        <Router>
+          <NotificationListener />
+          <LoadingSpinner />
+          <RoutesComponent />
+          <Toaster />
+        </Router>
+      </OrderStateProvider>
+    </ThemeProvider>
+  );
 };
 
 export default App;

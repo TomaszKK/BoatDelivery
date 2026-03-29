@@ -4,9 +4,12 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.logging.Logger;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
+import p.lodz.pl.dto.maps.HerePosition;
 import p.lodz.pl.model.enums.OrderStatus;
+import p.lodz.pl.service.LocationService;
 import p.lodz.pl.service.OrderService;
 
 import java.util.UUID;
@@ -19,10 +22,50 @@ public class OrderController {
     @Inject
     OrderService orderService;
 
+    @Inject
+    LocationService locationService;
+
+    private static final Logger LOG = Logger.getLogger(OrderController.class);
+
     @POST
     public Response createOrder(OrderRequestDTO requestDTO) {
+        LOG.infof("Received order creation request: %s", requestDTO);
+
+        HerePosition pickupPos = locationService.getCoordinatesIfValid(
+                requestDTO.pickupLocation().streetAddress(),
+                requestDTO.pickupLocation().city(),
+                requestDTO.pickupLocation().postalCode(),
+                requestDTO.pickupLocation().country()
+        );
+
+        if (pickupPos == null) {
+            LOG.warnf("Failed to retrieve coordinates for pickup address: %s, %s",
+                    requestDTO.pickupLocation().streetAddress(), requestDTO.pickupLocation().city());
+        }
+
+        HerePosition deliveryPos = locationService.getCoordinatesIfValid(
+                requestDTO.deliveryLocation().streetAddress(),
+                requestDTO.deliveryLocation().city(),
+                requestDTO.deliveryLocation().postalCode(),
+                requestDTO.deliveryLocation().country()
+        );
+
+        if (deliveryPos == null) {
+            LOG.warnf("Failed to retrieve coordinates for delivery address: %s, %s",
+                    requestDTO.deliveryLocation().streetAddress(), requestDTO.deliveryLocation().city());
+        }
+
+        if (pickupPos == null || deliveryPos == null) {
+            LOG.error("Rejecting request (400 Bad Request) - one or both addresses are invalid.");
+            throw new BadRequestException("One or both addresses are invalid. Please check the provided address details.");
+        }
+
+        OrderResponseDTO responseDTO = orderService.createOrder(requestDTO, pickupPos, deliveryPos);
+
+        LOG.infof("Successfully created order with ID: %s", responseDTO.trackingNumber());
+
         return Response.status(Response.Status.CREATED)
-                .entity(orderService.createOrder(requestDTO))
+                .entity(responseDTO)
                 .build();
     }
 

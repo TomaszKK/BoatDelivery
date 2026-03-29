@@ -43,7 +43,7 @@ import {
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t, i18n } = useTranslation();
   const [isScrolled, setIsScrolled] = useState(false);
-// MOCKED DATA - DO USUNIĘCIA I ZASTĄPIENIA PRAWDZIWYMI DANYMI Z AUTHSERVICE
+  // MOCKED DATA - DO USUNIĘCIA I ZASTĄPIENIA PRAWDZIWYMI DANYMI Z AUTHSERVICE
   const isLogged = true;
   const isCustomer = true;
   const isCourier = false;
