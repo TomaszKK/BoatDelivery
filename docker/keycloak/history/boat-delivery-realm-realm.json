@@ -666,9 +666,11 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "V5JXUTu8QVsXcRfo6jEdw5qbyjLltI6K",
       "redirectUris": [
+        "http://keycloak:8060/login/oauth2/code/*",
         "http://localhost:8060/login/oauth2/code/*"
       ],
       "webOrigins": [
+        "http://keycloak:8060",
         "http://localhost:8060"
       ],
       "notBefore": 0,

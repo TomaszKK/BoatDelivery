@@ -12,42 +12,15 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8060/realms/boat-delivery-realm/protocol/openid-connect/certs
-      client:
-        provider:
-          keycloak:
-            issuer-uri: http://localhost:8060/realms/boat-delivery-realm
-        registration:
-          spring-gateway-client:
-            provider: keycloak
-            client-id: auth-gateway
-            client-secret: V5JXUTu8QVsXcRfo6jEdw5qbyjLltI6K
-            authorization-grant-type: authorization_code
-            scope: openid, profile, email, phone
-  cloud:
-    gateway:
-      server:
-        webflux:
-          default-filters:
-            - TokenRelay
-
-          routes:
-            - id: user-service-route
-              uri: lb://user-service
-              predicates:
-                - Path=/api/user/**,/api/transport/**
-
-            - id: order-service-route
-              uri: lb://order-service
-              predicates:
-                - Path=/api/orders,/api/orders/**
-
-            - id: notification-service-route
-              uri: lb://notification-service
-              predicates:
-                - Path=/api/notifications/**
+          jwk-set-uri: http://keycloak:8060/realms/boat-delivery-realm/protocol/openid-connect/certs
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.web: TRACE
+    org.springframework.cloud.gateway: TRACE

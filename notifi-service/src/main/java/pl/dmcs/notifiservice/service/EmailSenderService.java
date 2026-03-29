@@ -34,32 +34,32 @@ public class EmailSenderService {
         return text;
     }
 
-    public String sendInTransitForPackageEmail(String to, String ref, String name) {
+    public String sendInTransitForPackageEmail(String to, String ref, String name, String address, String phone) {
         String subject = "Kurier jedzie po Twoją paczkę nr: " + ref;
-        String text = String.format("Cześć %s,\n\nKurier wyruszył z bazy i kieruje się po odbiór Twojej paczki (nr: %s).\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
+        String text = String.format("Cześć %s,\n\nKurier wyruszył z bazy i kieruje się po odbiór Twojej paczki nr: %s do %s. Telefon kuriera do kontaktu %s\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref, address, phone);
         sendEmail(to, subject, text);
         return text;
     }
 
     public String sendOrderReceivedEmail(String to, String ref, String name) {
         String subject = "Odebraliśmy paczkę nr: " + ref;
-        String text = String.format("Cześć %s,\n\nKurier pomyślnie odebrał Twoją paczkę (nr: %s). Zmierza teraz do sortowni.\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
+        String text = String.format("Cześć %s,\n\nKurier pomyślnie odebrał Twoją paczkę nr: %s. Zmierza teraz do sortowni.\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
         sendEmail(to, subject, text);
         return text;
     }
 
     // --- PROCES DOSTAWY ---
 
-    public String sendInTransitToCustomerEmail(String to, String ref, String name, String address) {
+    public String sendInTransitToCustomerEmail(String to, String ref, String name, String address, String phone) {
         String subject = "Paczka w drodze do Ciebie! Nr: " + ref;
-        String text = String.format("Cześć %s,\n\nTwoja paczka (nr: %s) wyruszyła w trasę do: %s.\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref, address);
+        String text = String.format("Cześć %s,\n\nTwoja paczka nr: %s wyruszyła w trasę do: %s. Telefon kuriera do kontaktu %s.\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref, phone, address);
         sendEmail(to, subject, text);
         return text;
     }
 
     public String sendDeliveryCompletedEmail(String to, String ref, String name) {
         String subject = "Doręczono paczkę nr: " + ref;
-        String text = String.format("Cześć %s,\n\nPaczka (nr: %s) została doręczona. Dziękujemy!\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
+        String text = String.format("Cześć %s,\n\nPaczka nr: %s została doręczona. Dziękujemy!\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
         sendEmail(to, subject, text);
         return text;
     }
@@ -74,7 +74,7 @@ public class EmailSenderService {
     }
 
     public String sendCourierCancellationEmail(String to, String ref, String address) {
-        String subject = "UWAGA: Anulacja zlecenia w trasie (Nr: " + ref + ")";
+        String subject = "UWAGA: Anulacja zlecenia w trasie nr: " + ref + ")";
         String text = String.format("Cześć,\n\nZlecenie nr %s zostało właśnie anulowane przez klienta lub centralę. Pomiń adres: %s.\n\nZespół BoatDelivery", ref, address);
         sendEmail(to, subject, text);
         return text;

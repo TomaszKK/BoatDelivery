@@ -1,4 +1,5 @@
 import { MyOrdersPage } from "@/pages/MyOrdersPage";
+import { ProfilePage } from "@/pages/ProfilePage";
 import { Pathnames } from "./pathnames";
 
 const PlaceholderPage = ({ title }: { title: string }) => (
@@ -35,7 +36,7 @@ export const customerRoutes: RouteType[] = [
   },
   {
     path: Pathnames.customer.profile,
-    Component: () => <PlaceholderPage title="Mój Profil" />,
+    Component: ProfilePage,
   },
   {
     path: Pathnames.customer.track,

@@ -4,5 +4,25 @@
   "english": "English",
   "login": "Login",
   "register": "Register",
-  "logout": "Logout"
+  "logout": "Logout",
+  "logOut": "Logout",
+  "myAccount": "My Account",
+  "loggedAs": "Logged as",
+  "trackPackage": "Track Package",
+  "myShipments": "My Shipments",
+  "myRoute": "My Route",
+  "activeDeliveries": "Active Deliveries",
+  "dashboard": "Dashboard",
+  "manageUsers": "Manage Users",
+  "myProfile": "My Profile",
+  "role": "Role",
+  "admin": "Admin",
+  "customer": "Customer",
+  "courier": "Courier",
+  "fullName": "Full Name",
+  "email": "Email",
+  "phone": "Phone",
+  "accountCreated": "Account Created"
 }
+
+

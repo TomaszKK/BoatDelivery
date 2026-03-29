@@ -6,7 +6,7 @@ import { LoadingSpinner } from "@/components/ui/loaderComponent";
 import { OrderStateProvider } from "./context/OrderContext";
 import { useNotifications } from "./hooks/useNotifications";
 
-// Komponent startujacy nasluch wyciszenia powiadomien
+// Komponent startujacy nasluch powiadomien
 const NotificationListener = () => {
   useNotifications();
   return null;

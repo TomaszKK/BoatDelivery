@@ -4,5 +4,25 @@
   "english": "Angielski",
   "login": "Zaloguj się",
   "register": "Zarejestruj się",
-  "logout": "Wyloguj się"
+  "logout": "Wyloguj się",
+  "logOut": "Wyloguj się",
+  "myAccount": "Moje konto",
+  "loggedAs": "Zalogowany jako",
+  "trackPackage": "Śledzenie paczki",
+  "myShipments": "Moje przesyłki",
+  "myRoute": "Moja trasa",
+  "activeDeliveries": "Aktywne dostawy",
+  "dashboard": "Pulpit",
+  "manageUsers": "Zarządzanie użytkownikami",
+  "myProfile": "Mój profil",
+  "role": "Rola",
+  "admin": "Administrator",
+  "customer": "Klient",
+  "courier": "Kurier",
+  "fullName": "Pełne imię",
+  "email": "Email",
+  "phone": "Telefon",
+  "accountCreated": "Konto utworzone"
 }
+
+
