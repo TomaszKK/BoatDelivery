@@ -22,7 +22,17 @@
   "fullName": "Pełne imię",
   "email": "Email",
   "phone": "Telefon",
-  "accountCreated": "Konto utworzone"
+  "accountCreated": "Konto utworzone",
+  "edit": "Edytuj",
+  "editProfile": "Edytuj profil",
+  "editProfileDesc": "Zaktualizuj dane swojego profilu",
+  "firstName": "Imię",
+  "lastName": "Nazwisko",
+  "changePassword": "Zmień hasło",
+  "cancel": "Anuluj",
+  "save": "Zapisz",
+  "saving": "Zapisywanie...",
+  "profileUpdatedSuccess": "Profil został zaktualizowany pomyślnie!"
 }
 
 

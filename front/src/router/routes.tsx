@@ -1,17 +1,13 @@
 import { OrdersPage } from "@/pages/OrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
+import { AdminPage } from "@/pages/AdminPage";
+import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { Pathnames } from "./pathnames";
 
-const PlaceholderPage = ({ title }: { title: string }) => (
-  <div className="flex min-h-[50vh] flex-col items-center justify-center space-y-4">
-    <h1 className="text-primary text-4xl font-bold">{title}</h1>
-    <p className="text-muted-foreground">Strona w budowie...</p>
-  </div>
-);
 
 export type RouteType = {
   path: string;
-  Component: React.ComponentType<any>;
+  Component: React.ComponentType<Record<string, unknown>>;
 };
 
 export const publicRoutes: RouteType[] = [
@@ -66,6 +62,6 @@ export const adminRoutes: RouteType[] = [
   },
   {
     path: Pathnames.admin.accounts,
-    Component: () => <PlaceholderPage title="Zarządzanie Użytkownikami" />,
+    Component: AdminPage,
   },
 ];
