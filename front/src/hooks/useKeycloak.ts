@@ -16,6 +16,7 @@ interface KeycloakState {
 }
 
 let keycloakInstance: Keycloak | null = null;
+let initStarted = false;
 
 const initKeycloakInstance = (): Keycloak => {
   if (!keycloakInstance) {
@@ -33,33 +34,54 @@ export const useKeycloak = () => {
     isLogged: false,
   });
   const [isInitialized, setIsInitialized] = useState(false);
-  const [keycloakClient, setKeycloakClient] = useState<Keycloak | null>(null);
   const initRef = useRef(false);
 
   useEffect(() => {
-    // Zapobiegaj wielokrotnej inicjalizacji
     if (initRef.current) return;
     initRef.current = true;
 
     const initKeycloak = async () => {
       try {
         const instance = initKeycloakInstance();
-        setKeycloakClient(instance);
 
-        // Sprawdź czy już jest zalogowany
-        if (instance.authenticated) {
-          setKeycloak({
-            isLogged: true,
-            token: instance.token,
-            user: instance.tokenParsed as KeycloakUser,
-          });
-          if (instance.token) {
+        // Jeśli init() już był startowany wcześniej, skip it i pobierz token z localStorage
+        if (initStarted) {
+          const storedToken = localStorage.getItem("accessToken");
+          if (storedToken) {
+            try {
+              const decoded = JSON.parse(atob(storedToken.split('.')[1]));
+              setKeycloak({
+                isLogged: true,
+                token: storedToken,
+                user: decoded as KeycloakUser,
+              });
+              setIsInitialized(true);
+              return;
+            } catch (e) {
+              // Ignore decode error
+            }
+          }
+
+          // Jeśli nie ma w localStorage, spróbuj z instance
+          if (instance.authenticated && instance.token) {
             localStorage.setItem("accessToken", instance.token);
+            setKeycloak({
+              isLogged: true,
+              token: instance.token,
+              user: instance.tokenParsed as KeycloakUser,
+            });
+          } else {
+            setKeycloak({
+              isLogged: false,
+            });
           }
           setIsInitialized(true);
           return;
         }
 
+        initStarted = true;
+
+        // Spróbuj wykonać init()
         const authenticated = await instance.init({
           onLoad: "check-sso",
           silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
@@ -93,25 +115,48 @@ export const useKeycloak = () => {
   }, []);
 
   const login = useCallback(() => {
-    if (keycloakClient) {
-      keycloakClient.login();
+    try {
+      const instance = initKeycloakInstance();
+      instance.login();
+    } catch (error) {
+      console.error("Error calling login:", error);
     }
-  }, [keycloakClient]);
+  }, []);
 
   const register = useCallback(() => {
-    if (keycloakClient) {
-      keycloakClient.register();
+    try {
+      const instance = initKeycloakInstance();
+      instance.register();
+    } catch (error) {
+      console.error("Error calling register:", error);
     }
-  }, [keycloakClient]);
+  }, []);
 
   const logout = useCallback(() => {
-    if (keycloakClient) {
-      localStorage.removeItem("accessToken");
-      keycloakClient.logout({
-        redirectUri: `${window.location.origin}/`,
-      });
+    try {
+      const instance = initKeycloakInstance();
+      if (instance) {
+        localStorage.removeItem("accessToken");
+        instance.logout({
+          redirectUri: `${window.location.origin}/`,
+        });
+      }
+    } catch (error) {
+      console.error("Error calling logout:", error);
     }
-  }, [keycloakClient]);
+  }, []);
+
+  const updatePassword = useCallback(() => {
+    try {
+      const instance = initKeycloakInstance();
+
+      instance.login({
+        action: "UPDATE_PASSWORD",
+      });
+    } catch (error) {
+      console.error("Error calling updatePassword:", error);
+    }
+  }, []);
 
   return {
     keycloak,
@@ -119,6 +164,7 @@ export const useKeycloak = () => {
     login,
     register,
     logout,
+    updatePassword,
     isLogged: keycloak.isLogged,
   };
 };

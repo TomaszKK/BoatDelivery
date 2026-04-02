@@ -18,6 +18,7 @@ import pl.dmcs.userservice.mapper.UserMapper;
 import pl.dmcs.userservice.model.User;
 import pl.dmcs.userservice.model.UserType;
 import pl.dmcs.userservice.repository.UserRepository;
+import pl.dmcs.userservice.sync.KeycloakSyncService;
 
 import java.util.List;
 import java.util.Set;
@@ -29,12 +30,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final Validator validator;
+    private final KeycloakSyncService keycloakSyncService;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserMapper userMapper, Validator validator) {
+    public UserService(
+            UserRepository userRepository,
+            UserMapper userMapper,
+            Validator validator,
+            KeycloakSyncService keycloakSyncService) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.validator = validator;
+        this.keycloakSyncService = keycloakSyncService;
     }
 
     public List<User> getAllUsers() {
@@ -62,7 +69,12 @@ public class UserService {
     public User updateUserWithPatch(UUID id, UpdateUserRequest updateRequest) {
         User existingUser = getUserById(id);
         userMapper.updateEntityFromDto(updateRequest, existingUser);
-        return userRepository.save(existingUser);
+        User updatedUser = userRepository.save(existingUser);
+
+        // Synchronizuj zmienione dane do Keycloaka
+        keycloakSyncService.syncUserToKeycloak(updatedUser);
+
+        return updatedUser;
     }
 
     @Transactional

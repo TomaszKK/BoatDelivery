@@ -1,11 +1,23 @@
 import { useProfile } from "@/hooks/useProfile";
+import { useKeycloak } from "@/hooks/useKeycloak";
 import { useTranslation } from "react-i18next";
 import { LoadingSpinner } from "@/components/ui/loaderComponent";
 import { AlertCircle, Mail, Phone, Calendar } from "lucide-react";
+import { EditProfileModal } from "@/components/profile/EditProfileModal";
+import { Button } from "@/components/ui/button";
 
 export const ProfilePage = () => {
-  const { user, loading, error } = useProfile();
+  const { user: initialUser, loading, error, refetch } = useProfile();
+  const { updatePassword } = useKeycloak();
   const { t } = useTranslation();
+
+  const handleProfileUpdated = () => {
+    refetch();
+  };
+
+  const handleChangePassword = () => {
+    updatePassword();
+  };
 
   if (loading) {
     return (
@@ -26,7 +38,7 @@ export const ProfilePage = () => {
     );
   }
 
-  if (!user) {
+  if (!initialUser) {
     return (
       <div className="container mx-auto px-4 py-8">
         <p className="text-center text-muted-foreground">Brak danych profilu</p>
@@ -34,12 +46,29 @@ export const ProfilePage = () => {
     );
   }
 
+  const user = initialUser;
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">{t("myProfile") || "Mój profil"}</h1>
-          <p className="text-muted-foreground mt-2">Twoje informacje konta</p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold">{t("myProfile") || "Mój profil"}</h1>
+            <p className="text-muted-foreground mt-2">Twoje informacje konta</p>
+          </div>
+          {user && (
+            <div className="flex gap-2">
+              <EditProfileModal user={user} onProfileUpdated={handleProfileUpdated} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleChangePassword}
+                className="gap-2"
+              >
+                {t("changePassword") || "Zmień hasło"}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4 bg-card border rounded-lg p-6">
