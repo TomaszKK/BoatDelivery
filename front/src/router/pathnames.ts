@@ -12,6 +12,7 @@ export const Pathnames = {
     home: "/home",
     track: "/track",
     orders: "/orders",
+    ordersDetails: "/orders/:trackingNumber",
     profile: "/profile",
   },
   admin: {

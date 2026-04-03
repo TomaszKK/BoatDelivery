@@ -1,4 +1,15 @@
-export type OrderStatus = "NEW" | "IN_TRANSIT" | "DELIVERED" | "CANCELLED";
+export type OrderStatus =
+  | "ORDER_CREATED"
+  | "CALCULATING_ROUTE_RECEIVE"
+  | "ROUTE_ASSIGNED_RECEIVE"
+  | "IN_TRANSIT_FOR_PACKAGE"
+  | "ORDER_RECEIVED_FROM_CUSTOMER"
+  | "IN_SORTING_CENTER"
+  | "CALCULATING_ROUTE_DELIVERY"
+  | "ROUTE_ASSIGNED_DELIVERY"
+  | "IN_TRANSIT_TO_CUSTOMER"
+  | "DELIVERY_COMPLETED"
+  | "ORDER_CANCELED";
 
 export interface LocationRequestDTO {
   streetAddress: string;

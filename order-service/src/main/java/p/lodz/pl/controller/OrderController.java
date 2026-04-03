@@ -1,5 +1,6 @@
 package p.lodz.pl.controller;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -28,6 +29,7 @@ public class OrderController {
     private static final Logger LOG = Logger.getLogger(OrderController.class);
 
     @POST
+    @RolesAllowed("CUSTOMER")
     public Response createOrder(OrderRequestDTO requestDTO) {
         LOG.infof("Received order creation request: %s", requestDTO);
 
@@ -38,11 +40,6 @@ public class OrderController {
                 requestDTO.pickupLocation().country()
         );
 
-        if (pickupPos == null) {
-            LOG.warnf("Failed to retrieve coordinates for pickup address: %s, %s",
-                    requestDTO.pickupLocation().streetAddress(), requestDTO.pickupLocation().city());
-        }
-
         HerePosition deliveryPos = locationService.getCoordinatesIfValid(
                 requestDTO.deliveryLocation().streetAddress(),
                 requestDTO.deliveryLocation().city(),
@@ -50,44 +47,47 @@ public class OrderController {
                 requestDTO.deliveryLocation().country()
         );
 
-        if (deliveryPos == null) {
-            LOG.warnf("Failed to retrieve coordinates for delivery address: %s, %s",
-                    requestDTO.deliveryLocation().streetAddress(), requestDTO.deliveryLocation().city());
-        }
-
         if (pickupPos == null || deliveryPos == null) {
             LOG.error("Rejecting request (400 Bad Request) - one or both addresses are invalid.");
             throw new BadRequestException("One or both addresses are invalid. Please check the provided address details.");
         }
 
         OrderResponseDTO responseDTO = orderService.createOrder(requestDTO, pickupPos, deliveryPos);
+        LOG.infof("Successfully created order with tracking number: %s", responseDTO.trackingNumber());
 
-        LOG.infof("Successfully created order with ID: %s", responseDTO.trackingNumber());
-
-        return Response.status(Response.Status.CREATED)
-                .entity(responseDTO)
-                .build();
+        return Response.status(Response.Status.CREATED).entity(responseDTO).build();
     }
 
     @GET
-    public Response getAllOrders() {
-        return Response.ok(orderService.getAllOrders()).build();
+    @RolesAllowed({"ADMIN", "CUSTOMER"})
+    public Response getOrders() {
+        return Response.ok(orderService.getOrders()).build();
     }
 
     @GET
     @Path("/{id}")
+    @RolesAllowed({"ADMIN", "CUSTOMER", "COURIER"})
     public Response getOrderById(@PathParam("id") UUID id) {
         return Response.ok(orderService.getOrderById(id)).build();
     }
 
+    @GET
+    @Path("/tracking/{trackingNumber}")
+    @RolesAllowed({"ADMIN", "CUSTOMER", "COURIER"})
+    public Response getOrderByTrackingNumber(@PathParam("trackingNumber") String trackingNumber) {
+        return Response.ok(orderService.getOrderByTrackingNumber(trackingNumber)).build();
+    }
+
     @PUT
     @Path("/{id}")
+    @RolesAllowed({"ADMIN", "CUSTOMER"})
     public Response updateOrder(@PathParam("id") UUID id, OrderRequestDTO requestDTO) {
         return Response.ok(orderService.updateOrder(id, requestDTO)).build();
     }
 
     @PATCH
     @Path("/{id}/status")
+    @RolesAllowed({"ADMIN", "COURIER", "CUSTOMER"})
     public Response changeOrderStatus(
             @PathParam("id") UUID id,
             @QueryParam("newStatus") OrderStatus newStatus) {
@@ -98,6 +98,7 @@ public class OrderController {
 
     @DELETE
     @Path("/{id}")
+    @RolesAllowed("ADMIN")
     public Response deleteOrder(@PathParam("id") UUID id) {
         orderService.deleteOrder(id);
         return Response.noContent().build();

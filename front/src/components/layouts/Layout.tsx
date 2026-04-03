@@ -52,7 +52,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = false;
   const account = { username: "Piotr", role: "admin" };
 
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
@@ -68,7 +67,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="bg-background flex min-h-screen flex-col font-sans antialiased">
+    <div className="bg-background grid min-h-[100dvh] grid-rows-[auto_1fr_auto] font-sans antialiased">
       <header
         className={`bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full backdrop-blur transition-all duration-200 ${
           isScrolled ? "border-b shadow-sm" : ""
@@ -327,7 +326,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </header>
 
-      <main className="container mx-auto flex-1 px-4 py-8">{children}</main>
+      <main className="container mx-auto px-4 py-8">{children}</main>
 
       <Toaster />
 

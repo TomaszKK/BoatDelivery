@@ -52,7 +52,6 @@ public class LocationService {
     public HerePosition getCoordinatesIfValid(String street, String city, String postalCode, String countryCode) {
         String query = String.format("%s, %s, %s, %s", street, postalCode, city, countryCode);
 
-        // LOG 1: What exact string are we sending to HERE API?
         LOG.infof("Sending query to HERE API: [%s]", query);
 
         HereGeocodeResponse response = hereGeocodeClient.getGeocode(query, hereApiKey);
@@ -64,7 +63,6 @@ public class LocationService {
 
         HereAddress returnedAddress = response.items().getFirst().address();
 
-        // LOG 2: What did HERE API actually return?
         LOG.infof("HERE API returned address: %s", returnedAddress);
 
         String returnedStreet = returnedAddress.street() != null ? returnedAddress.street() : "";
@@ -81,7 +79,6 @@ public class LocationService {
         boolean isStreetValid = normalizedStreet.equalsIgnoreCase(calculatedStreetToCompare);
         boolean isHouseNumberValid = returnedAddress.houseNumber() == null || street.contains(returnedAddress.houseNumber());
 
-        // LOG 3: The Moment of Truth - Print every single validation flag and the strings being compared
         LOG.infof("Validation details:\n" +
                         "  - City Valid: %b | Input: [%s] vs Returned: [%s]\n" +
                         "  - Country Valid: %b | Input: [%s] vs Returned: [%s]\n" +

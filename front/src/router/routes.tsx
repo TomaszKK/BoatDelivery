@@ -1,6 +1,7 @@
 import { MyOrdersPage } from "@/pages/MyOrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { Pathnames } from "./pathnames";
+import { OrderDetailsPage } from "@/pages/OrderDetailsPage";
 
 const PlaceholderPage = ({ title }: { title: string }) => (
   <div className="flex min-h-[50vh] flex-col items-center justify-center space-y-4">
@@ -45,6 +46,10 @@ export const customerRoutes: RouteType[] = [
   {
     path: Pathnames.customer.orders,
     Component: MyOrdersPage,
+  },
+  {
+    path: Pathnames.customer.ordersDetails,
+    Component: OrderDetailsPage,
   },
 ];
 

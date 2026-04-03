@@ -11,13 +11,24 @@ export const api = {
     apiForAnon.get("/orders/mine"),
   createOrder: (orderData: any): ApiResponseType<OrderResponseDTO> =>
     apiForAnon.post("/orders", orderData),
-  getOrders: () : ApiResponseType<OrderResponseDTO[]> =>
-      apiForAuthenticated.get("/orders"),
+  getOrders: (): ApiResponseType<OrderResponseDTO[]> =>
+    apiForAuthenticated.get("/orders"),
+  getOrderByTrackingNumber: (
+    trackingNumber: string,
+  ): ApiResponseType<OrderResponseDTO> =>
+    apiForAuthenticated.get(`/orders/tracking/${trackingNumber}`),
 
-  createPaymentSession: (orderId: string, amount: number, customerEmail: string) =>
-      apiForAuthenticated.post<PaymentSessionResponse>("/payments/create-session", {
-      orderId,
-      amount,
-      customerEmail
-    })
+  createPaymentSession: (
+    orderId: string,
+    amount: number,
+    customerEmail: string,
+  ) =>
+    apiForAuthenticated.post<PaymentSessionResponse>(
+      "/payments/create-session",
+      {
+        orderId,
+        amount,
+        customerEmail,
+      },
+    ),
 };

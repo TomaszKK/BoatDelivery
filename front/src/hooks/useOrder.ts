@@ -10,6 +10,7 @@ import type { OrderRequestDTO } from "@/types/OrderType";
 export const useOrder = () => {
   const { t } = useTranslation();
   const { orders, setOrders } = useOrderState();
+  const { order, setOrder } = useOrderState();
 
   const getAllOrders = async () => {
     try {
@@ -28,6 +29,29 @@ export const useOrder = () => {
         );
       } else {
         toast.error(t("orders.getAllFail"));
+      }
+      return e;
+    }
+  };
+
+  const getOrderByTrackingNumber = async (trackingNumber: string) => {
+    try {
+      const response = await trackPromise(
+        api.getOrderByTrackingNumber(trackingNumber),
+      );
+
+      const data = response.data;
+      setOrder(data);
+      return data;
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        toast.error(
+          e.response?.data?.message !== undefined
+            ? t(`${e.response.data.message}`)
+            : t("orders.getFail"),
+        );
+      } else {
+        toast.error(t("orders.getFail"));
       }
       return e;
     }
@@ -62,7 +86,10 @@ export const useOrder = () => {
   return {
     orders,
     setOrders,
+    order,
+    setOrder,
     getAllOrders,
     createOrder,
+    getOrderByTrackingNumber,
   };
 };

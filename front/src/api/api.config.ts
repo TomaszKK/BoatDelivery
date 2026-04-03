@@ -1,7 +1,7 @@
 import axios from "axios";
 import { type AxiosInstance } from "axios";
 
-export const API_URL = "http://localhost:8082/api";
+export const API_URL = "http://localhost:8080/api";
 export const TIMEOUT_IN_MS = 30000;
 export const DEFAULT_HEADERS = {
   Accept: "application/json",

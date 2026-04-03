@@ -167,8 +167,6 @@ services:
     container_name: stripe-cli-forwarder
     env_file:
       - ./payment-service/.env.docker
-    environment:
-      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
     command: listen --forward-to http://payment-service:8084/api/payments/webhook
     depends_on:
       - payment-service

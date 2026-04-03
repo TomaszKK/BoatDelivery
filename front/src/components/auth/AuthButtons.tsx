@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export const AuthButtons = () => {
-  const { isLogged, login, register, logout, keycloak, isInitialized } = useKeycloak();
+  const { isLogged, login, register, logout, keycloak, isInitialized } =
+    useKeycloak();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -24,17 +25,10 @@ export const AuthButtons = () => {
   if (!isLogged) {
     return (
       <div className="flex gap-2">
-        <Button
-          variant="outline"
-          onClick={login}
-          className="cursor-pointer"
-        >
+        <Button variant="outline" onClick={login} className="cursor-pointer">
           {t("login")}
         </Button>
-        <Button
-          onClick={register}
-          className="cursor-pointer"
-        >
+        <Button onClick={register} className="cursor-pointer">
           {t("register")}
         </Button>
       </div>
@@ -45,13 +39,17 @@ export const AuthButtons = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="cursor-pointer">
-          {keycloak.user?.preferred_username || keycloak.user?.name || t("myAccount")}
+          {keycloak.user?.preferred_username ||
+            keycloak.user?.name ||
+            t("myAccount")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {keycloak.user?.email && (
           <div className="text-muted-foreground px-2 py-1.5 text-sm">
-            <p className="text-foreground font-semibold">{keycloak.user.email}</p>
+            <p className="text-foreground font-semibold">
+              {keycloak.user.email}
+            </p>
           </div>
         )}
         <DropdownMenuSeparator />
@@ -74,6 +72,3 @@ export const AuthButtons = () => {
     </DropdownMenu>
   );
 };
-
-
-
