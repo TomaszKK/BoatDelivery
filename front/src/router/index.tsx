@@ -7,10 +7,36 @@ import {
   courierRoutes,
 } from "./routes";
 import { Pathnames } from "./pathnames";
+import { useKeycloak } from "@/hooks/useKeycloak";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { useTranslation } from "react-i18next";
 
 export const RoutesComponent = () => {
-  const isLogged = true;
-  const isAdmin = true;
+  const { keycloak, isInitialized } = useKeycloak();
+  const { t } = useTranslation();
+  const { isAdmin, isCourier, isCustomer } = useUserRoles();
+
+  const isLogged = keycloak.isLogged;
+
+  // 🔥 JEDNO ŹRÓDŁO PRAWDY — gdzie redirectować usera
+  const getHomePath = () => {
+    if (!isLogged) return Pathnames.customer.home;
+    if (isAdmin) return Pathnames.admin.dashboard;
+    if (isCourier) return Pathnames.courier.route;
+    if (isCustomer) return Pathnames.customer.orders;
+    return Pathnames.customer.home;
+  };
+
+  // ⛔ BLOKUJ dopóki Keycloak się nie zainicjalizuje
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <span className="animate-pulse text-lg font-semibold text-primary">
+          {t("loading")}...
+        </span>
+      </div>
+    );
+  }
 
   const withLayout = (Component: React.ComponentType) => (
     <Layout>
@@ -20,34 +46,54 @@ export const RoutesComponent = () => {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={(() => {
-          if (!isLogged)
-            return <Navigate to={Pathnames.public.login} replace />;
-          if (isAdmin)
-            return <Navigate to={Pathnames.admin.dashboard} replace />;
+      {/* ROOT */}
+      <Route path="/" element={<Navigate to={getHomePath()} replace />} />
 
-          return <Navigate to={Pathnames.customer.home} replace />;
-        })()}
-      />
-
+      {/* PUBLIC */}
       {publicRoutes.map(({ path, Component }) => (
         <Route key={path} path={path} element={withLayout(Component)} />
       ))}
 
-      {customerRoutes.map(({ path, Component }) => (
-        <Route key={path} path={path} element={withLayout(Component)} />
-      ))}
-
-      {courierRoutes.map(({ path, Component }) => (
-        <Route key={path} path={path} element={withLayout(Component)} />
-      ))}
-
+      {/* ADMIN */}
       {adminRoutes.map(({ path, Component }) => (
-        <Route key={path} path={path} element={withLayout(Component)} />
+        <Route
+          key={path}
+          path={path}
+          element={
+            isLogged && isAdmin
+              ? withLayout(Component)
+              : <Navigate to={getHomePath()} replace />
+          }
+        />
       ))}
 
+      {/* CUSTOMER */}
+      {customerRoutes.map(({ path, Component }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            isLogged && isCustomer
+              ? withLayout(Component)
+              : <Navigate to={getHomePath()} replace />
+          }
+        />
+      ))}
+
+      {/* COURIER */}
+      {courierRoutes.map(({ path, Component }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            isLogged && isCourier
+              ? withLayout(Component)
+              : <Navigate to={getHomePath()} replace />
+          }
+        />
+      ))}
+
+      {/* 404 */}
       <Route
         path="*"
         element={<Navigate to={Pathnames.public.error} replace />}

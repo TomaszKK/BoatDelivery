@@ -5,7 +5,7 @@ import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.model.enums.AlgorithmType;
-import p.lodz.pl.model.solver.RoutePlan;
+import p.lodz.pl.model.RoutePlan;
 import p.lodz.pl.service.routing.RoutingStrategy;
 
 import java.util.concurrent.ExecutionException;

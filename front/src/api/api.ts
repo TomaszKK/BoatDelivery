@@ -1,6 +1,8 @@
 import { apiForAuthenticated, apiForAnon } from "./api.config";
 import type { ApiResponseType } from "@/types/ApiResponseType";
 import type { OrderResponseDTO } from "@/types/OrderType";
+import type { User } from "@/types/UserType";
+import type { RouteResponseDTO } from "@/types/RoutingTypes";
 
 export interface PaymentSessionResponse {
   checkoutUrl: string;
@@ -18,6 +20,28 @@ export const api = {
   ): ApiResponseType<OrderResponseDTO> =>
     apiForAuthenticated.get(`/orders/tracking/${trackingNumber}`),
 
+  getAlgorithm: () =>
+    apiForAuthenticated.get<{ currentAlgorithm: string }>(
+      "/orders/admin/routing/settings/algorithm",
+    ),
+
+  setAlgorithm: (type: string) =>
+    apiForAuthenticated.post(`/orders/admin/routing/settings/algorithm?type=${type}`),
+
+  forceOptimize: () =>
+    apiForAuthenticated.post("/orders/admin/routing/force-optimize"),
+
+  getRoutes: () => apiForAuthenticated.get<RouteResponseDTO[]>("/orders/routes"),
+
+  startRoute: (routeId: string) =>
+    apiForAuthenticated.post(`/orders/routes/${routeId}/start`),
+
+  completeStop: (stopId: string) =>
+    apiForAuthenticated.post(`/orders/routes/stops/${stopId}/complete`),
+
+  finishRoute: (routeId: string) =>
+    apiForAuthenticated.post(`/orders/routes/${routeId}/finish`),
+
   createPaymentSession: (
     orderId: string,
     amount: number,
@@ -31,4 +55,6 @@ export const api = {
         customerEmail,
       },
     ),
+
+  getAllUsers: (): ApiResponseType<User[]> => apiForAuthenticated.get("/user"),
 };

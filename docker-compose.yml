@@ -21,6 +21,7 @@ services:
     container_name: rabbitmq
     ports:
       - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
@@ -53,16 +54,16 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-      KC_HTTP_ENABLED: "true"           # Włącza nasłuchiwanie na HTTP (nie tylko HTTPS)
-      KC_HOSTNAME_STRICT: "false"       # Pozwala Keycloakowi akceptować localhost i nazwy serwisów dockera
-      KC_HOSTNAME_STRICT_HTTPS: "false" # Pozwala na panel admina po HTTP
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_RELATIVE_PATH: "/"
       KC_HOSTNAME: localhost
       KC_HTTP_PORT: 8060
-      KC_EVENTS_ENABLED: "true"         # Włącza zapisywanie eventów
-      KC_EVENTS_LISTENERS: "userservice-sync-listener"  # Rejestruje nasz custom listener
-      KC_ADMIN_EVENTS_ENABLED: "true"   # Włącza zapisywanie admin eventów
-      KC_ADMIN_EVENTS_DETAILS_ENABLED: "true"  # Włącza szczegóły admin eventów
+      KC_EVENTS_ENABLED: "true"
+      KC_EVENTS_LISTENERS: "userservice-sync-listener"
+      KC_ADMIN_EVENTS_ENABLED: "true"
+      KC_ADMIN_EVENTS_DETAILS_ENABLED: "true"
       WEBHOOK_KEYCLOAK_SECRET: c8d904f5-5322-4d56-affb-fe63b9c436fb
     healthcheck:
       test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/8060'"]
@@ -90,6 +91,16 @@ services:
       - "8081"
     env_file:
       - ./userService/.env.docker
+    environment:
+      SPRING_PROFILES_ACTIVE: test-dev
+      APP_SYNC_ENABLED: "true"
+      APP_SYNC_ENVIRONMENT: test-dev
+      APP_SYNC_MIGRATE_ON_STARTUP: "true"
+      APP_SYNC_KEYCLOAK_ADMIN_URL: http://keycloak:8060
+      APP_SYNC_KEYCLOAK_ADMIN_USERNAME: admin
+      APP_SYNC_KEYCLOAK_ADMIN_PASSWORD: admin
+      APP_SYNC_KEYCLOAK_REALM: boat-delivery-realm
+      APP_SYNC_DEFAULT_PASSWORD: "password123"
     depends_on:
       postgres:
         condition: service_healthy
@@ -171,6 +182,18 @@ services:
     depends_on:
       - payment-service
     restart: unless-stopped
+
+  keycloak-init:
+    image: curlimages/curl:latest
+    container_name: keycloak-init
+    entrypoint: /bin/sh
+    command:
+      - /init-users.sh
+    volumes:
+      - ./docker/keycloak/imports/init-users-verbose.sh:/init-users.sh:ro
+    depends_on:
+      user-service:
+        condition: service_started
 
 volumes:
   postgres_data:

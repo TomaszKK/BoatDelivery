@@ -1,7 +1,7 @@
 package p.lodz.pl.service.routing;
 
 import p.lodz.pl.model.enums.AlgorithmType;
-import p.lodz.pl.model.solver.RoutePlan;
+import p.lodz.pl.model.RoutePlan;
 
 import java.util.concurrent.ExecutionException;
 

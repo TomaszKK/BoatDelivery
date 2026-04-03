@@ -1,6 +1,6 @@
 app:
   security:
-    enabled: false
+    enabled: true
 
 server:
   port: 8080

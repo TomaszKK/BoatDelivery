@@ -9,7 +9,9 @@ import p.lodz.pl.model.enums.AlgorithmType;
 import p.lodz.pl.service.AlgorithmSettingsService;
 import p.lodz.pl.service.DailyRouteScheduler;
 
-@Path("/api/admin/routing")
+import java.util.concurrent.ExecutionException;
+
+@Path("/api/orders/admin/routing")
 @RolesAllowed("ADMIN")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -24,7 +26,7 @@ public class RoutingAdminController {
     @GET
     @Path("/settings/algorithm")
     public Response getCurrentAlgorithm() {
-        return Response.ok().build();
+        return Response.ok("{\"currentAlgorithm\": \"" + settingsService.getCurrentAlgorithm() + "\"}").build();
     }
 
     @POST
@@ -34,13 +36,19 @@ public class RoutingAdminController {
             return Response.status(Response.Status.BAD_REQUEST).entity("You have to enter type parameter").build();
         }
         settingsService.setCurrentAlgorithm(type);
-        return Response.ok().build();
+        return Response.ok("{\"message\": \"Algorithm found: " + type + "\"}").build();
     }
 
     @POST
     @Path("/force-optimize")
     public Response forceOptimization() {
+        try {
             dailyRouteScheduler.forceImmediateOptimization();
-            return Response.ok().build();
+            return Response.ok("{\"message\": \"Wymuszono optymalizację tras\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Błąd serwera podczas układania tras: " + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 }

@@ -1,13 +1,10 @@
-package p.lodz.pl.model.solver;
+package p.lodz.pl.model;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import p.lodz.pl.model.Route;
-import p.lodz.pl.model.RouteStop;
 
 import java.util.List;
 
@@ -18,7 +15,7 @@ public class RoutePlan {
     public List<Route> routes;
 
     @ValueRangeProvider(id = "stopRange")
-    @ProblemFactCollectionProperty
+    @PlanningEntityCollectionProperty
     public List<RouteStop> stops;
 
     @PlanningScore

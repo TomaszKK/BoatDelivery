@@ -1,8 +1,10 @@
 package pl.dmcs.userservice.controller;
 
+import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +13,7 @@ import pl.dmcs.userservice.dto.request.UserRequest;
 import pl.dmcs.userservice.dto.response.UserResponse;
 import pl.dmcs.userservice.mapper.UserMapper;
 import pl.dmcs.userservice.model.User;
+import pl.dmcs.userservice.model.UserType;
 import pl.dmcs.userservice.service.UserService;
 import jakarta.validation.Valid;
 
@@ -38,12 +41,32 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         List<UserResponse> responses = users.stream()
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/couriers")
+    public ResponseEntity<List<UserResponse>> getCouriers() {
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> responses = users.stream()
+                .filter(user -> UserType.COURIER.equals(user.getUserType()))
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<User> updateCurrentUser(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody UpdateUserRequest request) {
+        User currentUser = userService.syncUserFromJwt(jwt);
+        User updatedUser = userService.updateUserWithPatch(currentUser.getId(), request);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @GetMapping("/{id}")

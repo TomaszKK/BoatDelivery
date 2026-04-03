@@ -4,7 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import p.lodz.pl.model.Route;
 import p.lodz.pl.model.RouteStop;
 import p.lodz.pl.model.enums.AlgorithmType;
-import p.lodz.pl.model.solver.RoutePlan;
+import p.lodz.pl.model.RoutePlan;
 import p.lodz.pl.util.Util;
 
 import java.util.ArrayList;

@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import p.lodz.pl.model.enums.AlgorithmType;
-import p.lodz.pl.model.solver.RoutePlan;
+import p.lodz.pl.model.RoutePlan;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 

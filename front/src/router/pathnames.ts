@@ -1,8 +1,7 @@
 export const Pathnames = {
   public: {
-    login: "/login",
     register: "/register",
-    error: "*",
+    error: "/404",
   },
   courier: {
     route: "/route",
