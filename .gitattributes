@@ -1,0 +1,25 @@
+* text=auto
+
+# Shell scripts - always use LF endings
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Docker files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+
+# Java/Maven
+*.java text eol=lf
+*.xml text eol=lf
+*.pom text eol=lf
+
+# Frontend
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+
+# SQL
+*.sql text eol=lf
+
