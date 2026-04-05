@@ -160,12 +160,20 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
             log.infof("Resource Path: %s", adminEvent.getResourcePath());
             log.infof("Realm ID: %s", adminEvent.getRealmId());
 
-            if (adminEvent.getOperationType() == OperationType.CREATE && adminEvent.getResourceType() == ResourceType.USER) {
+            if (adminEvent.getOperationType() == OperationType.CREATE &&
+                adminEvent.getResourceType() == ResourceType.REALM_ROLE_MAPPING) {
                 try {
                     String resourcePath = adminEvent.getResourcePath();
-                    log.infof("Przetwarzam CREATE USER event. Resource path: %s", resourcePath);
+                    log.infof("Przetwarzam CREATE REALM_ROLE_MAPPING event. Resource path: %s", resourcePath);
 
-                    String userId = resourcePath.split("/")[1];
+                    // Ekstrakcja userId z ścieżki: users/{userId}/role-mappings/realm
+                    String[] pathParts = resourcePath.split("/");
+                    if (pathParts.length < 2) {
+                        log.warnf("Nie można ekstrakcji userId z ścieżki: %s", resourcePath);
+                        return;
+                    }
+
+                    String userId = pathParts[1];
                     log.infof("Wyekstraktowany userId: %s", userId);
 
                     RealmModel realm = session.realms().getRealm(adminEvent.getRealmId());
@@ -175,24 +183,51 @@ public class UserRegistrationEventListenerProvider implements EventListenerProvi
                     }
 
                     UserModel user = session.users().getUserById(realm, userId);
-                    String accountType = "ADMIN";
 
                     if (user != null) {
-                        log.infof("Nowy uzytkownik utworzony przez admina: %s. Wysylam do UserService...", userId);
-                        sendUserToMicroservice(user, accountType);
+                        log.infof("Rola przypisana do użytkownika: %s. Pobieram userType z Keycloaka...", userId);
+
+                        // Pobranie userType z przypisanej roli
+                        String userType = extractUserType(user, realm);
+
+                        log.infof("Pobrany userType dla %s: %s", userId, userType);
+                        sendUserToMicroservice(user, userType);
                     } else {
                         log.warnf("Nie znaleziono usera z ID: %s", userId);
                     }
                 } catch (Exception e) {
-                    log.error("Blad podczas przetwarzania AdminEvent dla CREATE USER", e);
+                    log.error("Blad podczas przetwarzania AdminEvent dla REALM_ROLE_MAPPING", e);
                 }
             } else {
-                log.infof("AdminEvent nie pasuje do warunków: OperationType=%s, ResourceType=%s",
+                log.debugf("AdminEvent nie pasuje do warunków: OperationType=%s, ResourceType=%s",
                     adminEvent.getOperationType(), adminEvent.getResourceType());
             }
         } catch (Exception e) {
             log.error("KRYTYCZNY blad w onEvent(AdminEvent)", e);
         }
+    }
+
+    private String extractUserType(UserModel user, RealmModel realm) {
+        // 1. Sprawdź atrybut USER_TYPE w użytkowniku
+        String userTypeAttribute = user.getFirstAttribute("USER_TYPE");
+        if (userTypeAttribute != null && !userTypeAttribute.isBlank()) {
+            log.infof("Znaleziono atrybut USER_TYPE: %s", userTypeAttribute);
+            return userTypeAttribute;
+        }
+
+        // 2. Sprawdź przypisane role (CUSTOMER, COURIER, ADMIN)
+        log.infof("Sprawdzam role przypisane do użytkownika %s", user.getUsername());
+        for (String roleType : new String[]{"CUSTOMER", "COURIER", "ADMIN"}) {
+            org.keycloak.models.RoleModel role = realm.getRole(roleType);
+            if (role != null && user.hasRole(role)) {
+                log.infof("Znaleziono role: %s", roleType);
+                return roleType;
+            }
+        }
+
+        // 3. Domyślnie zwróć ADMIN
+        log.warn("Nie znaleziono userType w atrybutach ani w rolach. Domyślnie ustawiam ADMIN.");
+        return "USER";
     }
 
     @Override

@@ -91,9 +91,6 @@ JSONEOF
   sed -i "s|PLACEHOLDER_LAST_NAME|$last_name|g" "$JSON_FILE"
   sed -i "s|PLACEHOLDER_PHONE|$phone|g" "$JSON_FILE"
   sed -i "s|PLACEHOLDER_PASSWORD|$password|g" "$JSON_FILE"
-  sed -i "s|PLACEHOLDER_FIRST_NAME|$first_name|g" "$JSON_FILE"
-  sed -i "s|PLACEHOLDER_LAST_NAME|$last_name|g" "$JSON_FILE"
-  sed -i "s|PLACEHOLDER_PASSWORD|$password|g" "$JSON_FILE"
 
   echo "  JSON: $(cat $JSON_FILE | head -c 100)..."
 

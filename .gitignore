@@ -4,6 +4,9 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Wyjątek: Dopuść pliki JAR w docker/keycloak/providers (MUSI BYĆ PRZED *.jar)
+!docker/keycloak/providers/*.jar
+
 # Package Files #
 *.jar
 *.war
