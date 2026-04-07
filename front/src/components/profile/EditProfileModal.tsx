@@ -18,10 +18,7 @@ interface EditProfileModalProps {
   onProfileUpdated: (updatedUser: User) => void;
 }
 
-export const EditProfileModal = ({
-  user,
-  onProfileUpdated,
-}: EditProfileModalProps) => {
+export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalProps) => {
   const { t } = useTranslation();
   const { updateProfile, loading, error, success } = useProfileUpdate();
   const [open, setOpen] = useState(false);
@@ -83,7 +80,7 @@ export const EditProfileModal = ({
               type="text"
               value={formData.firstName}
               onChange={handleInputChange}
-              className="border-input w-full rounded-md border px-3 py-2 text-sm"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm"
               placeholder={t("firstName") || "Imię"}
             />
           </div>
@@ -99,7 +96,7 @@ export const EditProfileModal = ({
               type="text"
               value={formData.lastName}
               onChange={handleInputChange}
-              className="border-input w-full rounded-md border px-3 py-2 text-sm"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm"
               placeholder={t("lastName") || "Nazwisko"}
             />
           </div>
@@ -115,31 +112,30 @@ export const EditProfileModal = ({
               type="tel"
               value={formData.phoneNumber}
               onChange={handleInputChange}
-              className="border-input w-full rounded-md border px-3 py-2 text-sm"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm"
               placeholder={t("phone") || "Numer telefonu"}
             />
           </div>
 
           {/* Error */}
           {error && (
-            <div className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3">
-              <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-600" />
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+              <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
           {/* Success */}
           {success && (
-            <div className="rounded-md border border-green-200 bg-green-50 p-3">
+            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
               <p className="text-sm text-green-600">
-                {t("profileUpdatedSuccess") ||
-                  "Profil zaktualizowany pomyślnie!"}
+                {t("profileUpdatedSuccess") || "Profil zaktualizowany pomyślnie!"}
               </p>
             </div>
           )}
 
           {/* Buttons */}
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex gap-2 justify-end pt-4">
             <Button
               type="button"
               variant="outline"
@@ -149,9 +145,7 @@ export const EditProfileModal = ({
               {t("cancel") || "Anuluj"}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading
-                ? t("saving") || "Zapisywanie..."
-                : t("save") || "Zapisz"}
+              {loading ? (t("saving") || "Zapisywanie...") : t("save") || "Zapisz"}
             </Button>
           </div>
         </form>
@@ -159,3 +153,4 @@ export const EditProfileModal = ({
     </Dialog>
   );
 };
+

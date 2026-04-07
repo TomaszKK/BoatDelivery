@@ -30,18 +30,18 @@ public class SecurityConfig {
     @ConditionalOnProperty(name = "app.security.enabled", havingValue = "true", matchIfMissing = true)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(AbstractHttpConfigurer::disable)
-            .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers("/api/internal/user/webhook/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/internal/user/couriers").permitAll()
-                    .requestMatchers("/api/user/public/**").permitAll()
-                    .requestMatchers("/api/transport/**").permitAll()
-                    .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                    jwt.jwtAuthenticationConverter(jwtAuthConverter())
-            ));
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/internal/user/webhook/**").permitAll()
+                        .requestMatchers("/api/user/public/**").permitAll()
+                        .requestMatchers("/api/transport/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/internal/user/couriers").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(jwtAuthConverter())
+                ));
         return http.build();
     }
 

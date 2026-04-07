@@ -25,24 +25,20 @@ export const useProfileUpdate = () => {
     async (data: UpdateProfileData): Promise<User | null> => {
       setState({ loading: true, error: null, success: false });
       try {
-        const response = await apiForAuthenticated.patch<User>(
-          "/user/me",
-          data,
-        );
+        const response = await apiForAuthenticated.patch<User>("/user/me", data);
         setState({ loading: false, error: null, success: true });
         return response.data;
       } catch (error) {
         console.error("Error updating profile:", error);
         const errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Błąd podczas aktualizacji profilu";
+          error instanceof Error ? error.message : "Błąd podczas aktualizacji profilu";
         setState({ loading: false, error: errorMessage, success: false });
         return null;
       }
     },
-    [],
+    []
   );
 
   return { ...state, updateProfile };
 };
+

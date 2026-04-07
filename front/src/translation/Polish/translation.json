@@ -23,6 +23,17 @@
   "email": "Email",
   "phone": "Telefon",
   "accountCreated": "Konto utworzone",
+  "edit": "Edytuj",
+  "editProfile": "Edytuj profil",
+  "editProfileDesc": "Zaktualizuj dane swojego profilu",
+  "firstName": "Imię",
+  "lastName": "Nazwisko",
+  "changePassword": "Zmień hasło",
+  "cancel": "Anuluj",
+  "save": "Zapisz",
+  "saving": "Zapisywanie...",
+  "profileUpdatedSuccess": "Profil został zaktualizowany pomyślnie!"
+  "accountCreated": "Konto utworzone",
   "cancel": "Anuluj",
   "loadingMap": "Ładowanie mapy...",
   "orders": {
@@ -113,14 +124,5 @@
   "routeStartedSuccess": "Trasa rozpoczęta pomyślnie!",
   "routeStartedError": "Nie można rozpocząć trasy. Proszę spróbować ponownie."
   },
-  "edit": "Edytuj",
-  "editProfile": "Edytuj profil",
-  "editProfileDesc": "Zaktualizuj dane swojego profilu",
-  "firstName": "Imię",
-  "lastName": "Nazwisko",
-  "changePassword": "Zmień hasło",
-  "save": "Zapisz",
-  "saving": "Zapisywanie...",
-  "profileUpdatedSuccess": "Profil został zaktualizowany pomyślnie!",
-  "loading": "Ładowanie..."
+ "loading": "Ładowanie..."
 }

@@ -16,6 +16,7 @@ export const useUsers = () => {
         setUsers(response.data || []);
       } catch (err: unknown) {
         const errorMessage =
+          err instanceof Error ? err.message : "Nie udało się pobrać użytkowników";
           err instanceof Error
             ? err.message
             : "Nie udało się pobrać użytkowników";
@@ -31,3 +32,4 @@ export const useUsers = () => {
 
   return { users, loading, error };
 };
+

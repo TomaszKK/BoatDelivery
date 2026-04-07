@@ -51,19 +51,14 @@ export const ProfilePage = () => {
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
       <div className="space-y-6">
-        <div className="flex items-start justify-between">
+        <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold">
-              {t("myProfile") || "Mój profil"}
-            </h1>
+            <h1 className="text-3xl font-bold">{t("myProfile") || "Mój profil"}</h1>
             <p className="text-muted-foreground mt-2">Twoje informacje konta</p>
           </div>
           {user && (
             <div className="flex gap-2">
-              <EditProfileModal
-                user={user}
-                onProfileUpdated={handleProfileUpdated}
-              />
+              <EditProfileModal user={user} onProfileUpdated={handleProfileUpdated} />
               <Button
                 variant="outline"
                 size="sm"

@@ -4,3 +4,4 @@ export const PlaceholderPage = ({ title }: { title: string }) => (
     <p className="text-muted-foreground">Strona w budowie...</p>
   </div>
 );
+
