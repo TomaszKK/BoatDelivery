@@ -48,6 +48,16 @@ public class UserController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/public/list")
+    public ResponseEntity<List<UserResponse>> getPublicUsersList() {
+        // Endpoint dla init script-u - bez autentykacji, zwraca listę wszystkich userów
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> responses = users.stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
     @PatchMapping("/me")
     public ResponseEntity<User> updateCurrentUser(
             @AuthenticationPrincipal Jwt jwt,
