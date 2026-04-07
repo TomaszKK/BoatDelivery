@@ -7,9 +7,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import p.lodz.pl.dto.LocationDTO;
+import p.lodz.pl.dto.LocationRequestDTO;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
+import p.lodz.pl.dto.maps.HerePosition;
 import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.exception.ResourceNotFoundException;
 import p.lodz.pl.model.Order;
@@ -67,8 +68,10 @@ public class OrderServiceTest {
     @Test
     @DisplayName("createOrder - Should force status to ORDER_CREATED and persist successfully")
     public void shouldCreateOrderAndSetDefaultStatus() {
-        LocationDTO pickup = new LocationDTO(BigDecimal.ONE, BigDecimal.ONE, "Wólczańska 215", "90-924", "Łódź");
-        LocationDTO delivery = new LocationDTO(BigDecimal.TEN, BigDecimal.TEN, "Drewnowska 58", "91-002", "Łódź");
+        LocationRequestDTO pickup = new LocationRequestDTO("Wólczańska 215", "90-924", "Łódź", "Polska");
+        LocationRequestDTO delivery = new LocationRequestDTO("Drewnowska 58", "91-002", "Łódź", "Polska");
+        HerePosition pickupPos = new HerePosition(BigDecimal.valueOf(51.7592), BigDecimal.valueOf(19.4559));
+        HerePosition deliveryPos = new HerePosition(BigDecimal.valueOf(52.2297), BigDecimal.valueOf(21.0122));
 
         OrderRequestDTO request = new OrderRequestDTO(
                 UUID.randomUUID(),
@@ -78,7 +81,7 @@ public class OrderServiceTest {
                 delivery
         );
 
-        OrderResponseDTO response = orderService.createOrder(request);
+        OrderResponseDTO response = orderService.createOrder(request, pickupPos, deliveryPos);
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(OrderStatus.ORDER_CREATED, response.status(), "Service must override and set status to ORDER_CREATED");

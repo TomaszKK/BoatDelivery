@@ -1,8 +1,13 @@
 package pl.dmcs.userservice.controller;
 
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -11,8 +16,8 @@ import pl.dmcs.userservice.dto.request.UserRequest;
 import pl.dmcs.userservice.dto.response.UserResponse;
 import pl.dmcs.userservice.mapper.UserMapper;
 import pl.dmcs.userservice.model.User;
+import pl.dmcs.userservice.model.UserType;
 import pl.dmcs.userservice.service.UserService;
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,13 +27,20 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/user")
 public class UserController {
 
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
     private final UserService userService;
     private final UserMapper userMapper;
+    private final String expectedSecret;
 
     @Autowired
-    public UserController(UserService userService, UserMapper userMapper) {
+    public UserController(
+            UserService userService,
+            UserMapper userMapper,
+            @Value("${app.webhook.keycloak-secret}") String expectedSecret) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.expectedSecret = expectedSecret;
     }
 
     @GetMapping("/me")
@@ -38,12 +50,48 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         List<UserResponse> responses = users.stream()
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/internal/couriers")
+    public ResponseEntity<List<UserResponse>> getCouriers(
+            @RequestHeader(value = "X-Keycloak-Secret", required = false) String providedSecret) {
+        if (providedSecret == null || !expectedSecret.equals(providedSecret)) {
+            log.warn("Wrong secrey!!!: {}", providedSecret);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> responses = users.stream()
+                .filter(user -> UserType.COURIER.equals(user.getUserType()))
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/public/list")
+    public ResponseEntity<List<UserResponse>> getPublicUsersList() {
+        // Endpoint dla init script-u - bez autentykacji, zwraca listę wszystkich userów
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> responses = users.stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<User> updateCurrentUser(
+            @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody UpdateUserRequest request) {
+        User currentUser = userService.syncUserFromJwt(jwt);
+        User updatedUser = userService.updateUserWithPatch(currentUser.getId(), request);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @GetMapping("/{id}")

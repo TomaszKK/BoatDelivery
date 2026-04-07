@@ -22,7 +22,10 @@ export const useProfile = () => {
       setState({ user: response.data, loading: false, error: null });
     } catch (error) {
       console.error("Error fetching profile:", error);
-      const errorMessage = error instanceof Error ? error.message : "Błąd podczas pobierania profilu";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Błąd podczas pobierania profilu";
       setState({ user: null, loading: false, error: errorMessage });
     }
   }, []);
@@ -33,4 +36,3 @@ export const useProfile = () => {
 
   return { ...state, refetch: fetchProfile };
 };
-

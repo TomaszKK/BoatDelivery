@@ -10,9 +10,8 @@ import p.lodz.pl.model.ControlledEntity;
 @ApplicationScoped
 public class AuditListener {
 
-//    Póki nie mam JWT
-//    @Inject
-//    SecurityIdentity securityIdentity;
+    @Inject
+    SecurityIdentity securityIdentity;
 
     @PrePersist
     public void onPrePersist(ControlledEntity entity) {
@@ -27,9 +26,9 @@ public class AuditListener {
     }
 
     private String getCurrentUser() {
-//        if (securityIdentity == null || securityIdentity.isAnonymous()) {
+        if (securityIdentity == null || securityIdentity.isAnonymous()) {
             return "system";
-//        }
-//        return securityIdentity.getPrincipal().getName();
+        }
+        return securityIdentity.getPrincipal().getName();
     }
 }

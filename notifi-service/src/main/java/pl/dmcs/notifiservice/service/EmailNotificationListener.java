@@ -73,6 +73,7 @@ public class EmailNotificationListener {
                     }
                     case "ORDER_CANCELED" -> {
                         generatedEmailContent = emailSenderService.sendCancellationEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
+                        sseNotificationService.pushNotificationToFrontend("Zlecenie anulowane: " + event.trackingNumber());
                     }
                 }
             }

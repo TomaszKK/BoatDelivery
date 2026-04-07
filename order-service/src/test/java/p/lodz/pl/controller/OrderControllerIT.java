@@ -4,7 +4,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import p.lodz.pl.dto.LocationDTO;
+import p.lodz.pl.dto.LocationRequestDTO;
+import p.lodz.pl.dto.LocationResponseDTO;
 import p.lodz.pl.dto.OrderRequestDTO;
 
 import java.math.BigDecimal;
@@ -63,15 +64,11 @@ public class OrderControllerIT {
     @Test
     @DisplayName("POST /api/orders - Should successfully create a new order with 2 locations (201 Created)")
     public void shouldCreateNewOrder() {
-        LocationDTO pickup = new LocationDTO(
-                new BigDecimal("51.75"),
-                new BigDecimal("19.45"),
-                "Wólczańska 215", "90-924", "Łódź"
+        LocationRequestDTO pickup = new LocationRequestDTO(
+                "Wólczańska 215", "90-924", "Łódź", "Polska"
         );
-        LocationDTO delivery = new LocationDTO(
-                new BigDecimal("51.77"),
-                new BigDecimal("19.44"),
-                "Drewnowska 58", "91-002", "Łódź"
+        LocationRequestDTO delivery = new LocationRequestDTO(
+                "Drewnowska 58", "91-002", "Łódź", "Polska"
         );
 
         OrderRequestDTO requestDTO = new OrderRequestDTO(
@@ -100,15 +97,11 @@ public class OrderControllerIT {
     @Test
     @DisplayName("PUT /api/orders/{id} - Should successfully update an existing order and its locations (200 OK)")
     public void shouldUpdateOrder() {
-        LocationDTO updatedPickup = new LocationDTO(
-                new BigDecimal("51.747123"),
-                new BigDecimal("19.453987"),
-                "Updated Pickup", "11-111", "Łódź"
+        LocationRequestDTO updatedPickup = new LocationRequestDTO(
+                "Updated Pickup", "11-111", "Łódź",  "Polska"
         );
-        LocationDTO updatedDelivery = new LocationDTO(
-                new BigDecimal("51.760000"),
-                new BigDecimal("19.460000"),
-                "Updated Delivery", "22-222", "Łódź"
+        LocationRequestDTO updatedDelivery = new LocationRequestDTO(
+                "Updated Delivery", "22-222", "Łódź",  "Polska"
         );
 
         OrderRequestDTO updateRequest = new OrderRequestDTO(

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "transports")
@@ -15,6 +16,7 @@ public class Transport extends ControlledEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "courier_id", nullable = false)
+    @JsonBackReference
     private User courier;
 
     @Enumerated(EnumType.STRING)

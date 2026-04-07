@@ -4,27 +4,47 @@ import { RoutesComponent } from "@/router";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingSpinner } from "@/components/ui/loaderComponent";
 import { OrderStateProvider } from "./context/OrderContext";
-import { useNotifications } from "./hooks/useNotifications";
+// import { useNotifications } from "./hooks/useNotifications";
+import { useJsApiLoader } from "@react-google-maps/api";
+import { KeycloakProvider } from "./hooks/useKeycloak";
 
-// Komponent startujacy nasluch powiadomien
-const NotificationListener = () => {
-    useNotifications();
-    return null;
-};
+// const NotificationListener = () => {
+//   useNotifications();
+//   return null;
+// };
 
 const App = () => {
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  });
+
+  if (loadError) {
+    console.error("Google Maps load error:", loadError);
+  }
+
+  if (!isLoaded) {
     return (
-        <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            <OrderStateProvider>
-                <Router>
-                    <NotificationListener />
-                    <LoadingSpinner />
-                    <RoutesComponent />
-                    <Toaster />
-                </Router>
-            </OrderStateProvider>
-        </ThemeProvider>
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
     );
+  }
+
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <OrderStateProvider>
+        <KeycloakProvider>
+        <Router>
+          {/* <NotificationListener /> */}
+          <LoadingSpinner />
+          <RoutesComponent />
+          <Toaster />
+        </Router>
+        </KeycloakProvider>
+      </OrderStateProvider>
+    </ThemeProvider>
+  );
 };
 
 export default App;
