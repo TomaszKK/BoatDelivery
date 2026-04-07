@@ -34,6 +34,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/api/internal/user/webhook/**").permitAll()
+                    .requestMatchers("/api/user/public/**").permitAll()
+                    .requestMatchers("/api/transport/**").permitAll()
                     .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                     jwt.jwtAuthenticationConverter(jwtAuthConverter())

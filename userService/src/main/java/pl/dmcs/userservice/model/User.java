@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "users")
@@ -24,5 +25,6 @@ public class User extends ControlledEntity {
     private UserType userType;
 
     @OneToMany(mappedBy = "courier", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Transport> transports;
 }

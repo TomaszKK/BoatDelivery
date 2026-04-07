@@ -1,4 +1,3 @@
-
 package pl.dmcs.userservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import pl.dmcs.userservice.mapper.TransportMapper;
 import pl.dmcs.userservice.model.Transport;
 import pl.dmcs.userservice.service.TransportService;
 import jakarta.validation.Valid;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -54,6 +54,7 @@ public class TransportController {
     }
 
     @PostMapping("/courier/{courierId}")
+    @Transactional
     public ResponseEntity<TransportResponse> createTransport(
             @PathVariable UUID courierId,
             @Valid @RequestBody TransportRequest request) {

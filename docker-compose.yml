@@ -191,6 +191,11 @@ services:
       - /init-users.sh
     volumes:
       - ./docker/keycloak/imports/init-users-verbose.sh:/init-users.sh:ro
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      user-service:
+        condition: service_started
 
 volumes:
   postgres_data:

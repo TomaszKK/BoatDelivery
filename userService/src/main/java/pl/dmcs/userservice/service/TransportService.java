@@ -1,6 +1,8 @@
 package pl.dmcs.userservice.service;
 
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.dmcs.userservice.dto.request.TransportRequest;
@@ -18,6 +20,8 @@ import java.util.UUID;
 
 @Service
 public class TransportService {
+    private static final Logger log = LoggerFactory.getLogger(TransportService.class);
+
     private final TransportRepository transportRepository;
     private final UserRepository userRepository;
     private final TransportMapper transportMapper;
@@ -51,15 +55,35 @@ public class TransportService {
 
     @Transactional
     public Transport createTransport(UUID courierId, Transport transport) {
-        User courier = userRepository.findById(courierId)
-                .orElseThrow(() -> new ResourceNotFoundException("Courier", "id", courierId));
+        log.info("Próba dodania transportu dla courier ID: {}", courierId);
+        log.info("Transport data: type={}, brand={}, model={}", transport.getTransportType(), transport.getBrand(), transport.getModel());
 
-        if (courier.getUserType() != UserType.COURIER) {
-            throw new InvalidOperationException("Użytkownik o id " + courierId + " nie jest kurierem");
+        try {
+            User courier = userRepository.findById(courierId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Courier", "id", courierId));
+
+            log.info("Znaleziony courier: {} {} (type: {})", courier.getFirstName(), courier.getLastName(), courier.getUserType());
+
+            if (courier.getUserType() != UserType.COURIER) {
+                throw new InvalidOperationException("Użytkownik o id " + courierId + " nie jest kurierem");
+            }
+
+            if (transport.getId() == null) {
+                transport.setId(UUID.randomUUID());
+                log.info("Wygenerowano nowy UUID dla transportu: {}", transport.getId());
+            }
+
+            transport.setCourier(courier);
+            log.info("Ustawiłem couriera dla transportu");
+
+            Transport saved = transportRepository.save(transport);
+            log.info("Transport zapisany z ID: {}", saved.getId());
+
+            return saved;
+        } catch (Exception e) {
+            log.error("Błąd podczas dodawania transportu: {}", e.getMessage(), e);
+            throw e;
         }
-
-        transport.setCourier(courier);
-        return transportRepository.save(transport);
     }
 
     @Transactional

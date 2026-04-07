@@ -13,7 +13,7 @@ CREATE TABLE users (
 
 CREATE TABLE transports (
     id UUID PRIMARY KEY,
-    courier_id UUID NOT NULL,
+    courier_id UUID,
     transport_type VARCHAR(100) NOT NULL CHECK (transport_type IN ('CAR', 'BIKE', 'VAN', 'TRUCK', 'SCOOTER')),
     brand VARCHAR(100),
     model VARCHAR(100),
