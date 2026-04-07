@@ -103,6 +103,13 @@ public class DailyRouteScheduler {
                 existingRoute = new Route();
                 existingRoute.courierId = courier.id();
                 existingRoute.status = RouteStatus.PENDING;
+
+                if (courier.transport() != null && courier.transport().cargoCapacity() != null) {
+                    existingRoute.maxCargoCapacity = courier.transport().cargoCapacity();
+                } else {
+                    existingRoute.maxCargoCapacity = 1000.0;
+                }
+
                 routeRepository.persist(existingRoute);
             }
             activeRoutes.add(existingRoute);
@@ -174,25 +181,30 @@ public class DailyRouteScheduler {
         }
 
         RoutePlan problem = new RoutePlan(routes, stops);
-
         RoutePlan optimizedPlan = routeOptimizationService.optimizeRoutes(problem, currentAlgo);
 
-        for (Route route : optimizedPlan.routes) {
-            if (route.stops == null || route.stops.isEmpty()) {
-                route.totalDistanceKm = BigDecimal.ZERO;
-                route.estimatedDurationMin = 0;
+        for (Route optRoute : optimizedPlan.routes) {
+            Route realRoute = routeRepository.findById(optRoute.id);
+            if (realRoute == null) continue;
+
+            if (optRoute.stops == null || optRoute.stops.isEmpty()) {
+                realRoute.totalDistanceKm = BigDecimal.ZERO;
+                realRoute.estimatedDurationMin = 0;
                 continue;
             }
 
             double totalRouteDistance = 0.0;
             Instant currentTime = Instant.now().truncatedTo(ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS);
 
-            for (int i = 0; i < route.stops.size(); i++) {
-                RouteStop currentStop = route.stops.get(i);
+            for (int i = 0; i < optRoute.stops.size(); i++) {
+                RouteStop optStop = optRoute.stops.get(i);
+                RouteStop realStop = routeStopRepository.findById(optStop.id);
+
+                if (realStop == null) continue;
 
                 if (i > 0) {
-                    Location prevLoc = getTargetLocation(route.stops.get(i - 1).order);
-                    Location currLoc = getTargetLocation(currentStop.order);
+                    Location prevLoc = getTargetLocation(optRoute.stops.get(i - 1).order);
+                    Location currLoc = getTargetLocation(realStop.order);
 
                     if (prevLoc != null && currLoc != null) {
                         double distanceMeters = Util.calculateDistance(prevLoc, currLoc);
@@ -202,26 +214,32 @@ public class DailyRouteScheduler {
                     }
                 }
 
-                currentStop.estimatedArrivalTime = currentTime;
+                realStop.estimatedArrivalTime = currentTime;
+                realStop.stopSequence = i;
+
+                realStop.route = realRoute;
+
                 currentTime = currentTime.plus(5, ChronoUnit.MINUTES);
 
-                if (currentStop.order != null) {
-                    if (currentStop.order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE) {
-                        currentStop.order.status = OrderStatus.ROUTE_ASSIGNED_RECEIVE;
-                    } else if (currentStop.order.status == OrderStatus.CALCULATING_ROUTE_DELIVERY) {
-                        currentStop.order.status = OrderStatus.ROUTE_ASSIGNED_DELIVERY;
+                if (realStop.order != null) {
+                    if (realStop.order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE) {
+                        realStop.order.status = OrderStatus.ROUTE_ASSIGNED_RECEIVE;
+                    } else if (realStop.order.status == OrderStatus.CALCULATING_ROUTE_DELIVERY) {
+                        realStop.order.status = OrderStatus.ROUTE_ASSIGNED_DELIVERY;
                     }
                 }
             }
 
-            route.totalDistanceKm = BigDecimal.valueOf(totalRouteDistance);
-            route.estimatedDurationMin = (int) ChronoUnit.MINUTES.between(
+            realRoute.totalDistanceKm = BigDecimal.valueOf(totalRouteDistance);
+            realRoute.estimatedDurationMin = (int) ChronoUnit.MINUTES.between(
                     Instant.now().truncatedTo(ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS),
                     currentTime
             );
         }
 
-        LOG.info("Optimization started with alg: " + currentAlgo);
+        routeStopRepository.flush();
+
+        LOG.info("Optimization completed and saved with alg: " + currentAlgo);
     }
 
     private Location getTargetLocation(Order order) {

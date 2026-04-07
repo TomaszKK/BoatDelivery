@@ -4,10 +4,12 @@ import pl.dmcs.userservice.model.UserType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter; // <- Dodane!
 import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -18,5 +20,5 @@ public class UserResponse {
     private String email;
     private String phoneNumber;
     private UserType userType;
+    private TransportResponse transport;
 }
-

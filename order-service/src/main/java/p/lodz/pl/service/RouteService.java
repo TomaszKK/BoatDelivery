@@ -39,6 +39,12 @@ public class RouteService {
             routes = routeRepository.list("courierId", UUID.fromString(userId));
         }
 
+        routes.sort((r1, r2) -> {
+            int priority1 = getRoutePriority(r1.status);
+            int priority2 = getRoutePriority(r2.status);
+            return Integer.compare(priority1, priority2);
+        });
+
         for (Route route : routes) {
             if (route.stops != null) {
                 route.stops.sort(Comparator.comparingInt(s -> s.stopSequence != null ? s.stopSequence : 0));
@@ -48,6 +54,14 @@ public class RouteService {
         return routes.stream()
                 .map(routeMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    private int getRoutePriority(RouteStatus status) {
+        if (status == null) return 4;
+        if (status == RouteStatus.IN_PROGRESS) return 1; // Priorytet nr 1: Obecnie realizowana
+        if (status == RouteStatus.PENDING) return 2;     // Priorytet nr 2: Do zrobienia
+        if (status == RouteStatus.COMPLETED) return 3;   // Priorytet nr 3: Zakończona (spada na dół)
+        return 4;
     }
 
     @Transactional
@@ -106,15 +120,15 @@ public class RouteService {
     public void finishRoute(UUID routeId, String courierId) {
         Route route = routeRepository.findById(routeId);
         if (route == null) {
-            throw new IllegalArgumentException("Nie znaleziono trasy");
+            throw new IllegalArgumentException("No route found with ID: " + routeId);
         }
 
         if (!route.courierId.toString().equals(courierId)) {
-            throw new SecurityException("Nie masz uprawnień do tej trasy!");
+            throw new SecurityException("You do not have permission to finish this route!");
         }
 
         if (route.status != RouteStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Trasa musi być w trakcie realizacji (IN_PROGRESS), aby ją zakończyć!");
+            throw new IllegalStateException("You can only finish a route that is currently IN_PROGRESS!");
         }
 
         if (route.stops != null) {
@@ -123,7 +137,7 @@ public class RouteService {
                             || stop.order.status == OrderStatus.IN_TRANSIT_TO_CUSTOMER);
 
             if (hasUnfinishedStops) {
-                throw new IllegalStateException("Nie możesz zakończyć zmiany! Masz wciąż nieobsłużone paczki na trasie.");
+                throw new IllegalStateException("You cannot finish the route while there are still stops in transit!");
             }
         }
 

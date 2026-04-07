@@ -4,14 +4,14 @@ import { RoutesComponent } from "@/router";
 import { Toaster } from "@/components/ui/sonner";
 import { LoadingSpinner } from "@/components/ui/loaderComponent";
 import { OrderStateProvider } from "./context/OrderContext";
-// import { useNotifications } from "./hooks/useNotifications";
+import { useNotifications } from "./hooks/useNotifications";
 import { useJsApiLoader } from "@react-google-maps/api";
 import { KeycloakProvider } from "./hooks/useKeycloak";
 
-// const NotificationListener = () => {
-//   useNotifications();
-//   return null;
-// };
+const NotificationListener = () => {
+  useNotifications();
+  return null;
+};
 
 const App = () => {
   const { isLoaded, loadError } = useJsApiLoader({
@@ -34,14 +34,14 @@ const App = () => {
   return (
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <OrderStateProvider>
-        <KeycloakProvider>
         <Router>
-          {/* <NotificationListener /> */}
+          <KeycloakProvider>
+          <NotificationListener />
           <LoadingSpinner />
           <RoutesComponent />
           <Toaster />
+          </KeycloakProvider>
         </Router>
-        </KeycloakProvider>
       </OrderStateProvider>
     </ThemeProvider>
   );

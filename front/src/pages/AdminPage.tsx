@@ -78,7 +78,6 @@ export const AdminPage = () => {
 
         {t("admin.users.totalUsers") || "Razem użytkowników"}: {users.length}
       </div>
-    </div>
   );
 };
 

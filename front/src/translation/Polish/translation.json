@@ -32,9 +32,7 @@
   "cancel": "Anuluj",
   "save": "Zapisz",
   "saving": "Zapisywanie...",
-  "profileUpdatedSuccess": "Profil został zaktualizowany pomyślnie!"
-  "accountCreated": "Konto utworzone",
-  "cancel": "Anuluj",
+  "profileUpdatedSuccess": "Profil został zaktualizowany pomyślnie!",
   "loadingMap": "Ładowanie mapy...",
   "orders": {
     "weightInfo": "Waga (kg)",

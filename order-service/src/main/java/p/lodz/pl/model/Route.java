@@ -34,4 +34,7 @@ public class Route extends ControlledEntity {
     @PlanningListVariable(valueRangeProviderRefs = "stopRange")
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<RouteStop> stops = new ArrayList<>();
+
+    @Transient
+    public Double maxCargoCapacity;
 }

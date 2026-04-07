@@ -37,7 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/internal/user/webhook/**").permitAll()
                         .requestMatchers("/api/user/public/**").permitAll()
                         .requestMatchers("/api/transport/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/internal/user/couriers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(jwtAuthConverter())

@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import p.lodz.pl.model.enums.OrderStatus;
 import p.lodz.pl.util.Util;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class RouteConstraintProvider implements ConstraintProvider {
@@ -30,12 +29,26 @@ public class RouteConstraintProvider implements ConstraintProvider {
 
     private Constraint vehicleCapacity(ConstraintFactory factory) {
         return factory.forEach(Route.class)
-                .filter(route -> route.stops != null)
-                .filter(route -> route.stops.stream()
-                        .filter(stop -> stop.order != null && stop.order.weight != null)
-                        .map(stop -> stop.order.weight)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add)
-                        .compareTo(BigDecimal.valueOf(100.0)) > 0)
+                .filter(route -> route.stops != null && route.maxCargoCapacity != null)
+                .filter(route -> {
+                    double peakLoad = 0.0;
+                    double endLoad = 0.0;
+
+                    for (RouteStop stop : route.stops) {
+                        if (stop.order != null && stop.order.weight != null) {
+                            double weight = stop.order.weight.doubleValue();
+                            boolean isDelivery = stop.order.status == OrderStatus.IN_SORTING_CENTER;
+
+                            if (isDelivery) {
+                                peakLoad += weight;
+                            } else {
+                                endLoad += weight;
+                                peakLoad = Math.max(peakLoad, endLoad);
+                            }
+                        }
+                    }
+                    return peakLoad > route.maxCargoCapacity;
+                })
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Vehicle Capacity Exceeded");
     }

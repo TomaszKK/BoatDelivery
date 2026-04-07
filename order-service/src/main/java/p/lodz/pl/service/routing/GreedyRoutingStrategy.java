@@ -27,14 +27,23 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
         Map<Route, Location> currentCourierLocations = new HashMap<>();
         Map<Route, Integer> courierSequences = new HashMap<>();
 
+        Map<Route, Double> routePeakLoad = new HashMap<>();
+        Map<Route, Double> routeEndLoad = new HashMap<>();
+
         for (Route r : problem.routes) {
             if (r.stops != null) {
                 r.stops.clear();
             } else {
                 r.stops = new ArrayList<>();
             }
-            currentCourierLocations.put(r, null); // Na start kurierzy nie mają lokalizacji (dystans do 1 paczki = 0)
+            currentCourierLocations.put(r, null);
             courierSequences.put(r, 0);
+            routePeakLoad.put(r, 0.0);
+            routeEndLoad.put(r, 0.0);
+
+            if(r.maxCargoCapacity == null) {
+                r.maxCargoCapacity = 1000.0;
+            }
         }
 
         List<RouteStop> unassignedStops = new ArrayList<>(problem.stops);
@@ -46,10 +55,32 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
 
             for (Route candidateRoute : problem.routes) {
                 Location currentLoc = currentCourierLocations.get(candidateRoute);
+                double maxCapacity = candidateRoute.maxCargoCapacity;
 
                 for (RouteStop candidateStop : unassignedStops) {
-                    Location candidateLoc = getTargetLocation(candidateStop.order);
+                    double orderWeight = 0.0;
 
+                    if (candidateStop.order != null && candidateStop.order.weight != null) {
+                        orderWeight = candidateStop.order.weight.doubleValue();
+                    }
+
+                    boolean isDelivery = candidateStop.order != null && candidateStop.order.status == OrderStatus.IN_SORTING_CENTER;
+
+                    double predictedPeak = routePeakLoad.get(candidateRoute);
+                    double predictedEnd = routeEndLoad.get(candidateRoute);
+
+                    if (isDelivery) {
+                        predictedPeak += orderWeight;
+                    } else {
+                        predictedEnd += orderWeight;
+                        predictedPeak = Math.max(predictedPeak, predictedEnd);
+                    }
+
+                    if (predictedPeak > maxCapacity) {
+                        continue;
+                    }
+
+                    Location candidateLoc = getTargetLocation(candidateStop.order);
                     double distance = 0.0;
                     if (currentLoc != null && candidateLoc != null) {
                         distance = Util.calculateDistance(currentLoc, candidateLoc);
@@ -66,6 +97,20 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
             if (bestStop == null || bestRoute == null) {
                 bestStop = unassignedStops.getFirst();
                 bestRoute = problem.routes.getFirst();
+            }
+
+            double addedWeight = 0.0;
+            if (bestStop.order != null && bestStop.order.weight != null) {
+                addedWeight = bestStop.order.weight.doubleValue();
+            }
+            boolean isDelivery = bestStop.order != null && bestStop.order.status == OrderStatus.IN_SORTING_CENTER;
+
+            if (isDelivery) {
+                routePeakLoad.put(bestRoute, routePeakLoad.get(bestRoute) + addedWeight);
+            } else {
+                double newEndLoad = routeEndLoad.get(bestRoute) + addedWeight;
+                routeEndLoad.put(bestRoute, newEndLoad);
+                routePeakLoad.put(bestRoute, Math.max(routePeakLoad.get(bestRoute), newEndLoad));
             }
 
             int sequence = courierSequences.get(bestRoute);
