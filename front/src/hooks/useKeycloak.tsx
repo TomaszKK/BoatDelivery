@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from "react";
-import Keycloak from "keycloak-js";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import Keycloak, { type KeycloakTokenParsed } from "keycloak-js";
 
-interface KeycloakUser {
+interface KeycloakUser extends KeycloakTokenParsed {
   name?: string;
   email?: string;
   preferred_username?: string;
@@ -13,7 +13,20 @@ interface KeycloakState {
   token?: string;
   isLogged: boolean;
   user?: KeycloakUser;
+  realmAccess?: { roles: string[] };
 }
+
+interface KeycloakContextType {
+  keycloak: KeycloakState;
+  isInitialized: boolean;
+  login: () => void;
+  register: () => void;
+  logout: () => void;
+  updatePassword: () => void;
+  isLogged: boolean;
+}
+
+const KeycloakContext = createContext<KeycloakContextType | null>(null);
 
 let keycloakInstance: Keycloak | null = null;
 let initStarted = false;
@@ -29,10 +42,8 @@ const initKeycloakInstance = (): Keycloak => {
   return keycloakInstance;
 };
 
-export const useKeycloak = () => {
-  const [keycloak, setKeycloak] = useState<KeycloakState>({
-    isLogged: false,
-  });
+export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [keycloak, setKeycloak] = useState<KeycloakState>({ isLogged: false });
   const [isInitialized, setIsInitialized] = useState(false);
   const initRef = useRef(false);
 
@@ -44,36 +55,63 @@ export const useKeycloak = () => {
       try {
         const instance = initKeycloakInstance();
 
-        // Jeśli init() już był startowany wcześniej, skip it i pobierz token z localStorage
+        // ==========================================
+        // Automatyczne odświeżanie tokena!
+        // ==========================================
+        instance.onTokenExpired = () => {
+          console.log("Token expired, trying to refresh...");
+          instance.updateToken(30).then((refreshed) => {
+            if (refreshed && instance.token) {
+              localStorage.setItem("accessToken", instance.token);
+              setKeycloak({
+                isLogged: true,
+                token: instance.token,
+                user: instance.tokenParsed as KeycloakUser,
+                realmAccess: instance.realmAccess,
+              });
+            }
+          }).catch(() => {
+            console.warn("Failed to refresh token. Logging out.");
+            localStorage.removeItem("accessToken");
+            setKeycloak({ isLogged: false });
+          });
+        };
+
         if (initStarted) {
           const storedToken = localStorage.getItem("accessToken");
           if (storedToken) {
             try {
-              const decoded = JSON.parse(atob(storedToken.split('.')[1]));
-              setKeycloak({
-                isLogged: true,
-                token: storedToken,
-                user: decoded as KeycloakUser,
-              });
-              setIsInitialized(true);
-              return;
+              const decoded = JSON.parse(atob(storedToken.split(".")[1]));
+              // Sprawdź czy zdekodowany token już nie wygasł!
+              const isExpired = decoded.exp && (decoded.exp * 1000) < Date.now();
+              
+              if (!isExpired) {
+                  setKeycloak({
+                    isLogged: true,
+                    token: storedToken,
+                    user: decoded as KeycloakUser,
+                    realmAccess: decoded.realm_access,
+                  });
+                  setIsInitialized(true);
+                  return;
+              } else {
+                  localStorage.removeItem("accessToken");
+              }
             } catch (e) {
               // Ignore decode error
             }
           }
 
-          // Jeśli nie ma w localStorage, spróbuj z instance
           if (instance.authenticated && instance.token) {
             localStorage.setItem("accessToken", instance.token);
             setKeycloak({
               isLogged: true,
               token: instance.token,
               user: instance.tokenParsed as KeycloakUser,
+              realmAccess: instance.realmAccess,
             });
           } else {
-            setKeycloak({
-              isLogged: false,
-            });
+            setKeycloak({ isLogged: false });
           }
           setIsInitialized(true);
           return;
@@ -81,7 +119,6 @@ export const useKeycloak = () => {
 
         initStarted = true;
 
-        // Spróbuj wykonać init()
         const authenticated = await instance.init({
           onLoad: "check-sso",
           silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
@@ -95,17 +132,14 @@ export const useKeycloak = () => {
             isLogged: true,
             token: instance.token,
             user: instance.tokenParsed as KeycloakUser,
+            realmAccess: instance.realmAccess,
           });
         } else {
-          setKeycloak({
-            isLogged: false,
-          });
+          setKeycloak({ isLogged: false });
         }
       } catch (error) {
         console.error("Keycloak initialization error:", error);
-        setKeycloak({
-          isLogged: false,
-        });
+        setKeycloak({ isLogged: false });
       } finally {
         setIsInitialized(true);
       }
@@ -149,16 +183,13 @@ export const useKeycloak = () => {
   const updatePassword = useCallback(() => {
     try {
       const instance = initKeycloakInstance();
-
-      instance.login({
-        action: "UPDATE_PASSWORD",
-      });
+      instance.login({ action: "UPDATE_PASSWORD" });
     } catch (error) {
       console.error("Error calling updatePassword:", error);
     }
   }, []);
 
-  return {
+  const contextValue: KeycloakContextType = {
     keycloak,
     isInitialized,
     login,
@@ -167,5 +198,18 @@ export const useKeycloak = () => {
     updatePassword,
     isLogged: keycloak.isLogged,
   };
+
+  return (
+    <KeycloakContext.Provider value={contextValue}>
+      {children}
+    </KeycloakContext.Provider>
+  );
 };
 
+export const useKeycloak = (): KeycloakContextType => {
+  const context = useContext(KeycloakContext);
+  if (!context) {
+    throw new Error("useKeycloak must be used within a KeycloakProvider");
+  }
+  return context;
+};

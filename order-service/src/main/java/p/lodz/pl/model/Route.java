@@ -1,5 +1,7 @@
 package p.lodz.pl.model;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import jakarta.persistence.*;
 import p.lodz.pl.model.enums.RouteStatus;
 
@@ -10,6 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "routes")
+@PlanningEntity
 public class Route extends ControlledEntity {
 
     @Column(name = "courier_id")
@@ -28,6 +31,10 @@ public class Route extends ControlledEntity {
     @Column(name = "estimated_duration_min")
     public Integer estimatedDurationMin;
 
+    @PlanningListVariable(valueRangeProviderRefs = "stopRange")
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<RouteStop> stops = new ArrayList<>();
+
+    @Transient
+    public Double maxCargoCapacity;
 }

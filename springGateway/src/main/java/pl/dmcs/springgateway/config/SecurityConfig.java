@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeExchange(auth -> auth
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))

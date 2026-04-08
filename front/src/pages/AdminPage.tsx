@@ -76,10 +76,8 @@ export const AdminPage = () => {
         </Table>
       </div>
 
-      <div className="mt-4 text-sm text-muted-foreground">
         {t("admin.users.totalUsers") || "Razem użytkowników"}: {users.length}
       </div>
-    </div>
   );
 };
 

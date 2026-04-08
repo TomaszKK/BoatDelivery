@@ -1,23 +1,22 @@
-import { OrdersPage } from "@/pages/OrdersPage";
+import { MyOrdersPage } from "@/pages/MyOrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { AdminPage } from "@/pages/AdminPage";
 import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { Pathnames } from "./pathnames";
-
+import { OrderDetailsPage } from "@/pages/OrderDetailsPage";
+import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
+import { CourierRoutePage } from "@/pages/CourierRoutePage";
 
 export type RouteType = {
   path: string;
   Component: React.ComponentType<Record<string, unknown>>;
 };
 
+// DODANO: Strona główna jest teraz publiczna
 export const publicRoutes: RouteType[] = [
   {
-    path: Pathnames.public.login,
-    Component: () => <PlaceholderPage title="Logowanie" />,
-  },
-  {
-    path: Pathnames.public.register,
-    Component: () => <PlaceholderPage title="Rejestracja" />,
+    path: Pathnames.customer.home, 
+    Component: () => <PlaceholderPage title="Strona Główna" />,
   },
   {
     path: Pathnames.public.error,
@@ -25,11 +24,8 @@ export const publicRoutes: RouteType[] = [
   },
 ];
 
+// USUNIĘTO stąd stronę główną
 export const customerRoutes: RouteType[] = [
-  {
-    path: Pathnames.customer.home,
-    Component: () => <PlaceholderPage title="Strona Główna" />,
-  },
   {
     path: Pathnames.customer.profile,
     Component: ProfilePage,
@@ -40,14 +36,18 @@ export const customerRoutes: RouteType[] = [
   },
   {
     path: Pathnames.customer.orders,
-    Component: OrdersPage,
+    Component: MyOrdersPage,
+  },
+  {
+    path: Pathnames.customer.ordersDetails,
+    Component: OrderDetailsPage,
   },
 ];
 
 export const courierRoutes: RouteType[] = [
   {
     path: Pathnames.courier.route,
-    Component: () => <PlaceholderPage title="Moja Trasa (Mapa)" />,
+    Component: CourierRoutePage,
   },
   {
     path: Pathnames.courier.deliveries,
@@ -58,7 +58,7 @@ export const courierRoutes: RouteType[] = [
 export const adminRoutes: RouteType[] = [
   {
     path: Pathnames.admin.dashboard,
-    Component: () => <PlaceholderPage title="Panel Dyspozytora" />,
+    Component: AdminDashboardPage,
   },
   {
     path: Pathnames.admin.accounts,

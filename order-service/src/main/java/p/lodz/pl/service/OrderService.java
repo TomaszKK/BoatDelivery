@@ -1,10 +1,14 @@
 package p.lodz.pl.service;
 
+import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ForbiddenException;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
+import p.lodz.pl.dto.maps.HerePosition;
 import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.exception.ResourceNotFoundException;
 import p.lodz.pl.mapper.OrderMapper;
@@ -24,26 +28,60 @@ public class OrderService {
     @Inject
     OrderMapper orderMapper;
 
+    @Inject
+    JsonWebToken jwt;
+
+    @Inject
+    SecurityIdentity identity;
+
+    @Inject
+    LocationService locationService;
+
     @Transactional
-    public OrderResponseDTO createOrder(OrderRequestDTO requestDTO) {
+    public OrderResponseDTO createOrder(OrderRequestDTO requestDTO, HerePosition pickupPos, HerePosition deliveryPos) {
         Order order = orderMapper.toEntity(requestDTO);
         order.status = OrderStatus.ORDER_CREATED;
-
         order.trackingNumber = generateTrackingNumber();
 
+        order.customerId = UUID.fromString(jwt.getSubject());
+
+        order.pickupLocation.latitude = pickupPos.lat();
+        order.pickupLocation.longitude = pickupPos.lng();
+
+        order.deliveryLocation.latitude = deliveryPos.lat();
+        order.deliveryLocation.longitude = deliveryPos.lng();
+
         order.persist();
+
         return orderMapper.toDto(order);
     }
 
-    public List<OrderResponseDTO> getAllOrders() {
-        return Order.<Order>listAll().stream()
-                .map(orderMapper::toDto)
-                .collect(Collectors.toList());
+    public List<OrderResponseDTO> getOrders() {
+        if (identity.hasRole("ADMIN")) {
+            return Order.<Order>listAll().stream()
+                    .map(orderMapper::toDto)
+                    .collect(Collectors.toList());
+        } else {
+            UUID customerId = UUID.fromString(jwt.getSubject());
+            return Order.<Order>list("customerId", customerId).stream()
+                    .map(orderMapper::toDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     public OrderResponseDTO getOrderById(UUID id) {
         Order order = Order.<Order>findByIdOptional(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
+
+        verifyOwnership(order);
+        return orderMapper.toDto(order);
+    }
+
+    public OrderResponseDTO getOrderByTrackingNumber(String trackingNumber) {
+        Order order = Order.<Order>find("trackingNumber", trackingNumber).firstResultOptional()
+                .orElseThrow(() -> new ResourceNotFoundException("Order with tracking number " + trackingNumber + " not found"));
+
+        verifyOwnership(order);
         return orderMapper.toDto(order);
     }
 
@@ -51,6 +89,8 @@ public class OrderService {
     public OrderResponseDTO updateOrder(UUID id, OrderRequestDTO requestDTO) {
         Order order = Order.<Order>findByIdOptional(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
+
+        verifyOwnership(order);
         orderMapper.updateEntityFromDto(requestDTO, order);
 
         return orderMapper.toDto(order);
@@ -63,6 +103,8 @@ public class OrderService {
         }
         Order order = Order.<Order>findByIdOptional(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
+
+        verifyOwnership(order);
 
         if (newStatus == OrderStatus.ORDER_CANCELED) {
             return handleCancellation(order);
@@ -83,11 +125,10 @@ public class OrderService {
 
         if (isAlreadyPickedUp) {
             order.status = OrderStatus.IN_SORTING_CENTER;
-
             Location tempDelivery = order.deliveryLocation;
             order.deliveryLocation = order.pickupLocation;
             order.pickupLocation = tempDelivery;
-//            TODO add notification about cancelling order after receiving. This is important for driver, because he will have to return to sorting center instead of going to customer.
+            // TODO: Notyfikacja dla kuriera
         } else {
             order.status = OrderStatus.ORDER_CANCELED;
         }
@@ -97,9 +138,21 @@ public class OrderService {
 
     @Transactional
     public void deleteOrder(UUID id) {
-        boolean deleted = Order.deleteById(id);
-        if (!deleted) {
-            throw new ResourceNotFoundException("Order with id " + id + " not found");
+        Order order = Order.<Order>findByIdOptional(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
+
+        verifyOwnership(order);
+        order.delete();
+    }
+
+    private void verifyOwnership(Order order) {
+        if (identity.hasRole("ADMIN") || identity.hasRole("COURIER")) {
+            return;
+        }
+
+        String currentUserId = jwt.getSubject();
+        if (!order.customerId.toString().equals(currentUserId)) {
+            throw new ForbiddenException("Access denied: You are not the owner of this order");
         }
     }
 }

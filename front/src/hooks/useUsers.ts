@@ -17,6 +17,9 @@ export const useUsers = () => {
       } catch (err: unknown) {
         const errorMessage =
           err instanceof Error ? err.message : "Nie udało się pobrać użytkowników";
+          err instanceof Error
+            ? err.message
+            : "Nie udało się pobrać użytkowników";
         setError(errorMessage);
         console.error("Error fetching users:", err);
       } finally {

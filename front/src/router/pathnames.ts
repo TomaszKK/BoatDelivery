@@ -1,8 +1,7 @@
 export const Pathnames = {
   public: {
-    login: "/login",
     register: "/register",
-    error: "*",
+    error: "/404",
   },
   courier: {
     route: "/route",
@@ -12,6 +11,7 @@ export const Pathnames = {
     home: "/home",
     track: "/track",
     orders: "/orders",
+    ordersDetails: "/orders/:trackingNumber",
     profile: "/profile",
   },
   admin: {

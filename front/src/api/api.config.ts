@@ -2,7 +2,7 @@ import axios from "axios";
 import { type AxiosInstance } from "axios";
 
 export const API_URL = "http://localhost:8080/api";
-export const TIMEOUT_IN_MS = 30000;
+export const TIMEOUT_IN_MS = 30000; // 30 seconds
 export const DEFAULT_HEADERS = {
   Accept: "application/json",
   "Content-type": "application/json",

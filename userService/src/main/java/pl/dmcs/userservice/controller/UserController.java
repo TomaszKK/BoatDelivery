@@ -1,6 +1,10 @@
 package pl.dmcs.userservice.controller;
 
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,10 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import pl.dmcs.userservice.dto.request.UpdateUserRequest;
 import pl.dmcs.userservice.dto.request.UserRequest;
 import pl.dmcs.userservice.dto.response.UserResponse;
+import pl.dmcs.userservice.mapper.TransportMapper;
 import pl.dmcs.userservice.mapper.UserMapper;
+import pl.dmcs.userservice.model.Transport;
 import pl.dmcs.userservice.model.User;
+import pl.dmcs.userservice.model.UserType;
+import pl.dmcs.userservice.service.TransportService;
 import pl.dmcs.userservice.service.UserService;
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,13 +30,26 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/user")
 public class UserController {
 
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
     private final UserService userService;
     private final UserMapper userMapper;
+    private final TransportService transportService;
+    private final TransportMapper transportMapper;
+    private final String expectedSecret;
 
     @Autowired
-    public UserController(UserService userService, UserMapper userMapper) {
+    public UserController(
+            UserService userService,
+            UserMapper userMapper,
+            TransportService transportService,
+            TransportMapper transportMapper,
+            @Value("${app.webhook.keycloak-secret}") String expectedSecret) {
         this.userService = userService;
         this.userMapper = userMapper;
+        this.transportService = transportService;
+        this.transportMapper = transportMapper;
+        this.expectedSecret = expectedSecret;
     }
 
     @GetMapping("/me")
@@ -44,6 +64,36 @@ public class UserController {
         List<User> users = userService.getAllUsers();
         List<UserResponse> responses = users.stream()
                 .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/internal/couriers")
+    public ResponseEntity<List<UserResponse>> getCouriers(
+            @RequestHeader(value = "X-Keycloak-Secret", required = false) String providedSecret) {
+
+        if (providedSecret == null || !expectedSecret.equals(providedSecret)) {
+            log.warn("Wrong secret!!!: {}", providedSecret);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> responses = users.stream()
+                .filter(user -> UserType.COURIER.equals(user.getUserType()))
+                .map(user -> {
+                    UserResponse userResponse = userMapper.toResponse(user);
+                    try {
+                        List<Transport> transports = transportService.getTransportsByCourierId(user.getId());
+                        if (transports != null && !transports.isEmpty()) {
+                            Transport firstTransport = transports.get(0);
+                            userResponse.setTransport(transportMapper.toResponse(firstTransport));
+                        }
+                    } catch (Exception e) {
+                        log.debug("Courier {} do not have any transport", user.getId());
+                    }
+
+                    return userResponse;
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }

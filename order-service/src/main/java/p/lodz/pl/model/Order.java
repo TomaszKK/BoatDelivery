@@ -1,6 +1,7 @@
 package p.lodz.pl.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SoftDelete;
 import p.lodz.pl.model.enums.OrderStatus;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "orders")
+@SoftDelete
 public class Order extends ControlledEntity {
 
     @Column(name = "tracking_number", unique = true, nullable = false, updatable = false, length = 15)

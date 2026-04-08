@@ -13,6 +13,6 @@ public record OrderResponseDTO(
         BigDecimal weight,
         BigDecimal volume,
         Instant createdAt,
-        LocationDTO pickupLocation,
-        LocationDTO deliveryLocation
+        LocationResponseDTO pickupLocation,
+        LocationResponseDTO deliveryLocation
 ) {}
