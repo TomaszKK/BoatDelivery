@@ -4,7 +4,7 @@ export const UserType = {
   ADMIN: "ADMIN",
 } as const;
 
-export type UserType = typeof UserType[keyof typeof UserType];
+export type UserType = (typeof UserType)[keyof typeof UserType];
 
 export interface User {
   id: string;

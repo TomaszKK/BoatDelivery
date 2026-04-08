@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import Keycloak, { type KeycloakTokenParsed } from "keycloak-js";
 
 interface KeycloakUser extends KeycloakTokenParsed {
@@ -43,7 +50,9 @@ const initKeycloakInstance = (): Keycloak => {
   return keycloakInstance;
 };
 
-export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [keycloak, setKeycloak] = useState<KeycloakState>({ isLogged: false });
   const [isInitialized, setIsInitialized] = useState(false);
   const initRef = useRef(false);
@@ -61,21 +70,24 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // ==========================================
         instance.onTokenExpired = () => {
           console.log("Token expired, trying to refresh...");
-          instance.updateToken(30).then((refreshed) => {
-            if (refreshed && instance.token) {
-              localStorage.setItem("accessToken", instance.token);
-              setKeycloak({
-                isLogged: true,
-                token: instance.token,
-                user: instance.tokenParsed as KeycloakUser,
-                realmAccess: instance.realmAccess,
-              });
-            }
-          }).catch(() => {
-            console.warn("Failed to refresh token. Logging out.");
-            localStorage.removeItem("accessToken");
-            setKeycloak({ isLogged: false });
-          });
+          instance
+            .updateToken(30)
+            .then((refreshed) => {
+              if (refreshed && instance.token) {
+                localStorage.setItem("accessToken", instance.token);
+                setKeycloak({
+                  isLogged: true,
+                  token: instance.token,
+                  user: instance.tokenParsed as KeycloakUser,
+                  realmAccess: instance.realmAccess,
+                });
+              }
+            })
+            .catch(() => {
+              console.warn("Failed to refresh token. Logging out.");
+              localStorage.removeItem("accessToken");
+              setKeycloak({ isLogged: false });
+            });
         };
 
         if (initStarted) {
@@ -84,19 +96,19 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             try {
               const decoded = JSON.parse(atob(storedToken.split(".")[1]));
               // Sprawdź czy zdekodowany token już nie wygasł!
-              const isExpired = decoded.exp && (decoded.exp * 1000) < Date.now();
-              
+              const isExpired = decoded.exp && decoded.exp * 1000 < Date.now();
+
               if (!isExpired) {
-                  setKeycloak({
-                    isLogged: true,
-                    token: storedToken,
-                    user: decoded as KeycloakUser,
-                    realmAccess: decoded.realm_access,
-                  });
-                  setIsInitialized(true);
-                  return;
+                setKeycloak({
+                  isLogged: true,
+                  token: storedToken,
+                  user: decoded as KeycloakUser,
+                  realmAccess: decoded.realm_access,
+                });
+                setIsInitialized(true);
+                return;
               } else {
-                  localStorage.removeItem("accessToken");
+                localStorage.removeItem("accessToken");
               }
             } catch {
               // Ignore decode error
@@ -200,7 +212,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         // Wymuś refresh nawet jeśli token jeszcze nie wygasł
         await instance.updateToken(-1);
       }
-      
+
       if (instance.token) {
         localStorage.setItem("accessToken", instance.token);
         setKeycloak({

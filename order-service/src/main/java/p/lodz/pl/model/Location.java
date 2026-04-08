@@ -1,10 +1,13 @@
 package p.lodz.pl.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SoftDelete;
+
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "locations")
+@SoftDelete
 public class Location extends ControlledEntity {
 
     @Column(nullable = false, precision = 10, scale = 7)

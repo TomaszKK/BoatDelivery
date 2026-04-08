@@ -27,7 +27,10 @@ export const AuthButtons = () => {
 
   const firstName = keycloak.user?.given_name || "";
   const lastName = keycloak.user?.family_name || "";
-  const fullName = `${firstName} ${lastName}`.trim() || keycloak.user?.preferred_username || t("user");
+  const fullName =
+    `${firstName} ${lastName}`.trim() ||
+    keycloak.user?.preferred_username ||
+    t("user");
 
   return (
     <div className="flex items-center gap-3">

@@ -1,10 +1,13 @@
 package p.lodz.pl.controller;
 
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
@@ -25,6 +28,9 @@ public class OrderController {
 
     @Inject
     LocationService locationService;
+
+    @Inject
+    JsonWebToken jwt;
 
     private static final Logger LOG = Logger.getLogger(OrderController.class);
 
@@ -59,12 +65,6 @@ public class OrderController {
     }
 
     @GET
-    @RolesAllowed({"ADMIN", "CUSTOMER"})
-    public Response getOrders() {
-        return Response.ok(orderService.getOrders()).build();
-    }
-
-    @GET
     @Path("/{id}")
     @RolesAllowed({"ADMIN", "CUSTOMER", "COURIER"})
     public Response getOrderById(@PathParam("id") UUID id) {
@@ -80,6 +80,7 @@ public class OrderController {
 
     @GET
     @Path("/tracking/minimalized/{trackingNumber}")
+    @PermitAll
     public Response getOrderMinimalized(@PathParam("trackingNumber") String trackingNumber) {
         return Response.ok(orderService.getOrderByTrackingNumberMinimalized(trackingNumber)).build();
     }
@@ -103,10 +104,35 @@ public class OrderController {
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("/{trackingNumber}")
     @RolesAllowed("ADMIN")
-    public Response deleteOrder(@PathParam("id") UUID id) {
-        orderService.deleteOrder(id);
+    public Response deleteOrder(@PathParam("trackingNumber") String trackingNumber) {
+        orderService.deleteOrder(trackingNumber);
         return Response.noContent().build();
+    }
+
+    @GET
+    @RolesAllowed("ADMIN")
+    public Response getOrders(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size,
+            @QueryParam("status") OrderStatus status) {
+
+        return Response.ok(orderService.getOrdersPaged(page, size, status)).build();
+    }
+
+    @GET
+    @Path("/my")
+    @RolesAllowed("CUSTOMER")
+    public Response getMyOrders() {
+        String userId = jwt.getSubject();
+        return Response.ok(orderService.getOrdersByCustomerId(userId)).build();
+    }
+
+    @GET
+    @Path("/stats")
+    @RolesAllowed("ADMIN")
+    public Response getStatistics() {
+        return Response.ok(orderService.getAdminStatistics()).build();
     }
 }

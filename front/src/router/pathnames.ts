@@ -5,7 +5,6 @@ export const Pathnames = {
   },
   courier: {
     route: "/route",
-    deliveries: "/deliveries",
   },
   customer: {
     home: "/home",
@@ -15,7 +14,9 @@ export const Pathnames = {
     profile: "/profile",
   },
   admin: {
+    home: "/orders",
     dashboard: "/dashboard",
+    routing: "/routing",
     accounts: "/accounts",
   },
 };

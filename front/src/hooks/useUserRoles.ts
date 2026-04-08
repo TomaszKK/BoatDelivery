@@ -8,15 +8,14 @@ export const useUserRoles = () => {
     if (!isInitialized || !keycloak.isLogged || !keycloak.realmAccess) {
       return [];
     }
-    
+
     return keycloak.realmAccess.roles || [];
   }, [keycloak.realmAccess?.roles, keycloak.isLogged, isInitialized]);
 
   const isAdmin = roles.includes("ADMIN");
   const isCourier = roles.includes("COURIER");
-  
-  const isCustomer = keycloak.isLogged && !isAdmin && !isCourier;
 
+  const isCustomer = keycloak.isLogged && !isAdmin && !isCourier;
 
   return {
     roles,

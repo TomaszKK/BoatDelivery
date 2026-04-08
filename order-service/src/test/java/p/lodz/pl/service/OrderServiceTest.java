@@ -15,6 +15,7 @@ import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.exception.ResourceNotFoundException;
 import p.lodz.pl.model.Order;
 import p.lodz.pl.model.enums.OrderStatus;
+import p.lodz.pl.util.Util;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -119,7 +120,7 @@ public class OrderServiceTest {
     @Test
     @DisplayName("deleteOrder - Should throw ResourceNotFoundException if trying to delete non-existent order")
     public void shouldThrowExceptionOnDeletingNonExistentOrder() {
-        UUID fakeId = UUID.randomUUID();
+        String fakeId = Util.generateTrackingNumber();
         PanacheMock.mock(Order.class);
         Mockito.when(Order.deleteById(fakeId)).thenReturn(false);
 

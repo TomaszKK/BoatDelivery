@@ -44,16 +44,21 @@ export const useProfile = () => {
 
   useEffect(() => {
     let isMounted = true;
-    
-    fetchProfile().then(() => {
-      if (!isMounted) return;
-    }).catch((error) => {
-      console.error("Error in fetchProfile:", error);
-      if (isMounted) {
-        const errorMessage = error instanceof Error ? error.message : "Błąd podczas pobierania profilu";
-        setState({ user: null, loading: false, error: errorMessage });
-      }
-    });
+
+    fetchProfile()
+      .then(() => {
+        if (!isMounted) return;
+      })
+      .catch((error) => {
+        console.error("Error in fetchProfile:", error);
+        if (isMounted) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Błąd podczas pobierania profilu";
+          setState({ user: null, loading: false, error: errorMessage });
+        }
+      });
 
     return () => {
       isMounted = false;

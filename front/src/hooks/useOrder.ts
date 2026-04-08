@@ -79,7 +79,9 @@ export const useOrder = () => {
     }
   };
 
-  const getMininalizedOrderByTrackingNumber = async (trackingNumber: string) => {
+  const getMininalizedOrderByTrackingNumber = async (
+    trackingNumber: string,
+  ) => {
     try {
       const response = await trackPromise(
         api.getMininalizedOrderByTrackingNumber(trackingNumber),
@@ -99,7 +101,7 @@ export const useOrder = () => {
       }
       return e;
     }
-  }
+  };
 
   const createOrder = async (orderData: OrderRequestDTO) => {
     try {

@@ -36,10 +36,10 @@ const App = () => {
       <OrderStateProvider>
         <Router>
           <KeycloakProvider>
-          <NotificationListener />
-          <LoadingSpinner />
-          <RoutesComponent />
-          <Toaster />
+            <NotificationListener />
+            <LoadingSpinner />
+            <RoutesComponent />
+            <Toaster />
           </KeycloakProvider>
         </Router>
       </OrderStateProvider>

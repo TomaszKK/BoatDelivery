@@ -19,4 +19,3 @@ export interface Transport {
   licensePlate?: string;
   color?: string;
 }
-
