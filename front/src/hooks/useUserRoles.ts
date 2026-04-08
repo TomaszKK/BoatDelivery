@@ -10,12 +10,13 @@ export const useUserRoles = () => {
     }
     
     return keycloak.realmAccess.roles || [];
-  }, [keycloak.realmAccess, keycloak.isLogged, isInitialized]);
+  }, [keycloak.realmAccess?.roles, keycloak.isLogged, isInitialized]);
 
   const isAdmin = roles.includes("ADMIN");
   const isCourier = roles.includes("COURIER");
   
   const isCustomer = keycloak.isLogged && !isAdmin && !isCourier;
+
 
   return {
     roles,

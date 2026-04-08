@@ -46,6 +46,10 @@ export const customerRoutes: RouteType[] = [
 
 export const courierRoutes: RouteType[] = [
   {
+    path: Pathnames.customer.profile,
+    Component: ProfilePage,
+  },
+  {
     path: Pathnames.courier.route,
     Component: CourierRoutePage,
   },

@@ -53,9 +53,18 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
         User user = userService.syncUserFromJwt(jwt);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
+    @GetMapping("/my-role")
+    public ResponseEntity<?> getMyRole(@AuthenticationPrincipal Jwt jwt) {
+        User user = userService.syncUserFromJwt(jwt);
+        return ResponseEntity.ok(new Object() {
+            public UserType userType = user.getUserType();
+            public String role = user.getUserType().name();
+        });
     }
 
     @GetMapping
@@ -109,12 +118,12 @@ public class UserController {
     }
 
     @PatchMapping("/me")
-    public ResponseEntity<User> updateCurrentUser(
+    public ResponseEntity<UserResponse> updateCurrentUser(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody UpdateUserRequest request) {
         User currentUser = userService.syncUserFromJwt(jwt);
         User updatedUser = userService.updateUserWithPatch(currentUser.getId(), request);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(userMapper.toResponse(updatedUser));
     }
 
     @GetMapping("/{id}")
@@ -124,6 +133,7 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
         User user = userMapper.toEntity(request);
         User createdUser = userService.createUser(user);
@@ -131,6 +141,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable UUID id,
             @Valid @RequestBody UserRequest request) {
@@ -139,6 +150,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserResponse> partialUpdateUser(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
@@ -147,6 +159,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();

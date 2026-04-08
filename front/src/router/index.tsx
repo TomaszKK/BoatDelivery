@@ -57,11 +57,7 @@ export const RoutesComponent = () => {
         <Route
           key={path}
           path={path}
-          element={
-            isLogged && isAdmin
-              ? withLayout(Component)
-              : <Navigate to={getHomePath()} replace />
-          }
+          element={withLayout(Component)}
         />
       ))}
 
@@ -70,11 +66,7 @@ export const RoutesComponent = () => {
         <Route
           key={path}
           path={path}
-          element={
-            isLogged && isCustomer
-              ? withLayout(Component)
-              : <Navigate to={getHomePath()} replace />
-          }
+          element={withLayout(Component)}
         />
       ))}
 
@@ -83,11 +75,7 @@ export const RoutesComponent = () => {
         <Route
           key={path}
           path={path}
-          element={
-            isLogged && isCourier
-              ? withLayout(Component)
-              : <Navigate to={getHomePath()} replace />
-          }
+          element={withLayout(Component)}
         />
       ))}
 

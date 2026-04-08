@@ -36,7 +36,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/internal/user/webhook/**").permitAll()
                         .requestMatchers("/api/user/public/**").permitAll()
-                        .requestMatchers("/api/transport/**").permitAll()
+                        .requestMatchers("/api/transport/courier/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/transport/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/transport").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
@@ -61,17 +63,27 @@ public class SecurityConfig {
             public Collection<GrantedAuthority> convert(Jwt jwt) {
                 Map<String, Object> realmAccess = jwt.getClaim("realm_access");
                 if (realmAccess == null || realmAccess.isEmpty()) {
+                    System.out.println("[JwtAuthConverter] realmAccess is null or empty");
                     return Collections.emptyList();
                 }
 
                 Collection<String> roles = (Collection<String>) realmAccess.get("roles");
                 if (roles == null) {
+                    System.out.println("[JwtAuthConverter] roles is null");
                     return Collections.emptyList();
                 }
 
-                return roles.stream()
-                        .map(role -> new SimpleGrantedAuthority(role.toUpperCase()))
+                System.out.println("[JwtAuthConverter] Raw roles from JWT: " + roles);
+                Collection<GrantedAuthority> authorities = roles.stream()
+                        .map(role -> {
+                            String upperRole = role.toUpperCase();
+                            System.out.println("[JwtAuthConverter] Converting role: " + role + " -> " + upperRole);
+                            return new SimpleGrantedAuthority(upperRole);
+                        })
                         .collect(Collectors.toList());
+                
+                System.out.println("[JwtAuthConverter] Final authorities: " + authorities);
+                return authorities;
             }
         });
         return converter;

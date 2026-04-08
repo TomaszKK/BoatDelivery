@@ -1,9 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiForAuthenticated } from "@/api/api.config";
-import type { User } from "@/types/UserType";
+import type { User, UserType } from "@/types/UserType";
+
+export interface UserResponse {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  phoneNumber?: string;
+  userType: UserType;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 interface UseProfileState {
-  user: User | null;
+  user: UserResponse | null;
   loading: boolean;
   error: string | null;
 }
@@ -18,7 +29,7 @@ export const useProfile = () => {
   const fetchProfile = useCallback(async () => {
     setState({ user: null, loading: true, error: null });
     try {
-      const response = await apiForAuthenticated.get<User>("/user/me");
+      const response = await apiForAuthenticated.get<UserResponse>("/user/me");
       setState({ user: response.data, loading: false, error: null });
     } catch (error) {
       console.error("Error fetching profile:", error);

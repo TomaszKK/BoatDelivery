@@ -15,10 +15,13 @@
   "dashboard": "Dashboard",
   "manageUsers": "Manage Users",
   "myProfile": "My Profile",
+  "myTransport": "My Vehicle",
+  "accountType": "Account Type",
   "role": "Role",
   "admin": "Admin",
   "customer": "Customer",
   "courier": "Courier",
+  "user": "User",
   "fullName": "Full Name",
   "email": "Email",
   "phone": "Phone",
@@ -119,8 +122,40 @@
   "firstName": "First Name",
   "lastName": "Last Name",
   "changePassword": "Change Password",
+  "cancel": "Cancel",
   "save": "Save",
   "saving": "Saving...",
   "profileUpdatedSuccess": "Profile updated successfully!",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "roles": {
+    "admin": "Administrator",
+    "courier": "Courier",
+    "customer": "Customer"
+  },
+  "transport": {
+    "type": "Vehicle Type",
+    "brand": "Brand",
+    "model": "Model",
+    "licensePlate": "License Plate",
+    "color": "Color",
+    "fuelType": "Fuel Type",
+    "trunkVolume": "Trunk Volume",
+    "cargoCapacity": "Cargo Capacity",
+    "consumption": "Consumption",
+    "noVehicle": "You don't have an assigned vehicle",
+    "transportTypes": {
+      "CAR": "Car",
+      "VAN": "Van",
+      "TRUCK": "Truck",
+      "BIKE": "Motorcycle",
+      "BOAT": "Boat"
+    },
+    "fuelTypes": {
+      "PETROL": "Petrol",
+      "DIESEL": "Diesel",
+      "ELECTRIC": "Electric",
+      "HYBRID": "Hybrid",
+      "LPG": "LPG"
+    }
+  }
 }

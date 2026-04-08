@@ -15,10 +15,13 @@
   "dashboard": "Pulpit",
   "manageUsers": "Zarządzanie użytkownikami",
   "myProfile": "Mój profil",
+  "myTransport": "Mój pojazd",
+  "accountType": "Typ konta",
   "role": "Rola",
   "admin": "Administrator",
   "customer": "Klient",
   "courier": "Kurier",
+  "user": "Użytkownik",
   "fullName": "Pełne imię",
   "email": "Email",
   "phone": "Telefon",
@@ -122,5 +125,36 @@
   "routeStartedSuccess": "Trasa rozpoczęta pomyślnie!",
   "routeStartedError": "Nie można rozpocząć trasy. Proszę spróbować ponownie."
   },
- "loading": "Ładowanie..."
+ "loading": "Ładowanie...",
+ "roles": {
+    "admin": "Administrator",
+    "courier": "Kurier",
+    "customer": "Klient"
+  },
+  "transport": {
+    "type": "Typ pojazdu",
+    "brand": "Marka",
+    "model": "Model",
+    "licensePlate": "Tablica rejestracyjna",
+    "color": "Kolor",
+    "fuelType": "Typ paliwa",
+    "trunkVolume": "Pojemność bagażnika",
+    "cargoCapacity": "Ładowność",
+    "consumption": "Spalanie",
+    "noVehicle": "Nie masz przypisanego pojazdu",
+    "transportTypes": {
+      "CAR": "Samochód",
+      "VAN": "Van",
+      "TRUCK": "Ciężarówka",
+      "BIKE": "Motor",
+      "BOAT": "Łódź"
+    },
+    "fuelTypes": {
+      "PETROL": "Benzyna",
+      "DIESEL": "Diesel",
+      "ELECTRIC": "Elektryczne",
+      "HYBRID": "Hybrydowe",
+      "LPG": "LPG"
+    }
+  }
 }
