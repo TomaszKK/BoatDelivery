@@ -34,12 +34,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
+                        // Webhook'i od Keycloaka - mogą być otwarte (ale ochrona na poziomie secret header'a)
                         .requestMatchers("/api/internal/user/webhook/**").permitAll()
-                        .requestMatchers("/api/user/public/**").permitAll()
-                        .requestMatchers("/api/transport/courier/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/transport/{id}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/transport").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").authenticated()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(jwtAuthConverter())

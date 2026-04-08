@@ -108,8 +108,8 @@ public class UserController {
     }
 
     @GetMapping("/public/list")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserResponse>> getPublicUsersList() {
-        // Endpoint dla init script-u - bez autentykacji, zwraca listę wszystkich userów
         List<User> users = userService.getAllUsers();
         List<UserResponse> responses = users.stream()
                 .map(userMapper::toResponse)
@@ -127,6 +127,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         User user = userService.getUserById(id);
         return ResponseEntity.ok(userMapper.toResponse(user));

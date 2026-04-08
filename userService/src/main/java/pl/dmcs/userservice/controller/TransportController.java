@@ -73,6 +73,7 @@ public class TransportController {
     }
 
     @PostMapping("/courier/{courierId}")
+    @PreAuthorize("hasAuthority('COURIER')")
     @Transactional
     public ResponseEntity<TransportResponse> createTransport(
             @PathVariable UUID courierId,
@@ -83,6 +84,7 @@ public class TransportController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('COURIER')")
     public ResponseEntity<TransportResponse> updateTransport(
             @PathVariable UUID id,
             @Valid @RequestBody TransportRequest request) {
@@ -91,6 +93,7 @@ public class TransportController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('COURIER')")
     public ResponseEntity<TransportResponse> partialUpdateTransport(
             @PathVariable UUID id,
             @Valid @RequestBody TransportRequest request) {
