@@ -108,7 +108,6 @@ public class UserController {
     }
 
     @GetMapping("/public/list")
-    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UserResponse>> getPublicUsersList() {
         List<User> users = userService.getAllUsers();
         List<UserResponse> responses = users.stream()

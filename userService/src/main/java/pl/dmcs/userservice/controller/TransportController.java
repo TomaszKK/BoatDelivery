@@ -73,7 +73,6 @@ public class TransportController {
     }
 
     @PostMapping("/courier/{courierId}")
-    @PreAuthorize("hasAuthority('COURIER')")
     @Transactional
     public ResponseEntity<TransportResponse> createTransport(
             @PathVariable UUID courierId,
