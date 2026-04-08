@@ -3,12 +3,16 @@ package pl.dmcs.userservice.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import pl.dmcs.userservice.dto.request.TransportRequest;
 import pl.dmcs.userservice.dto.response.TransportResponse;
 import pl.dmcs.userservice.mapper.TransportMapper;
 import pl.dmcs.userservice.model.Transport;
 import pl.dmcs.userservice.service.TransportService;
+import pl.dmcs.userservice.service.UserService;
 import jakarta.validation.Valid;
 import jakarta.transaction.Transactional;
 
@@ -22,11 +26,26 @@ public class TransportController {
 
     private final TransportService transportService;
     private final TransportMapper transportMapper;
+    private final UserService userService;
 
     @Autowired
-    public TransportController(TransportService transportService, TransportMapper transportMapper) {
+    public TransportController(TransportService transportService, TransportMapper transportMapper, UserService userService) {
         this.transportService = transportService;
         this.transportMapper = transportMapper;
+        this.userService = userService;
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAuthority('COURIER')")
+    public ResponseEntity<TransportResponse> getMyTransport(@AuthenticationPrincipal Jwt jwt) {
+        pl.dmcs.userservice.model.User courier = userService.syncUserFromJwt(jwt);
+        List<Transport> transports = transportService.getTransportsByCourierId(courier.getId());
+        
+        if (transports == null || transports.isEmpty()) {
+            return ResponseEntity.ok(null);
+        }
+        
+        return ResponseEntity.ok(transportMapper.toResponse(transports.get(0)));
     }
 
     @GetMapping
@@ -64,6 +83,7 @@ public class TransportController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('COURIER')")
     public ResponseEntity<TransportResponse> updateTransport(
             @PathVariable UUID id,
             @Valid @RequestBody TransportRequest request) {
@@ -72,6 +92,7 @@ public class TransportController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('COURIER')")
     public ResponseEntity<TransportResponse> partialUpdateTransport(
             @PathVariable UUID id,
             @Valid @RequestBody TransportRequest request) {

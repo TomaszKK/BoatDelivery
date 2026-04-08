@@ -35,9 +35,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/internal/user/webhook/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").authenticated()
                         .requestMatchers("/api/user/public/**").permitAll()
-                        .requestMatchers("/api/transport/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
+                        .requestMatchers("/api/transport/courier/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/transport/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/transport").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(jwtAuthConverter())
@@ -61,6 +63,7 @@ public class SecurityConfig {
             public Collection<GrantedAuthority> convert(Jwt jwt) {
                 Map<String, Object> realmAccess = jwt.getClaim("realm_access");
                 if (realmAccess == null || realmAccess.isEmpty()) {
+                    System.out.println("[JwtAuthConverter] realmAccess is null or empty");
                     return Collections.emptyList();
                 }
 
@@ -69,9 +72,15 @@ public class SecurityConfig {
                     return Collections.emptyList();
                 }
 
-                return roles.stream()
-                        .map(role -> new SimpleGrantedAuthority(role.toUpperCase()))
+                Collection<GrantedAuthority> authorities = roles.stream()
+                        .map(role -> {
+                            String upperRole = role.toUpperCase();
+                            System.out.println("[JwtAuthConverter] Converting role: " + role + " -> " + upperRole);
+                            return new SimpleGrantedAuthority(upperRole);
+                        })
                         .collect(Collectors.toList());
+
+                return authorities;
             }
         });
         return converter;

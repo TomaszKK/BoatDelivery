@@ -8,26 +8,37 @@ export const useUsers = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchUsers = async () => {
       setLoading(true);
       setError(null);
       try {
         const response = await api.getAllUsers();
-        setUsers(response.data || []);
+        if (isMounted) {
+          setUsers(response.data || []);
+        }
       } catch (err: unknown) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Nie udało się pobrać użytkowników";
-          err instanceof Error
-            ? err.message
-            : "Nie udało się pobrać użytkowników";
-        setError(errorMessage);
-        console.error("Error fetching users:", err);
+        if (isMounted) {
+          const errorMessage =
+            err instanceof Error
+              ? err.message
+              : "Nie udało się pobrać użytkowników";
+          setError(errorMessage);
+          console.error("Error fetching users:", err);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchUsers();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return { users, loading, error };

@@ -44,12 +44,13 @@ import {
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t, i18n } = useTranslation();
-  const navigate = useNavigate(); // Hook do nawigacji z kodu
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   
   const { keycloak } = useKeycloak();
   const { isCustomer, isCourier, isAdmin } = useUserRoles();
   const isLogged = keycloak.isLogged;
+
 
   // Wyciąganie nazwy usera
   const tokenParsed = (keycloak as any)?.tokenParsed;
@@ -123,6 +124,11 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                             <PackageIcon className="h-5 w-5" /> {t("myShipments")}
                           </Link>
                         </SheetClose>
+                        <SheetClose asChild>
+                          <Link to={Pathnames.customer.profile} className="hover:text-primary flex items-center gap-2">
+                            <UsersIcon className="h-5 w-5" /> {t("myProfile") || "Mój profil"}
+                          </Link>
+                        </SheetClose>
                       </>
                     )}
 
@@ -136,6 +142,11 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                         <SheetClose asChild>
                           <Link to={Pathnames.courier.deliveries} className="hover:text-primary flex items-center gap-2">
                             <TruckIcon className="h-5 w-5" /> {t("activeDeliveries")}
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link to={Pathnames.customer.profile} className="hover:text-primary flex items-center gap-2">
+                            <UsersIcon className="h-5 w-5" /> {t("myProfile") || "Mój profil"}
                           </Link>
                         </SheetClose>
                       </>
@@ -182,7 +193,6 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
               
               {isLogged && isCustomer && (
                 <>
-                  {/* Zamiast zagnieżdżać Button w Link, używamy onClick + navigate */}
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.track)}>
@@ -198,6 +208,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent><p>{t("myShipments")}</p></TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.profile)}>
+                        <UsersIcon className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{t("myProfile") || "Mój profil"}</p></TooltipContent>
                   </Tooltip>
                 </>
               )}
@@ -219,6 +237,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent><p>{t("activeDeliveries")}</p></TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.profile)}>
+                        <UsersIcon className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{t("myProfile") || "Mój profil"}</p></TooltipContent>
                   </Tooltip>
                 </>
               )}
@@ -265,6 +291,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
             </DropdownMenu>
 
             <ModeToggle />
+            
+            <div className="bg-border mx-2 h-6 w-px"></div>
+            
             <AuthButtons />
           </div>
         </div>

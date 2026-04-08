@@ -23,6 +23,7 @@ interface KeycloakContextType {
   register: () => void;
   logout: () => void;
   updatePassword: () => void;
+  refreshToken: () => Promise<void>;
   isLogged: boolean;
 }
 
@@ -97,7 +98,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
               } else {
                   localStorage.removeItem("accessToken");
               }
-            } catch (e) {
+            } catch {
               // Ignore decode error
             }
           }
@@ -189,6 +190,31 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, []);
 
+  const refreshToken = useCallback(async () => {
+    try {
+      const instance = initKeycloakInstance();
+      if (instance.isTokenExpired(5)) {
+        // Token wygaśnie za mniej niż 5 sekund, odśwież go
+        await instance.updateToken(30);
+      } else {
+        // Wymuś refresh nawet jeśli token jeszcze nie wygasł
+        await instance.updateToken(-1);
+      }
+      
+      if (instance.token) {
+        localStorage.setItem("accessToken", instance.token);
+        setKeycloak({
+          isLogged: true,
+          token: instance.token,
+          user: instance.tokenParsed as KeycloakUser,
+          realmAccess: instance.realmAccess,
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+    }
+  }, []);
+
   const contextValue: KeycloakContextType = {
     keycloak,
     isInitialized,
@@ -196,6 +222,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     register,
     logout,
     updatePassword,
+    refreshToken,
     isLogged: keycloak.isLogged,
   };
 
