@@ -69,11 +69,9 @@ public class SecurityConfig {
 
                 Collection<String> roles = (Collection<String>) realmAccess.get("roles");
                 if (roles == null) {
-                    System.out.println("[JwtAuthConverter] roles is null");
                     return Collections.emptyList();
                 }
 
-                System.out.println("[JwtAuthConverter] Raw roles from JWT: " + roles);
                 Collection<GrantedAuthority> authorities = roles.stream()
                         .map(role -> {
                             String upperRole = role.toUpperCase();
@@ -81,8 +79,7 @@ public class SecurityConfig {
                             return new SimpleGrantedAuthority(upperRole);
                         })
                         .collect(Collectors.toList());
-                
-                System.out.println("[JwtAuthConverter] Final authorities: " + authorities);
+
                 return authorities;
             }
         });

@@ -35,8 +35,22 @@ export const useTransport = () => {
   }, []);
 
   useEffect(() => {
-    fetchTransport();
-  }, [fetchTransport]);
+    let isMounted = true;
+    
+    fetchTransport().then(() => {
+      if (!isMounted) return;
+    }).catch((error) => {
+      console.error("Error in fetchTransport:", error);
+      if (isMounted) {
+        const errorMessage = error instanceof Error ? error.message : "Błąd podczas pobierania danych pojazdu";
+        setState({ transport: null, loading: false, error: errorMessage });
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return { ...state, refetch: fetchTransport };
 };

@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { apiForAuthenticated } from "@/api/api.config";
-import type { User, UserType } from "@/types/UserType";
+import type { UserType } from "@/types/UserType";
 
 export interface UserResponse {
   id: string;
+  keycloakId: string;
   firstName?: string;
   lastName?: string;
   email: string;
@@ -42,8 +43,22 @@ export const useProfile = () => {
   }, []);
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    let isMounted = true;
+    
+    fetchProfile().then(() => {
+      if (!isMounted) return;
+    }).catch((error) => {
+      console.error("Error in fetchProfile:", error);
+      if (isMounted) {
+        const errorMessage = error instanceof Error ? error.message : "Błąd podczas pobierania profilu";
+        setState({ user: null, loading: false, error: errorMessage });
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return { ...state, refetch: fetchProfile };
 };

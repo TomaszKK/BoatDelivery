@@ -1,8 +1,10 @@
-export enum UserType {
-  CUSTOMER = "CUSTOMER",
-  COURIER = "COURIER",
-  ADMIN = "ADMIN",
-}
+export const UserType = {
+  CUSTOMER: "CUSTOMER",
+  COURIER: "COURIER",
+  ADMIN: "ADMIN",
+} as const;
+
+export type UserType = typeof UserType[keyof typeof UserType];
 
 export interface User {
   id: string;

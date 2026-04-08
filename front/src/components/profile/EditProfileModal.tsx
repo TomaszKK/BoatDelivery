@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useProfileUpdate } from "@/hooks/useProfileUpdate";
+import { useKeycloak } from "@/hooks/useKeycloak";
 import type { User } from "@/types/UserType";
 import { Edit2, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -20,14 +21,23 @@ interface EditProfileModalProps {
 
 export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalProps) => {
   const { t } = useTranslation();
-  const { updateProfile, loading, error, success } = useProfileUpdate();
+  const { refreshToken } = useKeycloak();
+  const { updateProfile, loading, error, fieldErrors, success } = useProfileUpdate(refreshToken);
   const [open, setOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
+    email: user.email || "",
     phoneNumber: user.phoneNumber || "",
   });
+
+  // Funkcja do pobrania błędu dla konkretnego pola
+  const getFieldError = (fieldName: string): string | null => {
+    if (!fieldErrors) return null;
+    const fieldError = fieldErrors.find((fe) => fe.field === fieldName);
+    return fieldError?.message || null;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,6 +52,7 @@ export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalPro
     const updatedUser = await updateProfile({
       firstName: formData.firstName,
       lastName: formData.lastName,
+      email: formData.email,
       phoneNumber: formData.phoneNumber,
     });
 
@@ -69,6 +80,14 @@ export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalPro
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* General Error */}
+          {error && !fieldErrors && (
+            <div className="flex items-center gap-2 p-3 bg-transparent border-2 border-red-600 dark:border-red-500 rounded-md">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
+
           {/* Imię */}
           <div className="space-y-2">
             <label htmlFor="firstName" className="text-sm font-medium">
@@ -80,9 +99,19 @@ export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalPro
               type="text"
               value={formData.firstName}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md text-sm"
+              className={`w-full px-3 py-2 border-2 rounded-md text-sm transition-colors ${
+                getFieldError("firstName")
+                  ? "border-red-600 bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+                  : "border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              }`}
               placeholder={t("firstName") || "Imię"}
             />
+            {getFieldError("firstName") && (
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {getFieldError("firstName")}
+              </p>
+            )}
           </div>
 
           {/* Nazwisko */}
@@ -96,9 +125,45 @@ export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalPro
               type="text"
               value={formData.lastName}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md text-sm"
+              className={`w-full px-3 py-2 border-2 rounded-md text-sm transition-colors ${
+                getFieldError("lastName")
+                  ? "border-red-600 bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+                  : "border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              }`}
               placeholder={t("lastName") || "Nazwisko"}
             />
+            {getFieldError("lastName") && (
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {getFieldError("lastName")}
+              </p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">
+              {t("email") || "Email"}
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`w-full px-3 py-2 border-2 rounded-md text-sm transition-colors ${
+                getFieldError("email")
+                  ? "border-red-600 bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+                  : "border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              }`}
+              placeholder={t("email") || "Email"}
+            />
+            {getFieldError("email") && (
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {getFieldError("email")}
+              </p>
+            )}
           </div>
 
           {/* Telefon */}
@@ -112,23 +177,25 @@ export const EditProfileModal = ({ user, onProfileUpdated }: EditProfileModalPro
               type="tel"
               value={formData.phoneNumber}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-input rounded-md text-sm"
+              className={`w-full px-3 py-2 border-2 rounded-md text-sm transition-colors ${
+                getFieldError("phoneNumber")
+                  ? "border-red-600 bg-white dark:bg-slate-900 text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+                  : "border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              }`}
               placeholder={t("phone") || "Numer telefonu"}
             />
+            {getFieldError("phoneNumber") && (
+              <p className="text-sm font-semibold text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {getFieldError("phoneNumber")}
+              </p>
+            )}
           </div>
-
-          {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-              <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
 
           {/* Success */}
           {success && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-600">
+            <div className="p-3 bg-green-50 dark:bg-slate-900 border border-green-200 dark:border-green-600 rounded-md">
+              <p className="text-sm text-green-600 dark:text-green-400">
                 {t("profileUpdatedSuccess") || "Profil zaktualizowany pomyślnie!"}
               </p>
             </div>

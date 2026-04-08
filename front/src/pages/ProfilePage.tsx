@@ -5,7 +5,7 @@ import { useKeycloak } from "@/hooks/useKeycloak";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTranslation } from "react-i18next";
 import { LoadingSpinner } from "@/components/ui/loaderComponent";
-import { AlertCircle, Mail, Phone, Calendar, Truck, User, Users } from "lucide-react";
+import { AlertCircle, Mail, Phone, Calendar, User, Users } from "lucide-react";
 import { EditProfileModal } from "@/components/profile/EditProfileModal";
 import { CourierTransportTab } from "@/components/profile/CourierTransportTab";
 import { Button } from "@/components/ui/button";

@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * Serwis do synchronizacji danych użytkownika z Keycloakiem
- * Wysyła aktualizacje imienia, nazwiska i numeru telefonu do Keycloaka
+ * Wysyła aktualizacje imienia, nazwiska, emaila i numeru telefonu do Keycloaka
  */
 @Service
 public class KeycloakSyncService {
@@ -47,7 +47,7 @@ public class KeycloakSyncService {
 
     /**
      * Synchronizuje dane użytkownika z User-Service do Keycloaka
-     * Aktualizuje: firstName, lastName, attributes (phoneNumber)
+     * Aktualizuje: firstName, lastName, email, attributes (phoneNumber)
      */
     public void syncUserToKeycloak(User user) {
         if (!syncEnabled) {
@@ -79,6 +79,7 @@ public class KeycloakSyncService {
             Map<String, Object> updateData = new HashMap<>();
             updateData.put("firstName", user.getFirstName() != null ? user.getFirstName() : "");
             updateData.put("lastName", user.getLastName() != null ? user.getLastName() : "");
+            updateData.put("email", user.getEmail() != null ? user.getEmail() : "");
 
             // Telefon jako attribute
             Map<String, Object> attributes = new HashMap<>();
