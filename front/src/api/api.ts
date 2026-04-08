@@ -1,6 +1,6 @@
 import { apiForAuthenticated, apiForAnon } from "./api.config";
 import type { ApiResponseType } from "@/types/ApiResponseType";
-import type { OrderResponseDTO } from "@/types/OrderType";
+import type { OrderResponseDTO, TrackedOrder } from "@/types/OrderType";
 import type { User } from "@/types/UserType";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
 
@@ -19,6 +19,10 @@ export const api = {
     trackingNumber: string,
   ): ApiResponseType<OrderResponseDTO> =>
     apiForAuthenticated.get(`/orders/tracking/${trackingNumber}`),
+  getMininalizedOrderByTrackingNumber: (
+    trackingNumber: string,
+  ): ApiResponseType<TrackedOrder> =>
+    apiForAnon.get(`/orders/tracking/minimalized/${trackingNumber}`),
 
   getAlgorithm: () =>
     apiForAuthenticated.get<{ currentAlgorithm: string }>(

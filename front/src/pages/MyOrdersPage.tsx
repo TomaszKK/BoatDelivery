@@ -20,12 +20,12 @@ import { Plus, Package, MapPin, Calendar, Inbox } from "lucide-react";
 
 export const MyOrdersPage = () => {
   const { t } = useTranslation();
-  const { orders, getAllOrders } = useOrder();
+  const { orders, getMineOrders } = useOrder();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getAllOrders();
+    getMineOrders();
   }, []);
 
   return (

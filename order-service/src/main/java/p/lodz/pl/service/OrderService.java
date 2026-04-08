@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import p.lodz.pl.dto.OrderMinimalizedResponseDTO;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
 import p.lodz.pl.dto.maps.HerePosition;
@@ -75,6 +76,13 @@ public class OrderService {
 
         verifyOwnership(order);
         return orderMapper.toDto(order);
+    }
+
+    public OrderMinimalizedResponseDTO getOrderByTrackingNumberMinimalized(String trackingNumber) {
+        Order order = Order.<Order>find("trackingNumber", trackingNumber).firstResultOptional()
+                .orElseThrow(() -> new ResourceNotFoundException("Order with tracking number " + trackingNumber + " not found"));
+        verifyOwnership(order);
+        return orderMapper.toMinimalizedDto(order);
     }
 
     public OrderResponseDTO getOrderByTrackingNumber(String trackingNumber) {

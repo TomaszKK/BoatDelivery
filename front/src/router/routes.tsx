@@ -6,6 +6,7 @@ import { Pathnames } from "./pathnames";
 import { OrderDetailsPage } from "@/pages/OrderDetailsPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
 import { CourierRoutePage } from "@/pages/CourierRoutePage";
+import { HomePage } from "@/pages/HomePage";
 
 export type RouteType = {
   path: string;
@@ -16,7 +17,7 @@ export type RouteType = {
 export const publicRoutes: RouteType[] = [
   {
     path: Pathnames.customer.home, 
-    Component: () => <PlaceholderPage title="Strona Główna" />,
+    Component: HomePage,
   },
   {
     path: Pathnames.public.error,

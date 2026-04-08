@@ -78,6 +78,12 @@ public class OrderController {
         return Response.ok(orderService.getOrderByTrackingNumber(trackingNumber)).build();
     }
 
+    @GET
+    @Path("/tracking/minimalized/{trackingNumber}")
+    public Response getOrderMinimalized(@PathParam("trackingNumber") String trackingNumber) {
+        return Response.ok(orderService.getOrderByTrackingNumberMinimalized(trackingNumber)).build();
+    }
+
     @PUT
     @Path("/{id}")
     @RolesAllowed({"ADMIN", "CUSTOMER"})

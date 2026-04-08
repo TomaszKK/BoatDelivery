@@ -156,5 +156,20 @@
       "HYBRID": "Hybrydowe",
       "LPG": "LPG"
     }
+  },
+  "home": {
+    "welcomeTo": "Witamy w",
+    "heroDescription": "Prosta, szybka i bezpieczna dostawa paczek. Zarządzaj zamówieniami i trasami w jednym miejscu.",
+    "enterTracking": "Wpisz numer paczki (np. BD-TEST-0022)...",
+    "trackButton": "Śledź",
+    "trackingFailed": "Nie znaleziono paczki o podanym numerze.",
+    "packageStatus": "Status paczki",
+    "destination": "Cel",
+    "routeDetails": "Szczegóły trasy",
+    "registerAction": "Zarejestruj się",
+    "loginAction": "Zaloguj się",
+    "cardCreateOrders": "Twórz Zamówienia w Sekundy",
+    "cardTrackRealtime": "Śledź Dostawę w Czasie Rzeczywistym",
+    "cardManageRoutes": "Zarządzaj Trasami i Kurierami"
   }
 }

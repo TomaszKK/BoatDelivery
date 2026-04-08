@@ -122,7 +122,6 @@
   "firstName": "First Name",
   "lastName": "Last Name",
   "changePassword": "Change Password",
-  "cancel": "Cancel",
   "save": "Save",
   "saving": "Saving...",
   "profileUpdatedSuccess": "Profile updated successfully!",
@@ -157,5 +156,20 @@
       "HYBRID": "Hybrid",
       "LPG": "LPG"
     }
+  },
+  "home": {
+    "welcomeTo": "Welcome to",
+    "heroDescription": "Simple, fast, and secure parcel delivery. Manage your orders and routes all in one place.",
+    "enterTracking": "Enter tracking number (e.g., BD-TEST-0022)...",
+    "trackButton": "Track",
+    "trackingFailed": "Could not find a package with the provided tracking number.",
+    "packageStatus": "Package status",
+    "destination": "Destination",
+    "routeDetails": "Route details",
+    "registerAction": "Sign Up",
+    "loginAction": "Log In",
+    "cardCreateOrders": "Create Orders in Seconds",
+    "cardTrackRealtime": "Track Deliveries in Real-Time",
+    "cardManageRoutes": "Manage Routes and Couriers"
   }
 }
