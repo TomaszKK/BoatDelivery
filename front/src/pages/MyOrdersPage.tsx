@@ -4,7 +4,6 @@ import { useOrder } from "@/hooks/useOrder";
 import { OrderFormModal } from "@/components/OrderFormModal";
 import { useNavigate } from "react-router-dom";
 
-// Importy komponentów Shadcn UI
 import {
   Card,
   CardContent,
@@ -15,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-// Importy ikon Lucide
 import { Plus, Package, MapPin, Calendar, Inbox } from "lucide-react";
 
 export const MyOrdersPage = () => {

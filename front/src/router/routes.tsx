@@ -21,7 +21,11 @@ export const publicRoutes: RouteType[] = [
   },
   {
     path: Pathnames.public.error,
-    Component: () => <h1 className="text-2xl font-bold text-center mt-20">404 - Page Not Found</h1>,
+    Component: () => (
+      <h1 className="mt-20 text-center text-2xl font-bold">
+        404 - Page Not Found
+      </h1>
+    ),
   },
 ];
 
@@ -48,7 +52,7 @@ export const courierRoutes: RouteType[] = [
   {
     path: Pathnames.courier.route,
     Component: CourierRoutePage,
-  }
+  },
 ];
 
 export const adminRoutes: RouteType[] = [

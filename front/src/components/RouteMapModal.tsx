@@ -18,7 +18,8 @@ type Props = {
 export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
   const { t } = useTranslation();
   const mapRef = useRef<google.maps.Map | null>(null);
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [directions, setDirections] =
+    useState<google.maps.DirectionsResult | null>(null);
 
   // Przetwarzanie punktów trasy
   const stopsData = useMemo(() => {
@@ -27,8 +28,14 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
       .sort((a, b) => a.stopSequence - b.stopSequence)
       .map((stop, index) => {
         const order = stop.order;
-        const isPickup = ["CALCULATING_ROUTE_RECEIVE", "ROUTE_ASSIGNED_RECEIVE", "IN_TRANSIT_FOR_PACKAGE"].includes(order.status);
-        const location = isPickup ? order.pickupLocation : order.deliveryLocation;
+        const isPickup = [
+          "CALCULATING_ROUTE_RECEIVE",
+          "ROUTE_ASSIGNED_RECEIVE",
+          "IN_TRANSIT_FOR_PACKAGE",
+        ].includes(order.status);
+        const location = isPickup
+          ? order.pickupLocation
+          : order.deliveryLocation;
         return {
           id: stop.id,
           sequence: index + 1,
@@ -39,16 +46,18 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
       });
   }, [route]);
 
-  // Pobieranie trasy drogowej z Google Directions API
   useEffect(() => {
     if (isOpen && stopsData.length >= 2) {
       const directionsService = new google.maps.DirectionsService();
 
       const origin = { lat: stopsData[0].lat, lng: stopsData[0].lng };
-      const destination = { lat: stopsData[stopsData.length - 1].lat, lng: stopsData[stopsData.length - 1].lng };
-      const waypoints = stopsData.slice(1, -1).map(stop => ({
+      const destination = {
+        lat: stopsData[stopsData.length - 1].lat,
+        lng: stopsData[stopsData.length - 1].lng,
+      };
+      const waypoints = stopsData.slice(1, -1).map((stop) => ({
         location: { lat: stop.lat, lng: stop.lng },
-        stopover: true
+        stopover: true,
       }));
 
       directionsService.route(
@@ -64,16 +73,16 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
           } else {
             console.error(`error fetching directions ${result}`);
           }
-        }
+        },
       );
     }
   }, [isOpen, stopsData]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-11/12 h-[85vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="flex h-[85vh] w-11/12 max-w-4xl flex-col overflow-hidden p-0">
         <DialogHeader className="p-6 pb-2">
-          <DialogTitle className="text-2xl flex items-center justify-between">
+          <DialogTitle className="flex items-center justify-between text-2xl">
             <span>{t("courier.routeMapTitle")}</span>
             <span className="text-muted-foreground text-sm font-normal">
               {stopsData.length} {t("courier.stopsCount")}
@@ -81,27 +90,29 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 relative border-t border-b">
+        <div className="relative flex-1 border-t border-b">
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}
-            onLoad={(map) => { mapRef.current = map; }}
+            onLoad={(map) => {
+              mapRef.current = map;
+            }}
             options={{
               streetViewControl: false,
               mapTypeControl: false,
-              fullscreenControl: false
+              fullscreenControl: false,
             }}
           >
             {directions && (
-              <DirectionsRenderer 
-                directions={directions} 
+              <DirectionsRenderer
+                directions={directions}
                 options={{
-                  suppressMarkers: true, // Sami rysujemy markery z numerkami
+                  suppressMarkers: true,
                   polylineOptions: {
                     strokeColor: "#2563eb",
                     strokeWeight: 5,
-                    strokeOpacity: 0.7
-                  }
-                }} 
+                    strokeOpacity: 0.7,
+                  },
+                }}
               />
             )}
 
@@ -119,13 +130,13 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
           </GoogleMap>
         </div>
 
-        <div className="p-4 flex gap-6 text-sm text-muted-foreground justify-center bg-card">
-           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+        <div className="text-muted-foreground bg-card flex justify-center gap-6 p-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="h-3 w-3 rounded-full bg-blue-600"></div>
             <span>{t("courier.drivingPath")}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full border-2 border-primary bg-background"></div>
+            <div className="border-primary bg-background h-3 w-3 rounded-full border-2"></div>
             <span>{t("courier.stops")}</span>
           </div>
         </div>

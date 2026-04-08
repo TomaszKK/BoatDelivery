@@ -39,7 +39,7 @@ import {
   LayoutDashboardIcon,
   UsersIcon,
   MapPinIcon,
-  Settings2
+  Settings2,
 } from "lucide-react";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
