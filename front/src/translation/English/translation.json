@@ -1,5 +1,17 @@
 {
   "allRightsReserved": "All rights reserved.",
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "actions": "Actions",
+    "confirmDelete": "Confirm Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "select": "Select"
+  },
   "polish": "Polish",
   "english": "English",
   "login": "Login",
@@ -26,8 +38,8 @@
   "email": "Email",
   "phone": "Phone",
   "accountCreated": "Account Created",
-  "cancel": "Cancel",
   "loadingMap": "Loading map...",
+  "edit": "Edit",
   "orders": {
     "weightInfo": "Weight (kg)",
     "to": "To",
@@ -89,7 +101,34 @@
       "phoneNumber": "Phone",
       "createdAt": "Created At",
       "totalUsers": "Total Users",
-      "title": "Manage Users"
+      "title": "Manage Users",
+      "noUsers": "No users",
+      "customers": "Customers",
+      "couriers": "Couriers",
+      "customersDesc": "List of all registered customers",
+      "couriersDesc": "List of all registered couriers",
+      "manageDesc": "Manage system users, add, edit and delete accounts",
+      "filterByFirstName": "Search by first name...",
+      "filterByLastName": "Search by last name...",
+      "filterByEmail": "Search by email...",
+      "filterByPhone": "Search by phone...",
+      "deleteWarning": "Are you sure you want to delete this user",
+      "deleteWarningDetails": "? This action cannot be undone."
+    },
+    "transport": {
+      "title": "Vehicles",
+      "desc": "List of all vehicles in the system",
+      "add": "Add vehicle",
+      "courier": "Courier",
+      "noAssigned": "None",
+      "noTransports": "No vehicles",
+      "totalTransports": "Total vehicles",
+      "filterByBrand": "Search by brand...",
+      "filterByFuel": "Search by fuel...",
+      "allTypes": "All types",
+      "deleteWarning": "Are you sure you want to delete this vehicle",
+      "deleteWarningDetails": "? This action cannot be undone.",
+      "assignCourier": "Assign courier..."
     }
   },
   "courier": {
@@ -116,17 +155,14 @@
   "routeStartedSuccess": "Route started successfully!",
   "routeStartedError": "Failed to start route. Please try again."
   },
-  "edit": "Edit",
   "editProfile": "Edit Profile",
   "editProfileDesc": "Update your profile information",
   "firstName": "First Name",
   "lastName": "Last Name",
   "changePassword": "Change Password",
-  "cancel": "Cancel",
   "save": "Save",
   "saving": "Saving...",
   "profileUpdatedSuccess": "Profile updated successfully!",
-  "loading": "Loading...",
   "roles": {
     "admin": "Administrator",
     "courier": "Courier",

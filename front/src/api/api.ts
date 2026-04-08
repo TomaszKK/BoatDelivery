@@ -2,6 +2,7 @@ import { apiForAuthenticated, apiForAnon } from "./api.config";
 import type { ApiResponseType } from "@/types/ApiResponseType";
 import type { OrderResponseDTO } from "@/types/OrderType";
 import type { User } from "@/types/UserType";
+import type { Transport } from "@/types/TransportType";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
 
 export interface PaymentSessionResponse {
@@ -57,4 +58,25 @@ export const api = {
     ),
 
   getAllUsers: (): ApiResponseType<User[]> => apiForAuthenticated.get("/user"),
+
+  deleteUser: (userId: string): ApiResponseType<void> =>
+    apiForAuthenticated.delete(`/user/${userId}`),
+
+  getAllTransports: (): ApiResponseType<Transport[]> =>
+    apiForAuthenticated.get("/transport"),
+
+  getTransportById: (id: string): ApiResponseType<Transport> =>
+    apiForAuthenticated.get(`/transport/${id}`),
+
+  createTransport: (courierId: string, data: any): ApiResponseType<Transport> =>
+    apiForAuthenticated.post(`/transport/courier/${courierId}`, data),
+
+  updateTransport: (id: string, data: any): ApiResponseType<Transport> =>
+    apiForAuthenticated.put(`/transport/${id}`, data),
+
+  deleteTransport: (id: string): ApiResponseType<void> =>
+    apiForAuthenticated.delete(`/transport/${id}`),
+
+  getAvailableCouriers: (): ApiResponseType<User[]> =>
+    apiForAuthenticated.get("/user"),
 };

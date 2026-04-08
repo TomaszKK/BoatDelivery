@@ -8,7 +8,13 @@ export enum TransportType {
 
 export interface Transport {
   id: string;
-  courierId: string;
+  courierId?: string;
+  courier?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
   transportType: TransportType;
   brand: string;
   model: string;
@@ -18,5 +24,7 @@ export interface Transport {
   consumption?: number;
   licensePlate?: string;
   color?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 

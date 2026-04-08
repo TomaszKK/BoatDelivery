@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import Keycloak, { type KeycloakTokenParsed } from "keycloak-js";
+import { setKeycloakInstance } from "../api/api.config";
 
 interface KeycloakUser extends KeycloakTokenParsed {
   name?: string;
@@ -55,6 +56,9 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const initKeycloak = async () => {
       try {
         const instance = initKeycloakInstance();
+
+        // Ustaw instancję w api.config dla obsługi 401
+        setKeycloakInstance(instance);
 
         // ==========================================
         // Automatyczne odświeżanie tokena!

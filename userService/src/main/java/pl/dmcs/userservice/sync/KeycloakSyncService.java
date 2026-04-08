@@ -15,6 +15,7 @@ import pl.dmcs.userservice.model.User;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Serwis do synchronizacji danych użytkownika z Keycloakiem
@@ -111,6 +112,62 @@ public class KeycloakSyncService {
             log.error("Błąd podczas synchronizacji użytkownika do Keycloaka: {}", e.getMessage(), e);
         } catch (Exception e) {
             log.error("Nieoczekiwany błąd podczas synchronizacji do Keycloaka: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Usuwa użytkownika z Keycloaka
+     */
+    public void deleteUserFromKeycloak(UUID userId) {
+        if (!syncEnabled) {
+            log.debug("Synchronizacja do Keycloaka wyłączona - usuwanie z Keycloaka pominięte");
+            return;
+        }
+
+        if (userId == null) {
+            log.warn("Nie można usunąć użytkownika z Keycloaka: null ID");
+            return;
+        }
+
+        try {
+            log.info("Usuwanie użytkownika z Keycloaka: {}", userId);
+
+            String token = keycloakAdminClient.getAdminToken();
+            if (token == null || token.isEmpty()) {
+                log.error("Nie udało się pobrać tokenu admin z Keycloaka");
+                return;
+            }
+
+            String deleteUrl = String.format(
+                    "%s/admin/realms/%s/users/%s",
+                    keycloakUrl,
+                    keycloakRealm,
+                    userId
+            );
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(token);
+            headers.set("Content-Type", "application/json");
+
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+            ResponseEntity<Void> response = restTemplate.exchange(
+                    deleteUrl,
+                    HttpMethod.DELETE,
+                    requestEntity,
+                    Void.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Pomyślnie usunięto użytkownika {} z Keycloaka", userId);
+            } else {
+                log.error("Błąd usuwania użytkownika z Keycloaka. Status: {}", response.getStatusCode());
+            }
+
+        } catch (RestClientException e) {
+            log.error("Błąd podczas usuwania użytkownika z Keycloaka: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Nieoczekiwany błąd podczas usuwania z Keycloaka: {}", e.getMessage(), e);
         }
     }
 }

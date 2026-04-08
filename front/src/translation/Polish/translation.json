@@ -1,5 +1,17 @@
 {
   "allRightsReserved": "Wszystkie prawa zastrzeżone.",
+  "common": {
+    "loading": "Ładowanie...",
+    "error": "Błąd",
+    "delete": "Usuń",
+    "deleting": "Usuwanie...",
+    "actions": "Akcje",
+    "confirmDelete": "Potwierdzenie usunięcia",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "close": "Zamknij",
+    "select": "Wybierz"
+  },
   "polish": "Polski",
   "english": "Angielski",
   "login": "Zaloguj się",
@@ -32,7 +44,6 @@
   "firstName": "Imię",
   "lastName": "Nazwisko",
   "changePassword": "Zmień hasło",
-  "cancel": "Anuluj",
   "save": "Zapisz",
   "saving": "Zapisywanie...",
   "profileUpdatedSuccess": "Profil został zaktualizowany pomyślnie!",
@@ -98,7 +109,34 @@
       "phoneNumber": "Telefon",
       "createdAt": "Utworzono",
       "totalUsers": "Łączna liczba użytkowników",
-      "title": "Zarządzaj użytkownikami"
+      "title": "Zarządzaj użytkownikami",
+      "noUsers": "Brak użytkowników",
+      "customers": "Klienci",
+      "couriers": "Kurierzy",
+      "customersDesc": "Lista wszystkich zarejestrowanych klientów",
+      "couriersDesc": "Lista wszystkich zarejestrowanych kurierów",
+      "manageDesc": "Zarządzaj użytkownikami systemu, dodawaj, edytuj i usuwaj konta",
+      "filterByFirstName": "Szukaj po imieniu...",
+      "filterByLastName": "Szukaj po nazwisku...",
+      "filterByEmail": "Szukaj po emailu...",
+      "filterByPhone": "Szukaj po telefonie...",
+      "deleteWarning": "Czy na pewno chcesz usunąć tego użytkownika",
+      "deleteWarningDetails": "? Ta operacja nie może być cofnięta."
+    },
+    "transport": {
+      "title": "Pojazdy",
+      "desc": "Lista wszystkich pojazdów w systemie",
+      "add": "Dodaj pojazd",
+      "courier": "Kurier",
+      "noAssigned": "Brak",
+      "noTransports": "Brak pojazdów",
+      "totalTransports": "Razem pojazdów",
+      "filterByBrand": "Szukaj po marce...",
+      "filterByFuel": "Szukaj po paliwie...",
+      "allTypes": "Wszystkie typy",
+      "deleteWarning": "Czy na pewno chcesz usunąć ten pojazd",
+      "deleteWarningDetails": "? Ta operacja nie może być cofnięta.",
+      "assignCourier": "Przypisz kuriera..."
     }
   },
   "courier": {
@@ -125,7 +163,6 @@
   "routeStartedSuccess": "Trasa rozpoczęta pomyślnie!",
   "routeStartedError": "Nie można rozpocząć trasy. Proszę spróbować ponownie."
   },
- "loading": "Ładowanie...",
  "roles": {
     "admin": "Administrator",
     "courier": "Kurier",
