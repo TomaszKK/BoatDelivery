@@ -27,36 +27,35 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-  SheetClose, // Dodano SheetClose do automatycznego zamykania menu mobilnego
+  SheetClose,
 } from "@/components/ui/sheet";
 import { Toaster } from "@/components/ui/sonner";
 
 import {
   LanguagesIcon,
   MenuIcon,
-  TruckIcon,
   PackageSearchIcon,
   PackageIcon,
   LayoutDashboardIcon,
   UsersIcon,
   MapPinIcon,
+  Settings2,
 } from "lucide-react";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
-  
+
   const { keycloak } = useKeycloak();
   const { isCustomer, isCourier, isAdmin } = useUserRoles();
   const isLogged = keycloak.isLogged;
-
 
   // Wyciąganie nazwy usera
   const tokenParsed = (keycloak as any)?.tokenParsed;
   const username =
     tokenParsed?.preferred_username || tokenParsed?.given_name || "Użytkownik";
-  
+
   // Dynamiczne ustalenie tekstu roli
   let activeRoleLabel = "customer";
   if (isAdmin) activeRoleLabel = "admin";
@@ -86,12 +85,15 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4">
-            
             {/* MENU MOBILNE */}
             <div className="lg:hidden">
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hover:text-primary">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hover:text-primary"
+                  >
                     <MenuIcon className="h-6 w-6" />
                   </Button>
                 </SheetTrigger>
@@ -104,7 +106,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                   <nav className="mt-8 flex flex-col space-y-4">
                     {isLogged && (
                       <div className="border-b pb-4">
-                        <p className="text-muted-foreground text-sm">{t("loggedAs")}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {t("loggedAs")}
+                        </p>
                         {/* Poprawiona składnia dla roli */}
                         <p className="font-medium">
                           {username} ({t(`roles.${activeRoleLabel}`)})
@@ -115,18 +119,30 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     {isLogged && isCustomer && (
                       <>
                         <SheetClose asChild>
-                          <Link to={Pathnames.customer.track} className="hover:text-primary flex items-center gap-2">
-                            <PackageSearchIcon className="h-5 w-5" /> {t("trackPackage")}
+                          <Link
+                            to={Pathnames.customer.track}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <PackageSearchIcon className="h-5 w-5" />{" "}
+                            {t("trackPackage")}
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
-                          <Link to={Pathnames.customer.orders} className="hover:text-primary flex items-center gap-2">
-                            <PackageIcon className="h-5 w-5" /> {t("myShipments")}
+                          <Link
+                            to={Pathnames.customer.orders}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <PackageIcon className="h-5 w-5" />{" "}
+                            {t("myShipments")}
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
-                          <Link to={Pathnames.customer.profile} className="hover:text-primary flex items-center gap-2">
-                            <UsersIcon className="h-5 w-5" /> {t("myProfile") || "Mój profil"}
+                          <Link
+                            to={Pathnames.customer.profile}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <UsersIcon className="h-5 w-5" />{" "}
+                            {t("myProfile") || "Mój profil"}
                           </Link>
                         </SheetClose>
                       </>
@@ -135,18 +151,20 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     {isLogged && isCourier && (
                       <>
                         <SheetClose asChild>
-                          <Link to={Pathnames.courier.route} className="hover:text-primary flex items-center gap-2">
+                          <Link
+                            to={Pathnames.courier.route}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
                             <MapPinIcon className="h-5 w-5" /> {t("myRoute")}
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
-                          <Link to={Pathnames.courier.deliveries} className="hover:text-primary flex items-center gap-2">
-                            <TruckIcon className="h-5 w-5" /> {t("activeDeliveries")}
-                          </Link>
-                        </SheetClose>
-                        <SheetClose asChild>
-                          <Link to={Pathnames.customer.profile} className="hover:text-primary flex items-center gap-2">
-                            <UsersIcon className="h-5 w-5" /> {t("myProfile") || "Mój profil"}
+                          <Link
+                            to={Pathnames.customer.profile}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <UsersIcon className="h-5 w-5" />{" "}
+                            {t("myProfile") || "Mój profil"}
                           </Link>
                         </SheetClose>
                       </>
@@ -155,12 +173,19 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     {isLogged && isAdmin && (
                       <>
                         <SheetClose asChild>
-                          <Link to={Pathnames.admin.dashboard} className="hover:text-primary flex items-center gap-2">
-                            <LayoutDashboardIcon className="h-5 w-5" /> {t("dashboard")}
+                          <Link
+                            to={Pathnames.admin.dashboard}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <LayoutDashboardIcon className="h-5 w-5" />{" "}
+                            {t("dashboard")}
                           </Link>
                         </SheetClose>
                         <SheetClose asChild>
-                          <Link to={Pathnames.admin.accounts} className="hover:text-primary flex items-center gap-2">
+                          <Link
+                            to={Pathnames.admin.accounts}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
                             <UsersIcon className="h-5 w-5" /> {t("manageUsers")}
                           </Link>
                         </SheetClose>
@@ -179,7 +204,13 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
             {/* LOGO (Automatycznie kieruje na dedykowany Home w zaleznosci od roli) */}
             <Link
-              to={isAdmin ? Pathnames.admin.dashboard : isCourier ? Pathnames.courier.route : Pathnames.customer.home}
+              to={
+                isAdmin
+                  ? Pathnames.admin.home
+                  : isCourier
+                    ? Pathnames.courier.route
+                    : Pathnames.customer.home
+              }
               className="text-primary flex items-center gap-2 text-2xl font-bold tracking-tight transition-opacity hover:opacity-80"
             >
               <BdLogo className="h-20 w-20" />
@@ -190,32 +221,49 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           {/* NAWIGACJA DESKTOPOWA */}
           <div className="hidden items-center gap-6 lg:flex">
             <TooltipProvider delayDuration={200}>
-              
               {isLogged && isCustomer && (
                 <>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.track)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.customer.track)}
+                      >
                         <PackageSearchIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("trackPackage")}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("trackPackage")}</p>
+                    </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.orders)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.customer.orders)}
+                      >
                         <PackageIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("myShipments")}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("myShipments")}</p>
+                    </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.profile)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.customer.profile)}
+                      >
                         <UsersIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("myProfile") || "Mój profil"}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("myProfile") || "Mój profil"}</p>
+                    </TooltipContent>
                   </Tooltip>
                 </>
               )}
@@ -224,27 +272,31 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 <>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.courier.route)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.courier.route)}
+                      >
                         <MapPinIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("myRoute")}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("myRoute")}</p>
+                    </TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.courier.deliveries)}>
-                        <TruckIcon className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>{t("activeDeliveries")}</p></TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.customer.profile)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.customer.profile)}
+                      >
                         <UsersIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("myProfile") || "Mój profil"}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("myProfile") || "Mój profil"}</p>
+                    </TooltipContent>
                   </Tooltip>
                 </>
               )}
@@ -253,19 +305,48 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 <>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.admin.dashboard)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.admin.dashboard)}
+                      >
                         <LayoutDashboardIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("dashboard")}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("admin.dashboardTitle")}</p>
+                    </TooltipContent>
                   </Tooltip>
+
+                  {/* Dodana ikonka dla Algorytmów */}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => navigate(Pathnames.admin.accounts)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.admin.routing)}
+                      >
+                        <Settings2 className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("admin.routingSettings")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.admin.accounts)}
+                      >
                         <UsersIcon className="h-5 w-5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{t("manageUsers")}</p></TooltipContent>
+                    <TooltipContent>
+                      <p>{t("manageUsers")}</p>
+                    </TooltipContent>
                   </Tooltip>
                 </>
               )}
@@ -281,19 +362,25 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onClickLanguageChange("pl")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => onClickLanguageChange("pl")}
+                  className="cursor-pointer"
+                >
                   {t("polish")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onClickLanguageChange("en")} className="cursor-pointer">
+                <DropdownMenuItem
+                  onClick={() => onClickLanguageChange("en")}
+                  className="cursor-pointer"
+                >
                   {t("english")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <ModeToggle />
-            
+
             <div className="bg-border mx-2 h-6 w-px"></div>
-            
+
             <AuthButtons />
           </div>
         </div>
@@ -305,7 +392,8 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
       <footer className="bg-muted/40 border-t py-6 text-center">
         <p className="text-muted-foreground text-sm">
-          &copy; {new Date().getFullYear()} BoatDelivery. {t("allRightsReserved")}
+          &copy; {new Date().getFullYear()} BoatDelivery.{" "}
+          {t("allRightsReserved")}
         </p>
       </footer>
     </div>

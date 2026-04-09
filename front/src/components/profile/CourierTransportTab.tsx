@@ -1,7 +1,16 @@
 import { useTransport } from "@/hooks/useTransport";
 import { useTranslation } from "react-i18next";
 import { LoadingSpinner } from "@/components/ui/loaderComponent";
-import { AlertCircle, Truck, Fuel, Weight, Package, Palette, Gauge, Zap } from "lucide-react";
+import {
+  AlertCircle,
+  Truck,
+  Fuel,
+  Weight,
+  Package,
+  Palette,
+  Gauge,
+  Zap,
+} from "lucide-react";
 import { TransportType } from "@/types/TransportType";
 
 const getTransportTypeLabel = (type: TransportType, t: any): string => {
@@ -61,12 +70,11 @@ export const CourierTransportTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border bg-card p-6">
-
+      <div className="bg-card rounded-lg border p-6">
         <div className="grid gap-6 md:grid-cols-2">
           {/* Typ i Marka */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
               <Truck className="h-4 w-4" />
               {t("transport.type")}
             </label>
@@ -76,7 +84,7 @@ export const CourierTransportTab = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
               <Package className="h-4 w-4" />
               {t("transport.brand")}
             </label>
@@ -85,7 +93,7 @@ export const CourierTransportTab = () => {
 
           {/* Model */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
               <Gauge className="h-4 w-4" />
               {t("transport.model")}
             </label>
@@ -94,7 +102,7 @@ export const CourierTransportTab = () => {
 
           {/* Tablica rejestracyjna */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
               <Zap className="h-4 w-4" />
               {t("transport.licensePlate")}
             </label>
@@ -105,7 +113,7 @@ export const CourierTransportTab = () => {
 
           {/* Kolor */}
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
               <Palette className="h-4 w-4" />
               {t("transport.color")}
             </label>
@@ -123,18 +131,20 @@ export const CourierTransportTab = () => {
           {/* Typ paliwa */}
           {transport.fuelType && (
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
                 <Fuel className="h-4 w-4" />
                 {t("transport.fuelType")}
               </label>
-              <p className="text-lg font-medium">{getFuelTypeLabel(transport.fuelType, t)}</p>
+              <p className="text-lg font-medium">
+                {getFuelTypeLabel(transport.fuelType, t)}
+              </p>
             </div>
           )}
 
           {/* Pojemność palinika */}
           {transport.trunkVolume && (
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
                 <Package className="h-4 w-4" />
                 {t("transport.trunkVolume")}
               </label>
@@ -145,22 +155,26 @@ export const CourierTransportTab = () => {
           {/* Ładowność */}
           {transport.cargoCapacity && (
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
                 <Weight className="h-4 w-4" />
                 {t("transport.cargoCapacity")}
               </label>
-              <p className="text-lg font-medium">{transport.cargoCapacity} kg</p>
+              <p className="text-lg font-medium">
+                {transport.cargoCapacity} kg
+              </p>
             </div>
           )}
 
           {/* Spalanie */}
           {transport.consumption && (
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
                 <Gauge className="h-4 w-4" />
                 {t("transport.consumption")}
               </label>
-              <p className="text-lg font-medium">{transport.consumption} L/100km</p>
+              <p className="text-lg font-medium">
+                {transport.consumption} L/100km
+              </p>
             </div>
           )}
         </div>
@@ -168,4 +182,3 @@ export const CourierTransportTab = () => {
     </div>
   );
 };
-

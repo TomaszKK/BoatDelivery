@@ -6,10 +6,26 @@ import { toast } from "sonner";
 import { trackPromise } from "react-promise-tracker";
 import type { AlgorithmType } from "@/types/RoutingTypes";
 
+interface DashboardStats {
+  pendingPickups: number;
+  inSortingCenter: number;
+  delivered: number;
+}
+
 export const useAdminRouting = () => {
   const { t } = useTranslation();
+
   const [currentAlgorithm, setCurrentAlgorithm] =
     useState<AlgorithmType | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    pendingPickups: 0,
+    inSortingCenter: 0,
+    delivered: 0,
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  const [sortingCenterOrders, setSortingCenterOrders] = useState<any[]>([]); // Zmień any na OrderResponseDTO
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
   const fetchAlgorithm = useCallback(async () => {
     try {
@@ -63,10 +79,47 @@ export const useAdminRouting = () => {
     }
   };
 
+  const fetchStats = useCallback(async () => {
+    setIsLoadingStats(true);
+    try {
+      const response = await trackPromise(api.getAdminStats());
+      setStats(response.data);
+    } catch (e) {
+      toast.error(t("admin.fetchStatsFail", "Nie udało się pobrać statystyk."));
+    } finally {
+      setIsLoadingStats(false);
+    }
+  }, [t]);
+
+  const fetchSortingCenterOrders = useCallback(
+    async (page = 0, size = 50) => {
+      setIsLoadingOrders(true);
+      try {
+        const response = await trackPromise(
+          api.getOrdersPaged(page, size, "IN_SORTING_CENTER"),
+        );
+        setSortingCenterOrders(response.data.content || response.data);
+      } catch (e) {
+        toast.error(
+          t("admin.fetchOrdersFail", "Nie udało się pobrać paczek z sortowni."),
+        );
+      } finally {
+        setIsLoadingOrders(false);
+      }
+    },
+    [t],
+  );
+
   return {
     currentAlgorithm,
     fetchAlgorithm,
     changeAlgorithm,
     forceOptimize,
+    stats,
+    isLoadingStats,
+    fetchStats,
+    sortingCenterOrders,
+    isLoadingOrders,
+    fetchSortingCenterOrders,
   };
 };

@@ -12,12 +12,13 @@ import { Button } from "@/components/ui/button";
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"profile" | "transport">("profile");
+  const [activeTab, setActiveTab] = useState<"profile" | "transport">(
+    "profile",
+  );
   const { user: initialUser, loading, error, refetch } = useProfile();
   const { updatePassword, keycloak, isInitialized } = useKeycloak();
   const { isCourier } = useUserRoles();
   const { t } = useTranslation();
-
 
   // Protect route - jeśli nie zalogowany, redirect
   if (isInitialized && !keycloak.isLogged) {
@@ -65,14 +66,13 @@ export const ProfilePage = () => {
   return (
     <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="space-y-6">
-
         {isCourier && (
           <div className="flex gap-2 border-b">
             <button
               onClick={() => setActiveTab("profile")}
               className={`px-4 py-2 font-medium transition-colors ${
                 activeTab === "profile"
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-primary text-primary border-b-2"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -82,7 +82,7 @@ export const ProfilePage = () => {
               onClick={() => setActiveTab("transport")}
               className={`flex items-center gap-2 px-4 py-2 font-medium transition-colors ${
                 activeTab === "transport"
-                  ? "border-b-2 border-primary text-primary"
+                  ? "border-primary text-primary border-b-2"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -91,22 +91,29 @@ export const ProfilePage = () => {
           </div>
         )}
 
-        <div className="flex justify-between items-start">
+        <div className="flex items-start justify-between">
           <div>
-            {!isCourier && ( <h1 className="text-3xl font-bold">{t("myProfile") || "Mój profil"}</h1> )}
+            {!isCourier && (
+              <h1 className="text-3xl font-bold">
+                {t("myProfile") || "Mój profil"}
+              </h1>
+            )}
           </div>
           {user && activeTab === "profile" && (
-              <div className="flex gap-2">
-                <EditProfileModal user={user} onProfileUpdated={handleProfileUpdated} />
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleChangePassword}
-                    className="gap-2"
-                >
-                  {t("changePassword") || "Zmień hasło"}
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              <EditProfileModal
+                user={user}
+                onProfileUpdated={handleProfileUpdated}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleChangePassword}
+                className="gap-2"
+              >
+                {t("changePassword") || "Zmień hasło"}
+              </Button>
+            </div>
           )}
         </div>
 
@@ -114,7 +121,7 @@ export const ProfilePage = () => {
           <div className="bg-card space-y-4 rounded-lg border p-6">
             {/* Rola użytkownika */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <label className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
                 <Users className="h-4 w-4" />
                 {t("accountType") || "Typ konta"}
               </label>

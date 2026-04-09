@@ -1,38 +1,38 @@
 import { MyOrdersPage } from "@/pages/MyOrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { AdminPage } from "@/pages/AdminPage";
-import { PlaceholderPage } from "@/components/PlaceholderPage";
 import { Pathnames } from "./pathnames";
 import { OrderDetailsPage } from "@/pages/OrderDetailsPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
 import { CourierRoutePage } from "@/pages/CourierRoutePage";
+import { HomePage } from "@/pages/HomePage";
+import { AdminRoutingPage } from "@/pages/AdminRoutingPage";
+import { AdminOrdersPage } from "@/pages/AdminOrdersPage";
 
 export type RouteType = {
   path: string;
   Component: React.ComponentType<Record<string, unknown>>;
 };
 
-// DODANO: Strona główna jest teraz publiczna
 export const publicRoutes: RouteType[] = [
   {
-    path: Pathnames.customer.home, 
-    Component: () => <PlaceholderPage title="Strona Główna" />,
+    path: Pathnames.customer.home,
+    Component: HomePage,
   },
   {
     path: Pathnames.public.error,
-    Component: () => <PlaceholderPage title="Błąd 404" />,
+    Component: () => (
+      <h1 className="mt-20 text-center text-2xl font-bold">
+        404 - Page Not Found
+      </h1>
+    ),
   },
 ];
 
-// USUNIĘTO stąd stronę główną
 export const customerRoutes: RouteType[] = [
   {
     path: Pathnames.customer.profile,
     Component: ProfilePage,
-  },
-  {
-    path: Pathnames.customer.track,
-    Component: () => <PlaceholderPage title="Śledzenie Paczki" />,
   },
   {
     path: Pathnames.customer.orders,
@@ -53,16 +53,20 @@ export const courierRoutes: RouteType[] = [
     path: Pathnames.courier.route,
     Component: CourierRoutePage,
   },
-  {
-    path: Pathnames.courier.deliveries,
-    Component: () => <PlaceholderPage title="Aktywne Zlecenia" />,
-  },
 ];
 
 export const adminRoutes: RouteType[] = [
   {
     path: Pathnames.admin.dashboard,
     Component: AdminDashboardPage,
+  },
+  {
+    path: Pathnames.admin.home,
+    Component: AdminOrdersPage,
+  },
+  {
+    path: Pathnames.admin.routing,
+    Component: AdminRoutingPage,
   },
   {
     path: Pathnames.admin.accounts,

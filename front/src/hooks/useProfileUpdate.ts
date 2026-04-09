@@ -33,27 +33,40 @@ export const useProfileUpdate = (onSuccess?: () => Promise<void>) => {
 
   const updateProfile = useCallback(
     async (data: UpdateProfileData): Promise<User | null> => {
-      setState({ loading: true, error: null, fieldErrors: null, success: false });
+      setState({
+        loading: true,
+        error: null,
+        fieldErrors: null,
+        success: false,
+      });
       try {
-        const response = await apiForAuthenticated.patch<User>("/user/me", data);
-        
+        const response = await apiForAuthenticated.patch<User>(
+          "/user/me",
+          data,
+        );
+
         // Wywołaj callback jeśli została dostarczona (np. refreshToken)
         if (onSuccess) {
           await onSuccess();
         }
-        
-        setState({ loading: false, error: null, fieldErrors: null, success: true });
+
+        setState({
+          loading: false,
+          error: null,
+          fieldErrors: null,
+          success: true,
+        });
         return response.data;
       } catch (error) {
         console.error("Error updating profile:", error);
-        
+
         // Obsługa błędów z API
         if (axios.isAxiosError(error) && error.response?.data) {
           const errorData = error.response.data as {
             message?: string;
             fieldErrors?: FieldError[];
           };
-          
+
           setState({
             loading: false,
             error: errorData.message || "Błąd podczas aktualizacji profilu",
@@ -62,13 +75,20 @@ export const useProfileUpdate = (onSuccess?: () => Promise<void>) => {
           });
         } else {
           const errorMessage =
-            error instanceof Error ? error.message : "Błąd podczas aktualizacji profilu";
-          setState({ loading: false, error: errorMessage, fieldErrors: null, success: false });
+            error instanceof Error
+              ? error.message
+              : "Błąd podczas aktualizacji profilu";
+          setState({
+            loading: false,
+            error: errorMessage,
+            fieldErrors: null,
+            success: false,
+          });
         }
         return null;
       }
     },
-    [onSuccess]
+    [onSuccess],
   );
 
   return {
@@ -79,4 +99,3 @@ export const useProfileUpdate = (onSuccess?: () => Promise<void>) => {
     updateProfile,
   };
 };
-

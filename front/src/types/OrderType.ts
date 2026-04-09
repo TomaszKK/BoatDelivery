@@ -45,3 +45,9 @@ export interface OrderResponseDTO {
   pickupLocation: LocationResponseDTO;
   deliveryLocation: LocationResponseDTO;
 }
+
+export interface TrackedOrder {
+  trackingNumber: string;
+  status: string;
+  weight: number;
+}

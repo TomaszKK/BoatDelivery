@@ -6,8 +6,10 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import p.lodz.pl.dto.OrderMinimalizedResponseDTO;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
+import p.lodz.pl.dto.PageResponseDTO;
 import p.lodz.pl.dto.maps.HerePosition;
 import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.exception.ResourceNotFoundException;
@@ -15,8 +17,11 @@ import p.lodz.pl.mapper.OrderMapper;
 import p.lodz.pl.model.Location;
 import p.lodz.pl.model.Order;
 import p.lodz.pl.model.enums.OrderStatus;
+import p.lodz.pl.repository.OrderRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -35,7 +40,7 @@ public class OrderService {
     SecurityIdentity identity;
 
     @Inject
-    LocationService locationService;
+    OrderRepository orderRepository;
 
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO requestDTO, HerePosition pickupPos, HerePosition deliveryPos) {
@@ -75,6 +80,13 @@ public class OrderService {
 
         verifyOwnership(order);
         return orderMapper.toDto(order);
+    }
+
+    public OrderMinimalizedResponseDTO getOrderByTrackingNumberMinimalized(String trackingNumber) {
+        Order order = Order.<Order>find("trackingNumber", trackingNumber).firstResultOptional()
+                .orElseThrow(() -> new ResourceNotFoundException("Order with tracking number " + trackingNumber + " not found"));
+        verifyOwnership(order);
+        return orderMapper.toMinimalizedDto(order);
     }
 
     public OrderResponseDTO getOrderByTrackingNumber(String trackingNumber) {
@@ -137,12 +149,59 @@ public class OrderService {
     }
 
     @Transactional
-    public void deleteOrder(UUID id) {
-        Order order = Order.<Order>findByIdOptional(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order with id " + id + " not found"));
+    public void deleteOrder(String id) {
+        Order order = Order.<Order>find("trackingNumber", id).firstResultOptional()
+                .orElseThrow(() -> new ResourceNotFoundException("Order with trackingNumber " + id + " not found"));
 
         verifyOwnership(order);
         order.delete();
+    }
+
+    @Transactional
+    public List<OrderResponseDTO> getOrdersByCustomerId(String customerId) {
+        return orderRepository.list("customerId", UUID.fromString(customerId))
+                .stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PageResponseDTO<OrderResponseDTO> getOrdersPaged(int page, int size, OrderStatus status) {
+        io.quarkus.hibernate.orm.panache.PanacheQuery<Order> query;
+
+        if (status != null) {
+            query = orderRepository.find("status", status);
+        } else {
+            query = orderRepository.findAll();
+        }
+
+        query.page(io.quarkus.panache.common.Page.of(page, size));
+
+        List<OrderResponseDTO> content = query.stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+
+        return new PageResponseDTO<>(
+                content,
+                page,
+                query.pageCount(),
+                query.count()
+        );
+    }
+
+    @Transactional
+    public Map<String, Long> getAdminStatistics() {
+        Map<String, Long> stats = new HashMap<>();
+
+        long pendingPickups = orderRepository.count("status", OrderStatus.ORDER_CREATED);
+        long inSortingCenter = orderRepository.count("status", OrderStatus.IN_SORTING_CENTER);
+        long delivered = orderRepository.count("status", OrderStatus.DELIVERY_COMPLETED);
+
+        stats.put("pendingPickups", pendingPickups);
+        stats.put("inSortingCenter", inSortingCenter);
+        stats.put("delivered", delivered);
+
+        return stats;
     }
 
     private void verifyOwnership(Order order) {

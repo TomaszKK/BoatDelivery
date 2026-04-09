@@ -2,6 +2,7 @@ package p.lodz.pl.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import p.lodz.pl.dto.OrderMinimalizedResponseDTO;
 import p.lodz.pl.dto.OrderRequestDTO;
 import p.lodz.pl.dto.OrderResponseDTO;
 import p.lodz.pl.model.Order;
@@ -12,6 +13,8 @@ public interface OrderMapper {
     Order toEntity(OrderRequestDTO dto);
 
     OrderResponseDTO toDto(Order entity);
+
+    OrderMinimalizedResponseDTO toMinimalizedDto(Order entity);
 
     void updateEntityFromDto(OrderRequestDTO dto, @MappingTarget Order entity);
 }

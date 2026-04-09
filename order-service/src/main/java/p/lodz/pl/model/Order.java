@@ -32,11 +32,11 @@ public class Order extends ControlledEntity {
     @Column(name = "time_window_end")
     public Instant timeWindowEnd;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "pickup_location_id", referencedColumnName = "id")
     public Location pickupLocation;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
     @JoinColumn(name = "delivery_location_id", referencedColumnName = "id")
     public Location deliveryLocation;
 

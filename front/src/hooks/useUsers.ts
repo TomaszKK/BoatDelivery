@@ -43,4 +43,3 @@ export const useUsers = () => {
 
   return { users, loading, error };
 };
-

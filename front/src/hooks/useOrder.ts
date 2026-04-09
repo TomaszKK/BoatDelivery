@@ -12,6 +12,28 @@ export const useOrder = () => {
   const { orders, setOrders } = useOrderState();
   const { order, setOrder } = useOrderState();
 
+  const getMineOrders = async () => {
+    try {
+      const response = await trackPromise(api.getMineOrders());
+
+      const data = response.data;
+
+      setOrders(data);
+      return data;
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        toast.error(
+          e.response?.data?.message !== undefined
+            ? t(`${e.response.data.message}`)
+            : t("orders.getMineFail"),
+        );
+      } else {
+        toast.error(t("orders.getMineFail"));
+      }
+      return e;
+    }
+  };
+
   const getAllOrders = async () => {
     try {
       const response = await trackPromise(api.getOrders());
@@ -42,6 +64,30 @@ export const useOrder = () => {
 
       const data = response.data;
       setOrder(data);
+      return data;
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        toast.error(
+          e.response?.data?.message !== undefined
+            ? t(`${e.response.data.message}`)
+            : t("orders.getFail"),
+        );
+      } else {
+        toast.error(t("orders.getFail"));
+      }
+      return e;
+    }
+  };
+
+  const getMininalizedOrderByTrackingNumber = async (
+    trackingNumber: string,
+  ) => {
+    try {
+      const response = await trackPromise(
+        api.getMininalizedOrderByTrackingNumber(trackingNumber),
+      );
+
+      const data = response.data;
       return data;
     } catch (e) {
       if (e instanceof AxiosError) {
@@ -88,8 +134,10 @@ export const useOrder = () => {
     setOrders,
     order,
     setOrder,
+    getMineOrders,
     getAllOrders,
     createOrder,
     getOrderByTrackingNumber,
+    getMininalizedOrderByTrackingNumber,
   };
 };

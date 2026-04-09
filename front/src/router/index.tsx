@@ -21,7 +21,7 @@ export const RoutesComponent = () => {
   if (!isInitialized) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <span className="animate-pulse text-lg font-semibold text-primary">
+        <span className="text-primary animate-pulse text-lg font-semibold">
           {t("loading", "Ładowanie")}...
         </span>
       </div>
@@ -54,29 +54,17 @@ export const RoutesComponent = () => {
 
       {/* ADMIN */}
       {adminRoutes.map(({ path, Component }) => (
-        <Route
-          key={path}
-          path={path}
-          element={withLayout(Component)}
-        />
+        <Route key={path} path={path} element={withLayout(Component)} />
       ))}
 
       {/* CUSTOMER */}
       {customerRoutes.map(({ path, Component }) => (
-        <Route
-          key={path}
-          path={path}
-          element={withLayout(Component)}
-        />
+        <Route key={path} path={path} element={withLayout(Component)} />
       ))}
 
       {/* COURIER */}
       {courierRoutes.map(({ path, Component }) => (
-        <Route
-          key={path}
-          path={path}
-          element={withLayout(Component)}
-        />
+        <Route key={path} path={path} element={withLayout(Component)} />
       ))}
 
       {/* 404 */}

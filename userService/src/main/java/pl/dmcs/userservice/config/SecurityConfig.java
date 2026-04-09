@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/internal/user/webhook/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
                         .requestMatchers("/api/user/public/**").permitAll()
                         .requestMatchers("/api/transport/courier/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transport/{id}").permitAll()
