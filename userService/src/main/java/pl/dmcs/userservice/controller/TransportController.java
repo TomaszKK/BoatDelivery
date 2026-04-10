@@ -11,6 +11,7 @@ import pl.dmcs.userservice.dto.request.TransportRequest;
 import pl.dmcs.userservice.dto.response.TransportResponse;
 import pl.dmcs.userservice.mapper.TransportMapper;
 import pl.dmcs.userservice.model.Transport;
+import pl.dmcs.userservice.model.User;
 import pl.dmcs.userservice.service.TransportService;
 import pl.dmcs.userservice.service.UserService;
 import jakarta.validation.Valid;
@@ -71,19 +72,42 @@ public class TransportController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
-
-    @PostMapping("/courier/{courierId}")
+    @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Transactional
     public ResponseEntity<TransportResponse> createTransport(
-            @PathVariable UUID courierId,
             @Valid @RequestBody TransportRequest request) {
         Transport transport = transportMapper.toEntity(request);
-        Transport createdTransport = transportService.createTransport(courierId, transport);
+        Transport createdTransport = transportService.createTransportWithoutCourier(transport);
         return ResponseEntity.status(HttpStatus.CREATED).body(transportMapper.toResponse(createdTransport));
     }
 
+    @PostMapping("/{transportId}/assign/{courierId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Transactional
+    public ResponseEntity<TransportResponse> assignCourierToTransport(
+            @PathVariable UUID transportId,
+            @PathVariable UUID courierId) {
+        Transport transport = transportService.getTransportById(transportId);
+        User courier = userService.getUserById(courierId);
+        transport.setCourier(courier);
+        Transport updatedTransport = transportService.saveTransport(transport);
+        return ResponseEntity.ok(transportMapper.toResponse(updatedTransport));
+    }
+
+    @PostMapping("/{transportId}/unassign")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Transactional
+    public ResponseEntity<TransportResponse> unassignCourierFromTransport(
+            @PathVariable UUID transportId) {
+        Transport transport = transportService.getTransportById(transportId);
+        transport.setCourier(null);
+        Transport updatedTransport = transportService.saveTransport(transport);
+        return ResponseEntity.ok(transportMapper.toResponse(updatedTransport));
+    }
+
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('COURIER')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<TransportResponse> updateTransport(
             @PathVariable UUID id,
             @Valid @RequestBody TransportRequest request) {
@@ -92,7 +116,7 @@ public class TransportController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAuthority('COURIER')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<TransportResponse> partialUpdateTransport(
             @PathVariable UUID id,
             @Valid @RequestBody TransportRequest request) {
@@ -101,6 +125,7 @@ public class TransportController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteTransport(@PathVariable UUID id) {
         transportService.deleteTransport(id);
         return ResponseEntity.noContent().build();

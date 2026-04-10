@@ -3,6 +3,7 @@ import type { ApiResponseType } from "@/types/ApiResponseType";
 import type { OrderResponseDTO, TrackedOrder } from "@/types/OrderType";
 import type { User } from "@/types/UserType";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
+import type { Transport } from "@/types/TransportType";
 
 export interface PaymentSessionResponse {
   checkoutUrl: string;
@@ -79,4 +80,29 @@ export const api = {
     ),
 
   getAllUsers: (): ApiResponseType<User[]> => apiForAuthenticated.get("/user"),
+
+  deleteUser: (userId: string) =>
+    apiForAuthenticated.delete(`/user/${userId}`),
+
+  // Transport endpoints
+  getAllTransports: (): ApiResponseType<Transport[]> =>
+    apiForAuthenticated.get("/transport"),
+
+  getTransportById: (id: string): ApiResponseType<Transport> =>
+    apiForAuthenticated.get(`/transport/${id}`),
+
+  createTransport: (transportData: any): ApiResponseType<Transport> =>
+    apiForAuthenticated.post("/transport", transportData),
+
+  updateTransport: (id: string, transportData: any): ApiResponseType<Transport> =>
+    apiForAuthenticated.put(`/transport/${id}`, transportData),
+
+  deleteTransport: (id: string) =>
+    apiForAuthenticated.delete(`/transport/${id}`),
+
+  assignTransportToCourier: (transportId: string, courierId: string) =>
+    apiForAuthenticated.post(`/transport/${transportId}/assign/${courierId}`),
+
+  unassignTransport: (transportId: string) =>
+    apiForAuthenticated.post(`/transport/${transportId}/unassign`),
 };

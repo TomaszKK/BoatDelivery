@@ -79,8 +79,11 @@ public class UserService {
 
     @Transactional
     public void deleteUser(UUID id) {
-        getUserById(id);
+        User user = getUserById(id);
         userRepository.deleteById(id);
+
+        // Synchronizuj usuwanie do Keycloaka
+        keycloakSyncService.deleteUserFromKeycloak(id);
     }
 
     @Transactional

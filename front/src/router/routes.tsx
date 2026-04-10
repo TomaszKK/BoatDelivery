@@ -1,6 +1,7 @@
 import { MyOrdersPage } from "@/pages/MyOrdersPage";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { AdminPage } from "@/pages/AdminPage";
+import { AdminFleetPage } from "@/pages/AdminFleetPage";
 import { Pathnames } from "./pathnames";
 import { OrderDetailsPage } from "@/pages/OrderDetailsPage";
 import { AdminDashboardPage } from "@/pages/AdminDashboardPage";
@@ -71,5 +72,9 @@ export const adminRoutes: RouteType[] = [
   {
     path: Pathnames.admin.accounts,
     Component: AdminPage,
+  },
+  {
+    path: Pathnames.admin.fleet,
+    Component: AdminFleetPage,
   },
 ];

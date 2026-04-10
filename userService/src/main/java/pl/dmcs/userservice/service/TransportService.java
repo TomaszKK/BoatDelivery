@@ -87,10 +87,37 @@ public class TransportService {
     }
 
     @Transactional
+    public Transport createTransportWithoutCourier(Transport transport) {
+        log.info("Próba dodania transportu bez kuriera: type={}, brand={}, model={}",
+                transport.getTransportType(), transport.getBrand(), transport.getModel());
+
+        try {
+            if (transport.getId() == null) {
+                transport.setId(UUID.randomUUID());
+                log.info("Wygenerowano nowy UUID dla transportu: {}", transport.getId());
+            }
+
+            transport.setCourier(null);
+            Transport saved = transportRepository.save(transport);
+            log.info("Transport zapisany z ID: {}", saved.getId());
+
+            return saved;
+        } catch (Exception e) {
+            log.error("Błąd podczas dodawania transportu: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Transactional
     public Transport updateTransport(UUID id, TransportRequest updateRequest) {
         Transport existingTransport = getTransportById(id);
         transportMapper.updateEntityFromDto(updateRequest, existingTransport);
         return transportRepository.save(existingTransport);
+    }
+
+    @Transactional
+    public Transport saveTransport(Transport transport) {
+        return transportRepository.save(transport);
     }
 
     @Transactional
