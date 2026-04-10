@@ -273,6 +273,12 @@
     "loginAction": "Zaloguj się",
     "cardCreateOrders": "Twórz Zamówienia w Sekundy",
     "cardTrackRealtime": "Śledź Dostawę w Czasie Rzeczywistym",
-    "cardManageRoutes": "Zarządzaj Trasami i Kurierami"
+    "cardManageRoutes": "Zarządzaj Trasami i Kurierami",
+    "stepCreated": "Zamówienie utworzone",
+    "stepPickedUp": "Odebrano",
+    "stepSorting": "Sortowanie",
+    "stepInTransit": "W drodze",
+    "stepDelivered": "Dostarczone",
+    "orderCanceledMsg": "To zamówienie zostało anulowane"
   }
 }

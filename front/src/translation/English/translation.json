@@ -274,6 +274,12 @@
     "loginAction": "Log In",
     "cardCreateOrders": "Create Orders in Seconds",
     "cardTrackRealtime": "Track Deliveries in Real-Time",
-    "cardManageRoutes": "Manage Routes and Couriers"
+    "cardManageRoutes": "Manage Routes and Couriers",
+    "stepCreated": "Order Created",
+    "stepPickedUp": "Picked Up",
+    "stepSorting": "Sorting",
+    "stepInTransit": "In Transit",
+    "stepDelivered": "Delivered",
+    "orderCanceledMsg": "This order has been canceled"
   }
 }
