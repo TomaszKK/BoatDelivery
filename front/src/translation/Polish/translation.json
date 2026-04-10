@@ -144,6 +144,7 @@
       "manageDesc": "Zarządzaj użytkownikami systemu, dodawaj, edytuj i usuwaj konta",
       "customers": "Klienci",
       "couriers": "Kurierzy",
+      "admins": "Administratorzy",
       "customersDesc": "Lista wszystkich zarejestrowanych klientów",
       "couriersDesc": "Lista wszystkich zarejestrowanych kurierów",
       "noUsers": "Brak użytkowników",
@@ -185,7 +186,15 @@
       "selectCourierFromList": "Wybierz kuriera z listy dostępnych",
       "noCouriersAvailable": "Brak dostępnych kurierów bez przypisanego pojazdu",
       "noVehicles": "Brak pojazdów",
-      "fillRequired": "Wypełnij wymagane pola"
+      "fillRequired": "Wypełnij wymagane pola",
+      "validationFailed": "Sprawdź pola formularza",
+      "brandRequired": "Marka jest wymagana",
+      "modelRequired": "Model jest wymagany",
+      "licensePlateRequired": "Tablica rejestracyjna jest wymagana",
+      "itemsPerPage": "Pozycji na stronę",
+      "page": "Strona",
+      "of": "z",
+      "showing": "Wyświetlanie"
     }
   },
   "courier": {

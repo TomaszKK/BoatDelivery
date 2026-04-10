@@ -66,6 +66,15 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
         const instance = initKeycloakInstance();
 
         // ==========================================
+        // Obsługa wylogowania
+        // ==========================================
+        instance.onAuthLogout = () => {
+          console.log("User logged out");
+          localStorage.removeItem("accessToken");
+          setKeycloak({ isLogged: false });
+        };
+
+        // ==========================================
         // Automatyczne odświeżanie tokena!
         // ==========================================
         instance.onTokenExpired = () => {

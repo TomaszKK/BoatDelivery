@@ -9,6 +9,24 @@ export interface PaymentSessionResponse {
   checkoutUrl: string;
 }
 
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  numberOfElements: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface UserCountByType {
+  totalUsers: number;
+  customerCount: number;
+  courierCount: number;
+  adminCount: number;
+}
+
 export const api = {
   getMineOrders: (): ApiResponseType<OrderResponseDTO[]> =>
     apiForAuthenticated.get("/orders/my"),
@@ -81,6 +99,15 @@ export const api = {
 
   getAllUsers: (): ApiResponseType<User[]> => apiForAuthenticated.get("/user"),
 
+  getAllUsersPaged: (page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
+    apiForAuthenticated.get(`/user/paginated?page=${page}&size=${size}`),
+
+  getUsersByTypePaged: (userType: string, page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
+    apiForAuthenticated.get(`/user/paginated/by-type?userType=${userType}&page=${page}&size=${size}`),
+
+  getUserCountByType: (): ApiResponseType<UserCountByType> =>
+    apiForAuthenticated.get("/user/stats/count-by-type"),
+
   deleteUser: (userId: string) =>
     apiForAuthenticated.delete(`/user/${userId}`),
 
@@ -88,8 +115,14 @@ export const api = {
   getAllTransports: (): ApiResponseType<Transport[]> =>
     apiForAuthenticated.get("/transport"),
 
+  getAllTransportsPaged: (page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<Transport>> =>
+    apiForAuthenticated.get(`/transport/paginated?page=${page}&size=${size}`),
+
   getTransportById: (id: string): ApiResponseType<Transport> =>
     apiForAuthenticated.get(`/transport/${id}`),
+
+  getTransportCountTotal: (): ApiResponseType<number> =>
+    apiForAuthenticated.get("/transport/count"),
 
   createTransport: (transportData: any): ApiResponseType<Transport> =>
     apiForAuthenticated.post("/transport", transportData),

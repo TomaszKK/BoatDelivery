@@ -7,11 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import pl.dmcs.userservice.dto.request.JwtUserSyncRequest;
 import pl.dmcs.userservice.dto.request.UpdateUserRequest;
 import pl.dmcs.userservice.dto.request.UserRequest;
+import pl.dmcs.userservice.dto.response.UserCountByTypeDTO;
 import pl.dmcs.userservice.exception.InvalidOperationException;
 import pl.dmcs.userservice.exception.ResourceNotFoundException;
 import pl.dmcs.userservice.mapper.UserMapper;
@@ -46,6 +50,30 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public Page<User> getAllUsersPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findAll(pageable);
+    }
+
+    public Page<User> getUsersByTypePaged(UserType userType, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findByUserType(userType, pageable);
+    }
+
+    public UserCountByTypeDTO getUserCountByType() {
+        long totalUsers = userRepository.count();
+        long customerCount = userRepository.countByUserType(UserType.CUSTOMER);
+        long courierCount = userRepository.countByUserType(UserType.COURIER);
+        long adminCount = userRepository.countByUserType(UserType.ADMIN);
+
+        return UserCountByTypeDTO.builder()
+                .totalUsers(totalUsers)
+                .customerCount(customerCount)
+                .courierCount(courierCount)
+                .adminCount(adminCount)
+                .build();
     }
 
     public User getUserById(UUID id) {
@@ -148,3 +176,5 @@ public class UserService {
                 });
     }
 }
+
+

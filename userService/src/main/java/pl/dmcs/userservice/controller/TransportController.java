@@ -1,6 +1,7 @@
 package pl.dmcs.userservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -8,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import pl.dmcs.userservice.dto.request.TransportRequest;
+import pl.dmcs.userservice.dto.response.PaginatedResponse;
 import pl.dmcs.userservice.dto.response.TransportResponse;
 import pl.dmcs.userservice.mapper.TransportMapper;
 import pl.dmcs.userservice.model.Transport;
@@ -57,6 +59,35 @@ public class TransportController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
+    
+    @GetMapping("/paginated")
+    public ResponseEntity<PaginatedResponse<TransportResponse>> getAllTransportsPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+        
+        Page<Transport> transportsPage = transportService.getAllTransportsPaged(page, size);
+        List<TransportResponse> responses = transportsPage.getContent().stream()
+                .map(transportMapper::toResponse)
+                .collect(Collectors.toList());
+        
+        PaginatedResponse<TransportResponse> response = PaginatedResponse.<TransportResponse>builder()
+                .content(responses)
+                .page(transportsPage.getNumber())
+                .size(transportsPage.getSize())
+                .totalElements(transportsPage.getTotalElements())
+                .totalPages(transportsPage.getTotalPages())
+                .numberOfElements(transportsPage.getNumberOfElements())
+                .hasNext(transportsPage.hasNext())
+                .hasPrevious(transportsPage.hasPrevious())
+                .build();
+        
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<TransportResponse> getTransportById(@PathVariable UUID id) {
@@ -72,6 +103,52 @@ public class TransportController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
+    
+    @GetMapping("/courier/{courierId}/paginated")
+    public ResponseEntity<PaginatedResponse<TransportResponse>> getTransportsByCourierIdPaged(
+            @PathVariable UUID courierId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+        
+        Page<Transport> transportsPage = transportService.getTransportsByCourierIdPaged(courierId, page, size);
+        List<TransportResponse> responses = transportsPage.getContent().stream()
+                .map(transportMapper::toResponse)
+                .collect(Collectors.toList());
+        
+        PaginatedResponse<TransportResponse> response = PaginatedResponse.<TransportResponse>builder()
+                .content(responses)
+                .page(transportsPage.getNumber())
+                .size(transportsPage.getSize())
+                .totalElements(transportsPage.getTotalElements())
+                .totalPages(transportsPage.getTotalPages())
+                .numberOfElements(transportsPage.getNumberOfElements())
+                .hasNext(transportsPage.hasNext())
+                .hasPrevious(transportsPage.hasPrevious())
+                .build();
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/count")
+    public ResponseEntity<Long> getTotalTransportCount() {
+        return ResponseEntity.ok(transportService.getTotalTransportCount());
+    }
+
+    @PostMapping("/courier/{courierId}")
+    @Transactional
+    public ResponseEntity<TransportResponse> createTestTransport(
+            @PathVariable UUID courierId,
+            @Valid @RequestBody TransportRequest request) {
+        Transport transport = transportMapper.toEntity(request);
+        Transport createdTransport = transportService.createTransport(courierId, transport);
+        return ResponseEntity.status(HttpStatus.CREATED).body(transportMapper.toResponse(createdTransport));
+    }
+
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     @Transactional

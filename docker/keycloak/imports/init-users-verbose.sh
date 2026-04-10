@@ -174,6 +174,25 @@ add_user "courier6" "magdalena.lewandowska@example.com" "Magdalena" "Lewandowska
 add_user "courier7" "michal.wisniewski@example.com" "Michał" "Wiszniewski" "Password123" "COURIER" "+48551111111"
 add_user "admin" "admin@example.com" "Admin" "User" "Password123" "ADMIN" "+48121234567"
 
+# Dodaj 50 customerów (customer001-customer050) - bez przypisywania pojazdów
+echo ""
+echo "2b. Dodawanie 50 customerów (customer001-customer050)..."
+for i in $(seq 1 50); do
+  customer_num=$(printf "%03d" $i)
+  phone=$(printf "+48%09d" $((123456000 + i)))
+  add_user "customer$customer_num" "customer$customer_num@boatdelivery.test" "Test" "Customer $customer_num" "Password123" "CUSTOMER" "$phone"
+done
+
+# Dodaj 20 kurierów (courier008-courier027) - bez przypisywania pojazdów
+echo ""
+echo "2c. Dodawanie 20 dodatkowych kurierów (courier008-courier027)..."
+for i in $(seq 8 27); do
+  courier_num=$(printf "%03d" $i)
+  phone=$(printf "+48%09d" $((987654000 + i)))
+  add_user "courier$courier_num" "courier$courier_num@boatdelivery.test" "Test" "Courier $courier_num" "Password123" "COURIER" "$phone"
+done
+
+
 echo ""
 echo "3. Dodawanie pojazdów transportowych dla courierów..."
 echo "⏳ Czekam 15 sekund na synchronizację użytkowników z UserService..."

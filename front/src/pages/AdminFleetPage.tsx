@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useTransports } from "@/hooks/useTransports";
 import { useUsers } from "@/hooks/useUsers";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -36,7 +37,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Edit, User, Plus } from "lucide-react";
+import { Trash2, Edit, User, Plus, ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from "lucide-react";
 
 type TransportFormData = {
   transportType: string;
@@ -64,8 +65,23 @@ const initialFormData: TransportFormData = {
 
 export const AdminFleetPage = () => {
   const { t } = useTranslation();
-  const { transports, loading, error, createTransport, updateTransport, deleteTransport, assignCourier, unassignCourier } = useTransports();
-  const { users } = useUsers();
+  const {
+    transports,
+    loading,
+    error,
+    page,
+    size,
+    totalCount,
+    totalPages,
+    createTransport,
+    updateTransport,
+    deleteTransport,
+    assignCourier,
+    unassignCourier,
+    handlePageChange,
+    handleSizeChange,
+  } = useTransports();
+  const { users, fetchUsersPaged } = useUsers();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [courierDialogOpen, setCourierDialogOpen] = useState(false);
@@ -76,6 +92,27 @@ export const AdminFleetPage = () => {
   const [selectedCourier, setSelectedCourier] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortColumn, setSortColumn] = useState<"brand" | "model" | "licensePlate" | "type">("brand");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // Funkcja do sortowania kolumny
+  const handleSort = (column: "brand" | "model" | "licensePlate" | "type") => {
+    if (sortColumn === column) {
+      // Jeśli kliknięto tę samą kolumnę, zmień kierunek
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // Jeśli kliknięto nową kolumnę, sortuj rosnąco
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  // Pobierz użytkowników (kurierów) na start
+  useEffect(() => {
+    fetchUsersPaged(0, 100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const couriers = useMemo(() => users.filter((u) => u.userType === "COURIER"), [users]);
 
@@ -87,12 +124,50 @@ export const AdminFleetPage = () => {
   }, [couriers, transports]);
 
   const filteredTransports = useMemo(() => {
-    return transports.filter((transport) =>
+    const filtered = transports.filter((transport) =>
       `${transport.brand} ${transport.model} ${transport.licensePlate}`
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
     );
-  }, [transports, searchTerm]);
+
+    // Sortuj transporty
+    filtered.sort((a, b) => {
+      let valueA: any;
+      let valueB: any;
+
+      switch (sortColumn) {
+        case "brand":
+          valueA = a.brand?.toLowerCase() || "";
+          valueB = b.brand?.toLowerCase() || "";
+          break;
+        case "model":
+          valueA = a.model?.toLowerCase() || "";
+          valueB = b.model?.toLowerCase() || "";
+          break;
+        case "licensePlate":
+          valueA = a.licensePlate?.toLowerCase() || "";
+          valueB = b.licensePlate?.toLowerCase() || "";
+          break;
+        case "type":
+          valueA = a.transportType || "";
+          valueB = b.transportType || "";
+          break;
+        default:
+          valueA = a.model?.toLowerCase() || "";
+          valueB = b.model?.toLowerCase() || "";
+      }
+
+      if (valueA < valueB) {
+        return sortDirection === "asc" ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return sortDirection === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [transports, searchTerm, sortColumn, sortDirection]);
 
   if (loading) {
     return (
@@ -114,11 +189,25 @@ export const AdminFleetPage = () => {
   }
 
   const handleAddTransport = async () => {
-    if (!formData.brand || !formData.model || !formData.licensePlate) {
-      alert(t("admin.fleet.fillRequired") || "Wypełnij wymagane pola");
+    const errors: Record<string, string> = {};
+
+    // Walidacja wymaganych pól
+    if (!formData.brand) {
+      errors.brand = t("admin.fleet.brandRequired") || "Marka jest wymagana";
+    }
+    if (!formData.model) {
+      errors.model = t("admin.fleet.modelRequired") || "Model jest wymagany";
+    }
+    if (!formData.licensePlate) {
+      errors.licensePlate = t("admin.fleet.licensePlateRequired") || "Tablica rejestracyjna jest wymagana";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
+    setFieldErrors({});
     setIsSubmitting(true);
     const result = await createTransport(formData);
     setIsSubmitting(false);
@@ -126,14 +215,43 @@ export const AdminFleetPage = () => {
     if (result.success) {
       setAddDialogOpen(false);
       setFormData(initialFormData);
+      setFieldErrors({});
     } else {
-      alert(result.error);
+      // Sprawdzaj czy są fieldErrors
+      if (result && 'fieldErrors' in result && result.fieldErrors && Array.isArray(result.fieldErrors) && result.fieldErrors.length > 0) {
+        const serverErrors: Record<string, string> = {};
+        result.fieldErrors.forEach((err: any) => {
+          serverErrors[err.field] = err.message;
+        });
+        setFieldErrors(serverErrors);
+      } else {
+        setFieldErrors({});
+      }
     }
   };
 
   const handleEditTransport = async () => {
     if (!selectedTransport) return;
 
+    const errors: Record<string, string> = {};
+
+    // Walidacja wymaganych pól
+    if (!formData.brand) {
+      errors.brand = t("admin.fleet.brandRequired") || "Marka jest wymagana";
+    }
+    if (!formData.model) {
+      errors.model = t("admin.fleet.modelRequired") || "Model jest wymagany";
+    }
+    if (!formData.licensePlate) {
+      errors.licensePlate = t("admin.fleet.licensePlateRequired") || "Tablica rejestracyjna jest wymagana";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSubmitting(true);
     const result = await updateTransport(selectedTransport.id, formData);
     setIsSubmitting(false);
@@ -142,8 +260,18 @@ export const AdminFleetPage = () => {
       setEditDialogOpen(false);
       setSelectedTransport(null);
       setFormData(initialFormData);
+      setFieldErrors({});
     } else {
-      alert(result.error);
+      // Sprawdzaj czy są fieldErrors
+      if (result && 'fieldErrors' in result && result.fieldErrors && Array.isArray(result.fieldErrors) && result.fieldErrors.length > 0) {
+        const serverErrors: Record<string, string> = {};
+        result.fieldErrors.forEach((err: any) => {
+          serverErrors[err.field] = err.message;
+        });
+        setFieldErrors(serverErrors);
+      } else {
+        setFieldErrors({});
+      }
     }
   };
 
@@ -209,11 +337,13 @@ export const AdminFleetPage = () => {
       licensePlate: transport.licensePlate,
       color: transport.color,
     });
+    setFieldErrors({});
     setEditDialogOpen(true);
   };
 
   const openAddDialog = () => {
     setFormData(initialFormData);
+    setFieldErrors({});
     setAddDialogOpen(true);
   };
 
@@ -248,6 +378,7 @@ export const AdminFleetPage = () => {
               onSubmit={handleAddTransport}
               isSubmitting={isSubmitting}
               t={t}
+              fieldErrors={fieldErrors}
             />
           </DialogContent>
         </Dialog>
@@ -266,20 +397,84 @@ export const AdminFleetPage = () => {
       {/* Transports Table */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("admin.fleet.vehiclesList") || "Lista Pojazdów"}</CardTitle>
-          <CardDescription>
-            {t("admin.fleet.vehiclesCount") || "Łącznie pojazdów"}: {filteredTransports.length}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{t("admin.fleet.vehiclesList") || "Lista Pojazdów"}</CardTitle>
+              <CardDescription>
+                {t("admin.fleet.vehiclesCount") || "Łącznie pojazdów"}: {totalCount} | {t("admin.fleet.page") || "Strona"} {page + 1} / {totalPages}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">{t("admin.fleet.itemsPerPage") || "Pozycji na stronę"}:</label>
+              <select
+                value={size}
+                onChange={(e) => handleSizeChange(parseInt(e.target.value))}
+                className="px-3 py-1 border rounded-md text-sm"
+              >
+                <option value={10}>10</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("admin.fleet.brand") || "Marka"}</TableHead>
-                  <TableHead>{t("admin.fleet.model") || "Model"}</TableHead>
-                  <TableHead>{t("admin.fleet.licensePlate") || "Tablica"}</TableHead>
-                  <TableHead>{t("admin.fleet.type") || "Typ"}</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted" 
+                    onClick={() => handleSort("brand")}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t("admin.fleet.brand") || "Marka"}
+                      {sortColumn === "brand" && (
+                        sortDirection === "asc" ? 
+                          <ArrowUp className="h-4 w-4" /> : 
+                          <ArrowDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted" 
+                    onClick={() => handleSort("model")}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t("admin.fleet.model") || "Model"}
+                      {sortColumn === "model" && (
+                        sortDirection === "asc" ? 
+                          <ArrowUp className="h-4 w-4" /> : 
+                          <ArrowDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted" 
+                    onClick={() => handleSort("licensePlate")}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t("admin.fleet.licensePlate") || "Tablica"}
+                      {sortColumn === "licensePlate" && (
+                        sortDirection === "asc" ? 
+                          <ArrowUp className="h-4 w-4" /> : 
+                          <ArrowDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-muted" 
+                    onClick={() => handleSort("type")}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t("admin.fleet.type") || "Typ"}
+                      {sortColumn === "type" && (
+                        sortDirection === "asc" ? 
+                          <ArrowUp className="h-4 w-4" /> : 
+                          <ArrowDown className="h-4 w-4" />
+                      )}
+                    </div>
+                  </TableHead>
                   <TableHead>{t("admin.fleet.assignedCourier") || "Przypisany Kurier"}</TableHead>
                   <TableHead className="text-right">{t("common.actions") || "Akcje"}</TableHead>
                 </TableRow>
@@ -355,6 +550,7 @@ export const AdminFleetPage = () => {
                                   onUnassignCourier={handleUnassignCourier}
                                   isSubmitting={isSubmitting}
                                   t={t}
+                                  fieldErrors={fieldErrors}
                                 />
                               )}
                             </DialogContent>
@@ -380,6 +576,44 @@ export const AdminFleetPage = () => {
                 )}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="text-sm text-muted-foreground">
+              {t("admin.fleet.showing") || "Wyświetlanie"} {page * size + 1} - {Math.min((page + 1) * size, totalCount)} {t("admin.fleet.of") || "z"} {totalCount}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 0}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
+                  <Button
+                    key={p}
+                    variant={page === p ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(p)}
+                    className="min-w-10"
+                  >
+                    {p + 1}
+                  </Button>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages - 1}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -428,7 +662,7 @@ export const AdminFleetPage = () => {
 };
 
 // Component: Transport Form
-const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any) => (
+const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t, fieldErrors = {} }: any) => (
   <div className="space-y-4">
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       <div>
@@ -436,12 +670,13 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
         <select
           value={formData.transportType}
           onChange={(e) => setFormData({ ...formData, transportType: e.target.value })}
-          className="w-full px-3 py-2 border rounded-md"
+          className={`w-full px-3 py-2 border rounded-md ${fieldErrors.transportType ? 'border-red-500' : ''}`}
         >
           <option value="CAR">Samochód</option>
           <option value="VAN">Van</option>
           <option value="TRUCK">Ciężarówka</option>
         </select>
+        {fieldErrors.transportType && <p className="text-red-500 text-sm mt-1">{fieldErrors.transportType}</p>}
       </div>
 
       <div>
@@ -449,7 +684,7 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
         <select
           value={formData.fuelType}
           onChange={(e) => setFormData({ ...formData, fuelType: e.target.value })}
-          className="w-full px-3 py-2 border rounded-md"
+          className={`w-full px-3 py-2 border rounded-md ${fieldErrors.fuelType ? 'border-red-500' : ''}`}
         >
           <option value="PETROL">Benzyna</option>
           <option value="DIESEL">Diesel</option>
@@ -457,6 +692,7 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           <option value="HYBRID">Hybrydowe</option>
           <option value="LPG">LPG</option>
         </select>
+        {fieldErrors.fuelType && <p className="text-red-500 text-sm mt-1">{fieldErrors.fuelType}</p>}
       </div>
     </div>
 
@@ -467,7 +703,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.brand}
           onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
           placeholder="np. Toyota"
+          className={fieldErrors.brand ? 'border-red-500' : ''}
         />
+        {fieldErrors.brand && <p className="text-red-500 text-sm mt-1">{fieldErrors.brand}</p>}
       </div>
       <div>
         <label className="text-sm font-medium">{t("admin.fleet.model") || "Model"} *</label>
@@ -475,7 +713,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.model}
           onChange={(e) => setFormData({ ...formData, model: e.target.value })}
           placeholder="np. Corolla"
+          className={fieldErrors.model ? 'border-red-500' : ''}
         />
+        {fieldErrors.model && <p className="text-red-500 text-sm mt-1">{fieldErrors.model}</p>}
       </div>
     </div>
 
@@ -486,7 +726,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.licensePlate}
           onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value })}
           placeholder="np. WA01ABC"
+          className={fieldErrors.licensePlate ? 'border-red-500' : ''}
         />
+        {fieldErrors.licensePlate && <p className="text-red-500 text-sm mt-1">{fieldErrors.licensePlate}</p>}
       </div>
       <div>
         <label className="text-sm font-medium">{t("admin.fleet.color") || "Kolor"}</label>
@@ -494,7 +736,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.color}
           onChange={(e) => setFormData({ ...formData, color: e.target.value })}
           placeholder="np. Czarny"
+          className={fieldErrors.color ? 'border-red-500' : ''}
         />
+        {fieldErrors.color && <p className="text-red-500 text-sm mt-1">{fieldErrors.color}</p>}
       </div>
     </div>
 
@@ -506,7 +750,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.trunkVolume}
           onChange={(e) => setFormData({ ...formData, trunkVolume: parseFloat(e.target.value) })}
           placeholder="0"
+          className={fieldErrors.trunkVolume ? 'border-red-500' : ''}
         />
+        {fieldErrors.trunkVolume && <p className="text-red-500 text-sm mt-1">{fieldErrors.trunkVolume}</p>}
       </div>
       <div>
         <label className="text-sm font-medium">{t("admin.fleet.cargoCapacity") || "Ładowność"}</label>
@@ -515,7 +761,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.cargoCapacity}
           onChange={(e) => setFormData({ ...formData, cargoCapacity: parseFloat(e.target.value) })}
           placeholder="0"
+          className={fieldErrors.cargoCapacity ? 'border-red-500' : ''}
         />
+        {fieldErrors.cargoCapacity && <p className="text-red-500 text-sm mt-1">{fieldErrors.cargoCapacity}</p>}
       </div>
       <div>
         <label className="text-sm font-medium">{t("admin.fleet.consumption") || "Spalanie"}</label>
@@ -524,7 +772,9 @@ const TransportForm = ({ formData, setFormData, onSubmit, isSubmitting, t }: any
           value={formData.consumption}
           onChange={(e) => setFormData({ ...formData, consumption: parseFloat(e.target.value) })}
           placeholder="0"
+          className={fieldErrors.consumption ? 'border-red-500' : ''}
         />
+        {fieldErrors.consumption && <p className="text-red-500 text-sm mt-1">{fieldErrors.consumption}</p>}
       </div>
     </div>
 
@@ -544,6 +794,7 @@ const TransportEditForm = ({
   onUnassignCourier,
   isSubmitting,
   t,
+  fieldErrors = {},
 }: any) => (
   <div className="space-y-6">
     <TransportForm
@@ -552,6 +803,7 @@ const TransportEditForm = ({
       onSubmit={onSubmit}
       isSubmitting={isSubmitting}
       t={t}
+      fieldErrors={fieldErrors}
     />
 
     <div className="border-t pt-6">

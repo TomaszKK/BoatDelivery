@@ -136,6 +136,7 @@
       "manageDesc": "Manage system users, add, edit and delete accounts",
       "customers": "Customers",
       "couriers": "Couriers",
+      "admins": "Administrators",
       "customersDesc": "List of all registered customers",
       "couriersDesc": "List of all registered couriers",
       "noUsers": "No users",
@@ -177,7 +178,15 @@
       "selectCourierFromList": "Select a courier from the available list",
       "noCouriersAvailable": "No available couriers without an assigned vehicle",
       "noVehicles": "No vehicles",
-      "fillRequired": "Fill in the required fields"
+      "fillRequired": "Fill in the required fields",
+      "validationFailed": "Please check the form fields",
+      "brandRequired": "Brand is required",
+      "modelRequired": "Model is required",
+      "licensePlateRequired": "License plate is required",
+      "itemsPerPage": "Items per page",
+      "page": "Page",
+      "of": "of",
+      "showing": "Showing"
     }
   },
   "courier": {

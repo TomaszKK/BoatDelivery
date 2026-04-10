@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useUsers } from "@/hooks/useUsers";
 import { useTranslation } from "react-i18next";
 import {
@@ -27,7 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Trash2, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 type SortField = "firstName" | "lastName" | "email" | "phoneNumber";
 type SortOrder = "asc" | "desc" | null;
@@ -38,11 +38,25 @@ const UserTable = ({
   onDelete,
   isDeleting,
   t,
+  page,
+  size,
+  totalCount,
+  totalPages,
+  onPageChange,
+  onSizeChange,
+  loading,
 }: {
   users: any[];
   onDelete: (user: any) => void;
   isDeleting: string | null;
   t: any;
+  page: number;
+  size: number;
+  totalCount: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  onSizeChange: (size: number) => void;
+  loading: boolean;
 }) => {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
@@ -138,6 +152,24 @@ const UserTable = ({
             value={filters.phoneNumber}
             onChange={(e) => setFilters({ ...filters, phoneNumber: e.target.value })}
           />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div>
+          <label className="text-sm font-medium">{t("admin.fleet.itemsPerPage") || "Pozycji na stronę"}:</label>
+          <select
+            value={size}
+            onChange={(e) => onSizeChange(parseInt(e.target.value))}
+            className="px-3 py-1 border rounded-md text-sm ml-2"
+          >
+            <option value={10}>10</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {page * size + 1} - {Math.min((page + 1) * size, totalCount)} {t("admin.fleet.of") || "z"} {totalCount}
         </div>
       </div>
 
@@ -247,8 +279,43 @@ const UserTable = ({
         </Table>
       </div>
 
-      <div className="text-sm text-muted-foreground">
-        {t("admin.users.totalUsers") || "Razem użytkowników"}: {filteredAndSortedUsers.length}
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
+          {t("admin.users.totalUsers") || "Razem użytkowników"}: {totalCount}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(page - 1)}
+            disabled={page === 0 || loading}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i).map((p) => (
+              <Button
+                key={p}
+                variant={page === p ? "default" : "outline"}
+                size="sm"
+                onClick={() => onPageChange(p)}
+                disabled={loading}
+                className="min-w-10"
+              >
+                {p + 1}
+              </Button>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(page + 1)}
+            disabled={page >= totalPages - 1 || loading}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -256,11 +323,30 @@ const UserTable = ({
 
 export const AdminPage = () => {
   const { t } = useTranslation();
-  const { users, loading, error, deleteUser } = useUsers();
+  const {
+    users,
+    loading,
+    error,
+    deleteUser,
+    page,
+    size,
+    totalCount,
+    totalPages,
+    countByType,
+    handlePageChange,
+    handleSizeChange,
+    fetchUsersByTypePaged,
+  } = useUsers();
   const [activeTab, setActiveTab] = useState<TabType>("customers");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Pobierz użytkowników po typie gdy zmienia się aktywna zakladka
+  useEffect(() => {
+    const userType = activeTab === "customers" ? "CUSTOMER" : "COURIER";
+    fetchUsersByTypePaged(userType, 0, size);
+  }, [activeTab]);
 
   if (loading) {
     return (
@@ -280,9 +366,6 @@ export const AdminPage = () => {
       </div>
     );
   }
-
-  const customers = users.filter((u) => u.userType === "CUSTOMER");
-  const couriers = users.filter((u) => u.userType === "COURIER");
 
   const handleDeleteClick = (user: any) => {
     setUserToDelete({ id: user.id, email: user.email });
@@ -313,6 +396,52 @@ export const AdminPage = () => {
         </p>
       </div>
 
+      {/* Stats Cards */}
+      {countByType && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t("admin.users.totalUsers") || "Razem Użytkowników"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{countByType.totalUsers}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t("admin.users.customers") || "Klienci"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{countByType.customerCount}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t("admin.users.couriers") || "Kurierzy"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{countByType.courierCount}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t("admin.users.admins") || "Administratorzy"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{countByType.adminCount}</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="flex gap-2 border-b mb-8">
         <button
@@ -324,7 +453,7 @@ export const AdminPage = () => {
           }`}
         >
           {t("admin.users.customers") || "Klienci"}
-          <span className="text-sm bg-muted rounded-full px-2 py-1">{customers.length}</span>
+          <span className="text-sm bg-muted rounded-full px-2 py-1">{countByType?.customerCount || 0}</span>
         </button>
         <button
           onClick={() => setActiveTab("couriers")}
@@ -335,7 +464,7 @@ export const AdminPage = () => {
           }`}
         >
           {t("admin.users.couriers") || "Kurierzy"}
-          <span className="text-sm bg-muted rounded-full px-2 py-1">{couriers.length}</span>
+          <span className="text-sm bg-muted rounded-full px-2 py-1">{countByType?.courierCount || 0}</span>
         </button>
       </div>
 
@@ -351,10 +480,17 @@ export const AdminPage = () => {
           <CardContent>
             <UserTable
               key="customers"
-              users={customers}
+              users={users}
               onDelete={handleDeleteClick}
               isDeleting={isDeleting}
               t={t}
+              page={page}
+              size={size}
+              totalCount={totalCount}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onSizeChange={handleSizeChange}
+              loading={loading}
             />
           </CardContent>
         </Card>
@@ -372,10 +508,17 @@ export const AdminPage = () => {
           <CardContent>
             <UserTable
               key="couriers"
-              users={couriers}
+              users={users}
               onDelete={handleDeleteClick}
               isDeleting={isDeleting}
               t={t}
+              page={page}
+              size={size}
+              totalCount={totalCount}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onSizeChange={handleSizeChange}
+              loading={loading}
             />
           </CardContent>
         </Card>

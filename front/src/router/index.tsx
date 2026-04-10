@@ -11,6 +11,14 @@ import { useKeycloak } from "@/hooks/useKeycloak";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTranslation } from "react-i18next";
 
+// ProtectedRoute component - chroni dostęp do stron tylko dla zalogowanych użytkowników
+const ProtectedRoute = ({ children, isLogged }: { children: React.ReactNode; isLogged: boolean }) => {
+  if (!isLogged) {
+    return <Navigate to={Pathnames.customer.home} replace />;
+  }
+  return children;
+};
+
 export const RoutesComponent = () => {
   const { keycloak, isInitialized } = useKeycloak();
   const { t } = useTranslation();
@@ -52,19 +60,43 @@ export const RoutesComponent = () => {
         <Route key={path} path={path} element={withLayout(Component)} />
       ))}
 
-      {/* ADMIN */}
+      {/* ADMIN - Protected */}
       {adminRoutes.map(({ path, Component }) => (
-        <Route key={path} path={path} element={withLayout(Component)} />
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute isLogged={isLogged}>
+              {withLayout(Component)}
+            </ProtectedRoute>
+          }
+        />
       ))}
 
-      {/* CUSTOMER */}
+      {/* CUSTOMER - Protected */}
       {customerRoutes.map(({ path, Component }) => (
-        <Route key={path} path={path} element={withLayout(Component)} />
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute isLogged={isLogged}>
+              {withLayout(Component)}
+            </ProtectedRoute>
+          }
+        />
       ))}
 
-      {/* COURIER */}
+      {/* COURIER - Protected */}
       {courierRoutes.map(({ path, Component }) => (
-        <Route key={path} path={path} element={withLayout(Component)} />
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute isLogged={isLogged}>
+              {withLayout(Component)}
+            </ProtectedRoute>
+          }
+        />
       ))}
 
       {/* 404 */}
