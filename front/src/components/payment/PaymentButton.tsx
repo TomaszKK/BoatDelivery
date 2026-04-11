@@ -1,5 +1,6 @@
 import React from "react";
 import { usePayment } from "@/hooks/usePayment";
+import { useTranslation } from "react-i18next";
 
 interface PaymentButtonProps {
   orderId: string;
@@ -8,11 +9,12 @@ interface PaymentButtonProps {
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
-  orderId,
-  amount,
-  customerEmail,
-}) => {
+                                                       orderId,
+                                                       amount,
+                                                       customerEmail,
+                                                     }) => {
   const { initiatePayment, isLoading, error } = usePayment();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     initiatePayment(orderId, amount, customerEmail);
@@ -29,7 +31,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
             : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"
         }`}
       >
-        {isLoading ? "Przetwarzanie..." : `Zapłać ${amount} PLN`}
+        {isLoading
+          ? t("payment.processing")
+          : t("payment.payAmount", { amount: amount.toFixed(2) })}
       </button>
 
       {error && (

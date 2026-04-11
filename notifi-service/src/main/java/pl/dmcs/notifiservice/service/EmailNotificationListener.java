@@ -10,11 +10,37 @@ import pl.dmcs.notifiservice.model.SmsLog;
 import pl.dmcs.notifiservice.repository.NotificationLogRepository;
 import pl.dmcs.notifiservice.repository.SmsLogRepository;
 import pl.dmcs.notifiservice.service.sms.SmsSender;
+import pl.dmcs.notifiservice.config.RabbitMQConfig;
+import pl.dmcs.notifiservice.dto.PaymentEvent;
+import pl.dmcs.notifiservice.dto.PaymentStatus;
 
+import java.beans.EventHandler;
 import java.util.UUID;
 
 @Service
 public class EmailNotificationListener {
+
+    private static final String DEFAULT_EMAIL_CONTENT = "Brak wysłanego e-maila";
+    private static final String RECIPIENT_LOG_PREFIX = "MAIL ODBIORCY:\n";
+    private static final String COURIER_LOG_PREFIX = "MAIL KURIERA:\n";
+    private static final String NO_DATA = "BRAK DANYCH";
+
+    public enum EventType {
+        ORDER_CREATED,
+        IN_TRANSIT_FOR_PACKAGE,
+        ORDER_RECEIVED_FROM_CUSTOMER,
+        IN_TRANSIT_TO_CUSTOMER,
+        DELIVERY_COMPLETED,
+        ORDER_CANCELED,
+        ROUTE_ASSIGNED_RECEIVE,
+        ROUTE_ASSIGNED_DELIVERY
+    }
+
+    public enum Audience {
+        CUSTOMER,
+        RECIPIENT,
+        COURIER
+    }
 
     private final EmailSenderService emailSenderService;
     private final NotificationLogRepository emailLogRepository;
@@ -39,39 +65,47 @@ public class EmailNotificationListener {
     public void handleOrderEvent(OrderEvent event) {
         NotificationStatus status = NotificationStatus.SUCCESS;
         String errorMessage = null;
-        String generatedEmailContent = "Brak wysłanego e-maila";
-        String logRecipientEmail = "BRAK DANYCH";
+        String generatedEmailContent = DEFAULT_EMAIL_CONTENT;
+        String logRecipientEmail = NO_DATA;
 
         try {
-            // Obsluga wiadomosci do klineta
+
+            EventType currentEvent;
+            try {
+                currentEvent = EventType.valueOf(event.eventType());
+            } catch (IllegalArgumentException e) {
+                System.err.println("Otrzymano nieznany typ zdarzenia: " + event.eventType());
+                return;
+            }
+            // Klient wiadmosci
             if (event.targetAudience() != null && event.targetAudience().contains("CUSTOMER")) {
                 if(event.customerEmail() != null) logRecipientEmail = event.customerEmail();
 
-                switch (event.eventType()) {
-                    case "ORDER_CREATED" -> {
+                switch (currentEvent) {
+                    case ORDER_CREATED -> {
                         generatedEmailContent = emailSenderService.sendOrderCreatedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                         sseNotificationService.pushNotificationToFrontend("Utworzono zlecenie nadania paczki: " + event.trackingNumber());
                     }
-                    case "IN_TRANSIT_FOR_PACKAGE" -> {
+                    case IN_TRANSIT_FOR_PACKAGE -> {
                         generatedEmailContent = emailSenderService.sendInTransitForPackageEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.pickupAddress(), event.courierPhone());
                         sseNotificationService.pushNotificationToFrontend("Kurier jedzie po odbiór: " + event.trackingNumber());
                     }
-                    case "ORDER_RECEIVED_FROM_CUSTOMER" -> {
+                    case ORDER_RECEIVED_FROM_CUSTOMER -> {
                         generatedEmailContent = emailSenderService.sendOrderReceivedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                         sseNotificationService.pushNotificationToFrontend("Kurier odebrał paczkę: " + event.trackingNumber());
                     }
-                    case "IN_TRANSIT_TO_CUSTOMER" -> {
+                    case IN_TRANSIT_TO_CUSTOMER -> {
                         generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.deliveryAddress(), event.courierPhone());
                         sseNotificationService.pushNotificationToFrontend("Paczka w drodze do doręczenia: " + event.trackingNumber());
 
                         String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.trackingNumber(), event.courierPhone());
                         dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.customerPhone(), smsMsg);
                     }
-                    case "DELIVERY_COMPLETED" -> {
+                    case DELIVERY_COMPLETED -> {
                         generatedEmailContent = emailSenderService.sendDeliveryCompletedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                         sseNotificationService.pushNotificationToFrontend("Paczka dostarczona: " + event.trackingNumber());
                     }
-                    case "ORDER_CANCELED" -> {
+                    case ORDER_CANCELED -> {
                         generatedEmailContent = emailSenderService.sendCancellationEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                         sseNotificationService.pushNotificationToFrontend("Zlecenie anulowane: " + event.trackingNumber());
                     }
@@ -80,51 +114,46 @@ public class EmailNotificationListener {
             }
 
             // Obsługa wiadomości do odbiorcy paczki
-            if (event.targetAudience() != null && event.targetAudience().contains("RECIPIENT") && event.recipientEmail() != null) {
+            if (event.targetAudience() != null && event.targetAudience().contains(Audience.RECIPIENT.name()) && event.recipientEmail() != null) {
 
-                String recipientLogContext = "MAIL ODBIORCY:\n";
-
-                switch (event.eventType()) {
-                    case "ORDER_CREATED" -> {
+                switch (currentEvent) {
+                    case ORDER_CREATED -> {
                         String mailContent = emailSenderService.sendRecipientOrderCreatedEmail(event.recipientEmail(), event.trackingNumber(), event.recipientFirstName(), event.firstName());
-                        generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + recipientLogContext + mailContent;
+                        generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + RECIPIENT_LOG_PREFIX + mailContent;
                     }
-                    case "IN_TRANSIT_TO_CUSTOMER" -> {
+                    case IN_TRANSIT_TO_CUSTOMER -> {
                         String mailContent = emailSenderService.sendRecipientInTransitEmail(event.recipientEmail(), event.trackingNumber(), event.recipientFirstName(), event.courierPhone());
-                        generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + recipientLogContext + mailContent;
+                        generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + RECIPIENT_LOG_PREFIX + mailContent;
 
                         String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer kuriera: %s", event.trackingNumber(), event.courierPhone());
                         dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.recipientPhone(), smsMsg);
                     }
                 }
 
-                // Dopisujemy odbiorcę do logów bazy danych
-                if (logRecipientEmail.equals("BRAK DANYCH")) {
+                if (logRecipientEmail.equals(NO_DATA)) {
                     logRecipientEmail = event.recipientEmail();
                 } else {
                     logRecipientEmail += " ORAZ ODBIORCA: " + event.recipientEmail();
                 }
             }
 
-
-            // Obsluga wiadomosci do kuriera
-            if (event.targetAudience() != null && event.targetAudience().contains("COURIER")) {
-                if(event.courierEmail() != null && !event.targetAudience().contains("CUSTOMER")) {
+            // Obsługa wiadomości do kuriera
+            if (event.targetAudience() != null && event.targetAudience().contains(Audience.COURIER.name())) {
+                if (event.courierEmail() != null && !event.targetAudience().contains(Audience.CUSTOMER.name())) {
                     logRecipientEmail = event.courierEmail();
                 } else if (event.courierEmail() != null) {
                     logRecipientEmail += " ORAZ " + event.courierEmail();
                 }
 
-                switch (event.eventType()) {
-                    case "ROUTE_ASSIGNED_RECEIVE", "ROUTE_ASSIGNED_DELIVERY" -> {
+                switch (currentEvent) {
+                    case ROUTE_ASSIGNED_RECEIVE, ROUTE_ASSIGNED_DELIVERY -> {
                         String courierEmailContent = emailSenderService.sendRouteAssignedEmail(event.courierEmail(), event.totalDistanceKm(), event.estimatedDurationMin());
-                        generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + "MAIL KURIERA:\n" + courierEmailContent;
+                        generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + COURIER_LOG_PREFIX + courierEmailContent;
                         sseNotificationService.pushNotificationToFrontend(String.format("Nowa trasa przydzielona! Dystans: %.1f km, Czas: %d min.", event.totalDistanceKm(), event.estimatedDurationMin()));
                     }
-                    case "ORDER_CANCELED" -> {
-
+                    case ORDER_CANCELED -> {
                         String courierEmailContent = emailSenderService.sendCourierCancellationEmail(event.courierEmail(), event.trackingNumber(), event.deliveryAddress());
-                        generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + "MAIL KURIERA:\n" + courierEmailContent;
+                        generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + COURIER_LOG_PREFIX + courierEmailContent;
                         sseNotificationService.pushNotificationToFrontend("UWAGA! Anulacja paczki " + event.trackingNumber() + " - zmiana w trasie.");
 
                         String smsMsg = String.format("Zlecenie %s anulowane! Pomiń adres: %s.", event.trackingNumber(), event.deliveryAddress());
@@ -189,10 +218,11 @@ public class EmailNotificationListener {
             }
         }
     }
-    @org.springframework.amqp.rabbit.annotation.RabbitListener(queues = pl.dmcs.notifiservice.config.RabbitMQConfig.PAYMENT_QUEUE)
-    public void handlePaymentEvent(pl.dmcs.notifiservice.dto.PaymentEvent event) {
+    @RabbitListener(queues = RabbitMQConfig.PAYMENT_QUEUE)
+    public void handlePaymentEvent(PaymentEvent event) {
         try {
-            if (pl.dmcs.notifiservice.dto.PaymentStatus.PAID.equals(event.status())) {
+            // Zobacz jak czysto to teraz wygląda:
+            if (PaymentStatus.PAID.equals(event.status())) {
                 String trackingRef = event.orderId().toString().substring(0, 8);
 
                 String mailContent = emailSenderService.sendInvoiceEmail(

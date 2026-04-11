@@ -12,6 +12,9 @@ export const Pathnames = {
     "mine-orders": "/mine-orders",
     "orders-details": "/orders/:trackingNumber",
     profile: "/profile",
+    "payment-success": "/payment/success",
+    "payment-cancel": "/payment/cancel",
+    "payment-details": "/payment/:orderId",
   },
   admin: {
     home: "/orders",

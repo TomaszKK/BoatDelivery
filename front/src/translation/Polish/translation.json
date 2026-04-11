@@ -304,5 +304,16 @@
     "stepInTransit": "W drodze",
     "stepDelivered": "Dostarczone",
     "orderCanceledMsg": "To zamówienie zostało anulowane"
+  },
+  "payment": {
+    "missingData": "Brak wymaganych danych do płatności.",
+    "backToOrders": "Wróć do zamówień",
+    "completePayment": "Dokończ płatność",
+    "savedNeedsPayment": "Zlecenie zostało zapisane, ale wymaga opłacenia, abyśmy mogli wysłać kuriera.",
+    "toPay": "Do zapłaty:",
+    "successTitle": "Płatność zakończona!",
+    "successDesc": "Dziękujemy za opłacenie zamówienia. Oczekuj na powiadomienia e-mail – wkrótce wyślemy kuriera po odbiór paczki.",
+    "processing": "Przetwarzanie...",
+    "payAmount": "Zapłać {{amount}} PLN"
   }
 }

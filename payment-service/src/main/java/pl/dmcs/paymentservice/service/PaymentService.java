@@ -1,5 +1,6 @@
 package pl.dmcs.paymentservice.service;
 
+import com.stripe.exception.EventDataObjectDeserializationException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -7,13 +8,17 @@ import com.stripe.model.Invoice;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.dmcs.paymentservice.config.RabbitMQConfig;
+import pl.dmcs.paymentservice.dto.PaymentEvent;
 import pl.dmcs.paymentservice.dto.PaymentRequest;
+import pl.dmcs.paymentservice.model.PaymentStatus;
 import pl.dmcs.paymentservice.model.PaymentTransaction;
 import pl.dmcs.paymentservice.repository.PaymentTransactionRepository;
-import com.stripe.exception.EventDataObjectDeserializationException;
+
 
 import java.math.BigDecimal;
 
@@ -21,7 +26,7 @@ import java.math.BigDecimal;
 public class PaymentService {
 
     private final PaymentTransactionRepository transactionRepository;
-    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${stripe.webhook-secret}")
     private String webhookSecret;
@@ -29,10 +34,11 @@ public class PaymentService {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
-    public PaymentService(PaymentTransactionRepository transactionRepository, org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate) {
+    public PaymentService(PaymentTransactionRepository transactionRepository, RabbitTemplate rabbitTemplate) {
         this.transactionRepository = transactionRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
+
 
     @Transactional
     public String createPaymentSession(PaymentRequest request) throws StripeException {
@@ -77,10 +83,10 @@ public class PaymentService {
                 .stripeSessionId(session.getId())
                 .amount(request.amount())
                 .currency("PLN")
-                .status(pl.dmcs.paymentservice.model.PaymentStatus.PENDING)
+                .status(PaymentStatus.PENDING)
                 .build();
 
-        transactionRepository.save(transaction);
+        transactionRepository.saveAndFlush(transaction);
 
         return session.getUrl();
     }
@@ -109,12 +115,29 @@ public class PaymentService {
                 String sessionId = session.getId();
                 System.out.println("System rozpoznal sesje z Webhooka: " + sessionId);
 
-                PaymentTransaction transaction = transactionRepository.findByStripeSessionId(sessionId)
-                        .orElseThrow(() -> new RuntimeException("Nie znaleziono transakcji o ID: " + sessionId));
+
+                PaymentTransaction transaction;
+                try {
+                    transaction = transactionRepository.findByStripeSessionId(sessionId)
+                            .orElseThrow(() -> new RuntimeException("Nie znaleziono transakcji o ID: " + sessionId));
+                } catch (Exception e) {
+                    System.err.println("Błąd pobierania z bazy: " + e.getMessage());
+                    return;
+                }
 
 
-                transaction.setStatus(pl.dmcs.paymentservice.model.PaymentStatus.PAID);
-                transactionRepository.save(transaction);
+                try {
+                    transaction.setStatus(PaymentStatus.PAID);
+                    transactionRepository.saveAndFlush(transaction);
+                    System.out.println("SUKCES: Baza danych zaktualizowana na PAID!");
+                } catch (Exception e) {
+                    System.err.println("=========================================");
+                    System.err.println("KRYTYCZNY BŁĄD ZAPISU DO BAZY DANYCH!");
+                    System.err.println("Wiadomość: " + e.getMessage());
+                    System.err.println("Prawdopodobnie kolumna 'status' w tabeli PostgreSQL jest typu integer (liczba), a Spring próbuje tam wstawić tekst 'PAID'.");
+                    System.err.println("=========================================");
+
+                }
 
 
                 String invoiceUrl = null;
@@ -127,26 +150,30 @@ public class PaymentService {
                     }
                 }
 
+                if (session.getCustomerDetails() == null || session.getCustomerDetails().getEmail() == null) {
+                    throw new RuntimeException("KRYTYCZNY BŁĄD INTEGRACJI: Stripe nie zwrócił adresu e-mail klienta. Przerwano wysyłkę powiadomienia do RabbitMQ.");
+                }
+                String customerEmail = session.getCustomerDetails().getEmail();
 
-                String customerEmail = session.getCustomerDetails() != null ? session.getCustomerDetails().getEmail() : "brak-danych@system.pl";
 
-
-                pl.dmcs.paymentservice.dto.PaymentEvent eventMsg =
-                        new pl.dmcs.paymentservice.dto.PaymentEvent(
-                                transaction.getOrderId(),
-                                customerEmail,
-                                pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
-                                transaction.getAmount(),
-                                invoiceUrl
-                        );
-
-                rabbitTemplate.convertAndSend(
-                        pl.dmcs.paymentservice.config.RabbitMQConfig.EXCHANGE_NAME,
-                        pl.dmcs.paymentservice.config.RabbitMQConfig.ROUTING_KEY_COMPLETED,
-                        eventMsg
+                PaymentEvent eventMsg = new PaymentEvent(
+                        transaction.getOrderId(),
+                        customerEmail,
+                        pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
+                        transaction.getAmount(),
+                        invoiceUrl
                 );
 
-                System.out.println("Wyslano zdarzenie do RabbitMQ: " + eventMsg);
+                try {
+                    rabbitTemplate.convertAndSend(
+                            RabbitMQConfig.EXCHANGE_NAME,
+                            RabbitMQConfig.ROUTING_KEY_COMPLETED,
+                            eventMsg
+                    );
+                    System.out.println("Wysłano zdarzenie do RabbitMQ: " + eventMsg);
+                } catch (Exception e) {
+                    System.err.println("Błąd komunikacji z RabbitMQ: " + e.getMessage());
+                }
 
             } else {
                 System.err.println("Blad: Obiekt sesji to null po deserializacji.");

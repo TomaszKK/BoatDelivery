@@ -47,11 +47,11 @@ export const customerRoutes: RouteType[] = [
     Component: OrderDetailsPage,
   },
   {
-    path: "/payment/success",
+    path: Pathnames.customer["payment-success"],
     Component: PaymentSuccessPage,
   },
   {
-    path: "/payment/cancel",
+    path: Pathnames.customer["payment-cancel"],
     Component: () => (
       <div className="mt-20 text-center">
         <h1 className="text-2xl font-bold text-red-500">Płatność anulowana</h1>
@@ -60,7 +60,7 @@ export const customerRoutes: RouteType[] = [
     ),
   },
   {
-    path: "/payment/:orderId",
+    path: Pathnames.customer["payment-details"],
     Component: PaymentPage,
   },
 ];
