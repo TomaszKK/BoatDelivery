@@ -75,6 +75,7 @@ public class EmailNotificationListener {
                         generatedEmailContent = emailSenderService.sendCancellationEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                         sseNotificationService.pushNotificationToFrontend("Zlecenie anulowane: " + event.trackingNumber());
                     }
+
                 }
             }
 
@@ -185,6 +186,49 @@ public class EmailNotificationListener {
                 smsLogRepository.save(smsLog);
             } catch (Exception dbEx) {
                 System.err.println("KRYTYCZNY BŁĄD BAZY DANYCH (SMS): " + dbEx.getMessage());
+            }
+        }
+    }
+    @org.springframework.amqp.rabbit.annotation.RabbitListener(queues = pl.dmcs.notifiservice.config.RabbitMQConfig.PAYMENT_QUEUE)
+    public void handlePaymentEvent(pl.dmcs.notifiservice.dto.PaymentEvent event) {
+        try {
+            if (pl.dmcs.notifiservice.dto.PaymentStatus.PAID.equals(event.status())) {
+                String trackingRef = event.orderId().toString().substring(0, 8);
+
+                String mailContent = emailSenderService.sendInvoiceEmail(
+                        event.customerEmail(),
+                        trackingRef,
+                        event.invoiceUrl()
+                );
+
+                sseNotificationService.pushNotificationToFrontend("Płatność zaksięgowana, faktura wysłana.");
+                System.out.println("Wysłano fakturę na maila: " + event.customerEmail());
+
+                NotificationLog dbLog = NotificationLog.builder()
+                        .orderId(event.orderId())
+                        .recipientEmail(event.customerEmail())
+                        .trackingNumber(trackingRef)
+                        .messageContent("MAIL Z FAKTURĄ:\n" + mailContent)
+                        .status(NotificationStatus.SUCCESS)
+                        .build();
+
+                emailLogRepository.save(dbLog);
+            }
+        } catch (Exception e) {
+            System.err.println("Błąd wysyłki faktury: " + e.getMessage());
+
+            try {
+                NotificationLog errorLog = NotificationLog.builder()
+                        .orderId(event.orderId())
+                        .recipientEmail(event.customerEmail())
+                        .trackingNumber(event.orderId().toString().substring(0, 8))
+                        .messageContent("BŁĄD WYSYŁKI FAKTURY")
+                        .status(NotificationStatus.ERROR)
+                        .errorMessage(e.getMessage())
+                        .build();
+                emailLogRepository.save(errorLog);
+            } catch (Exception dbEx) {
+                System.err.println("KRYTYCZNY BŁĄD BAZY DANYCH: " + dbEx.getMessage());
             }
         }
     }

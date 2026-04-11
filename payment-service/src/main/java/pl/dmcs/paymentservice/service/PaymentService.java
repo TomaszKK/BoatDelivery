@@ -3,6 +3,7 @@ package pl.dmcs.paymentservice.service;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.Invoice;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -50,6 +51,7 @@ public class PaymentService {
                 .setCancelUrl(cancelUrl)
                 .setCustomerEmail(request.customerEmail())
                 .putMetadata("order_id", request.orderId().toString())
+                .setInvoiceCreation(SessionCreateParams.InvoiceCreation.builder().setEnabled(true).build())
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)
@@ -110,20 +112,32 @@ public class PaymentService {
                 PaymentTransaction transaction = transactionRepository.findByStripeSessionId(sessionId)
                         .orElseThrow(() -> new RuntimeException("Nie znaleziono transakcji o ID: " + sessionId));
 
-                transaction.setStatus(pl.dmcs.paymentservice.model.PaymentStatus.COMPLETED);
+
+                transaction.setStatus(pl.dmcs.paymentservice.model.PaymentStatus.PAID);
                 transactionRepository.save(transaction);
 
-                System.out.println("=========================================");
-                System.out.println("PLATNOSC ZAKSIEGOWANA!");
-                System.out.println("Zamowienie: " + transaction.getOrderId());
-                System.out.println("Kwota: " + transaction.getAmount() + " PLN");
-                System.out.println("=========================================");
+
+                String invoiceUrl = null;
+                if (session.getInvoice() != null) {
+                    try {
+                        Invoice invoice = Invoice.retrieve(session.getInvoice());
+                        invoiceUrl = invoice.getInvoicePdf();
+                    } catch (Exception e) {
+                        System.err.println("Błąd pobierania faktury ze Stripe: " + e.getMessage());
+                    }
+                }
+
+
+                String customerEmail = session.getCustomerDetails() != null ? session.getCustomerDetails().getEmail() : "brak-danych@system.pl";
+
 
                 pl.dmcs.paymentservice.dto.PaymentEvent eventMsg =
                         new pl.dmcs.paymentservice.dto.PaymentEvent(
                                 transaction.getOrderId(),
+                                customerEmail,
                                 pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
-                                transaction.getAmount()
+                                transaction.getAmount(),
+                                invoiceUrl
                         );
 
                 rabbitTemplate.convertAndSend(
