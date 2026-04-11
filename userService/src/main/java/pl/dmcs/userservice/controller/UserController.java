@@ -177,6 +177,20 @@ public class UserController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/internal/{id}")
+    public ResponseEntity<UserResponse> getUserByIdInternal(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Keycloak-Secret", required = false) String providedSecret) {
+
+        if (providedSecret == null || !expectedSecret.equals(providedSecret)) {
+            log.warn("Wrong secret for internal user fetch!!!: {}", providedSecret);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(userMapper.toResponse(user));
+    }
+
     @GetMapping("/public/list")
     public ResponseEntity<List<UserResponse>> getPublicUsersList() {
         List<User> users = userService.getAllUsers();

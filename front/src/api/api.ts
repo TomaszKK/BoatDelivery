@@ -4,6 +4,7 @@ import type { OrderResponseDTO, TrackedOrder } from "@/types/OrderType";
 import type { User } from "@/types/UserType";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
 import type { Transport } from "@/types/TransportType";
+import type { NotificationLog } from "@/types/NotificationType";
 
 export interface PaymentSessionResponse {
   checkoutUrl: string;
@@ -138,4 +139,10 @@ export const api = {
 
   unassignTransport: (transportId: string) =>
     apiForAuthenticated.post(`/transport/${transportId}/unassign`),
+
+  getEmailLogs: (): ApiResponseType<EmailLog[]> =>
+    apiForAuthenticated.get("/notifications/logs/email"),
+
+  getSmsLogs: (): ApiResponseType<SmsLog[]> =>
+    apiForAuthenticated.get("/notifications/logs/sms"),
 };

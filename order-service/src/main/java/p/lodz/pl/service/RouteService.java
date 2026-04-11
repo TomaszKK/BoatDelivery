@@ -11,6 +11,7 @@ import p.lodz.pl.model.enums.OrderStatus;
 import p.lodz.pl.model.enums.RouteStatus;
 import p.lodz.pl.repository.RouteRepository;
 import p.lodz.pl.repository.RouteStopRepository;
+import p.lodz.pl.messaging.OrderEventPublisher;
 
 import java.util.Comparator;
 import java.util.List;
@@ -28,6 +29,9 @@ public class RouteService {
 
     @Inject
     RouteMapper routeMapper;
+
+    @Inject
+    OrderEventPublisher eventPublisher;
 
     @Transactional
     public List<RouteResponseDTO> getAllRoutes(String userId, boolean isAdmin) {
@@ -82,11 +86,19 @@ public class RouteService {
         route.status = RouteStatus.IN_PROGRESS;
 
         if (route.stops != null) {
+            UUID courierUuid = UUID.fromString(courierId);
             for (RouteStop stop : route.stops) {
+                boolean changed = false;
                 if (stop.order.status == OrderStatus.ROUTE_ASSIGNED_RECEIVE) {
                     stop.order.status = OrderStatus.IN_TRANSIT_FOR_PACKAGE;
+                    changed = true;
                 } else if (stop.order.status == OrderStatus.ROUTE_ASSIGNED_DELIVERY) {
                     stop.order.status = OrderStatus.IN_TRANSIT_TO_CUSTOMER;
+                    changed = true;
+                }
+
+                if (changed) {
+                    eventPublisher.publishOrderChange(stop.order, courierUuid);
                 }
             }
         }
@@ -108,12 +120,18 @@ public class RouteService {
             throw new IllegalStateException("You have to start ur route first!");
         }
 
+        boolean changed = false; // <-- DODANO DEKLARACJĘ
         if (stop.order.status == OrderStatus.IN_TRANSIT_FOR_PACKAGE) {
             stop.order.status = OrderStatus.ORDER_RECEIVED_FROM_CUSTOMER;
+            changed = true;
         } else if (stop.order.status == OrderStatus.IN_TRANSIT_TO_CUSTOMER) {
             stop.order.status = OrderStatus.DELIVERY_COMPLETED;
+            changed = true;
         }
 
+        if (changed) {
+            eventPublisher.publishOrderChange(stop.order, UUID.fromString(courierId));
+        }
     }
 
     @Transactional
@@ -144,10 +162,13 @@ public class RouteService {
         route.status = RouteStatus.COMPLETED;
 
         if (route.stops != null) {
+            UUID courierUuid = UUID.fromString(courierId);
             for (RouteStop stop : route.stops) {
                 if (stop.order != null) {
                     if (stop.order.status == OrderStatus.ORDER_RECEIVED_FROM_CUSTOMER) {
                         stop.order.status = OrderStatus.IN_SORTING_CENTER;
+
+                        eventPublisher.publishOrderChange(stop.order, courierUuid);
                     }
                 }
             }

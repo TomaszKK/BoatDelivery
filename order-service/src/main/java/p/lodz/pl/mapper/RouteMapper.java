@@ -6,7 +6,7 @@ import p.lodz.pl.dto.RouteStopDTO;
 import p.lodz.pl.model.Route;
 import p.lodz.pl.model.RouteStop;
 
-@Mapper(componentModel = "cdi", uses = OrderMapper.class)
+@Mapper(componentModel = "jakarta")
 public interface RouteMapper {
 
     RouteResponseDTO toDto(Route entity);

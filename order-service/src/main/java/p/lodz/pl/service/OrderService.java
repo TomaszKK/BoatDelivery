@@ -18,6 +18,7 @@ import p.lodz.pl.model.Location;
 import p.lodz.pl.model.Order;
 import p.lodz.pl.model.enums.OrderStatus;
 import p.lodz.pl.repository.OrderRepository;
+import p.lodz.pl.messaging.OrderEventPublisher;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,9 @@ public class OrderService {
     @Inject
     OrderRepository orderRepository;
 
+    @Inject
+    OrderEventPublisher eventPublisher;
+
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO requestDTO, HerePosition pickupPos, HerePosition deliveryPos) {
         Order order = orderMapper.toEntity(requestDTO);
@@ -57,7 +61,7 @@ public class OrderService {
         order.deliveryLocation.longitude = deliveryPos.lng();
 
         order.persist();
-
+        eventPublisher.publishOrderChange(order);
         return orderMapper.toDto(order);
     }
 
@@ -104,7 +108,7 @@ public class OrderService {
 
         verifyOwnership(order);
         orderMapper.updateEntityFromDto(requestDTO, order);
-
+        eventPublisher.publishOrderChange(order);
         return orderMapper.toDto(order);
     }
 
@@ -123,6 +127,7 @@ public class OrderService {
         }
 
         order.status = newStatus;
+        eventPublisher.publishOrderChange(order);
         return orderMapper.toDto(order);
     }
 
@@ -144,7 +149,7 @@ public class OrderService {
         } else {
             order.status = OrderStatus.ORDER_CANCELED;
         }
-
+        eventPublisher.publishOrderChange(order);
         return orderMapper.toDto(order);
     }
 
