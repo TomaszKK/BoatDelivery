@@ -120,16 +120,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       <>
                         <SheetClose asChild>
                           <Link
-                            to={Pathnames.customer.track}
-                            className="hover:text-primary flex items-center gap-2"
-                          >
-                            <PackageSearchIcon className="h-5 w-5" />{" "}
-                            {t("trackPackage")}
-                          </Link>
-                        </SheetClose>
-                        <SheetClose asChild>
-                          <Link
-                            to={Pathnames.customer.orders}
+                            to={Pathnames.customer["mine-orders"]}
                             className="hover:text-primary flex items-center gap-2"
                           >
                             <PackageIcon className="h-5 w-5" />{" "}
@@ -236,21 +227,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => navigate(Pathnames.customer.track)}
-                      >
-                        <PackageSearchIcon className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{t("trackPackage")}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(Pathnames.customer.orders)}
+                        onClick={() => navigate(Pathnames.customer["mine-orders"])}
                       >
                         <PackageIcon className="h-5 w-5" />
                       </Button>
