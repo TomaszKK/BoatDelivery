@@ -48,7 +48,7 @@ public class OrderEventPublisher {
             LOG.error("Nie udało się pobrać danych klienta z user-service dla id: " + order.customerId, e);
         }
 
-        // 2. Pobieranie danych Kuriera (jeśli został podany)
+        // 2. Pobieranie danych Kuriera
         if (courierId != null) {
             try {
                 courier = userServiceClient.getUserById(courierId);

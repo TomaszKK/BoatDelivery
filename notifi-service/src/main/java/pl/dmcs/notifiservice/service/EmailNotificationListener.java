@@ -92,7 +92,6 @@ public class EmailNotificationListener {
                         String mailContent = emailSenderService.sendRecipientInTransitEmail(event.recipientEmail(), event.trackingNumber(), event.recipientFirstName(), event.courierPhone());
                         generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + recipientLogContext + mailContent;
 
-                        // Opcjonalnie: SMS do odbiorcy
                         String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer kuriera: %s", event.trackingNumber(), event.courierPhone());
                         dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.recipientPhone(), smsMsg);
                     }
