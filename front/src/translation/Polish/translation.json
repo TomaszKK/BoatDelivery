@@ -70,8 +70,8 @@
     "DELIVERY_COMPLETED": "Dostawa zakończona",
     "newOrder": "Nowe zamówienie",
     "yourOrders": "Twoje zamówienia",
-    "weight": "Waga",
-    "volume": "Objętość",
+    "weight": "Waga (kg)",
+    "volume": "Objętość (m3)",
     "pickup": "Odbiór",
     "delivery": "Dostawa",
     "street": "Ulica",
@@ -122,7 +122,7 @@
     "next": "Następna",
     "fetchOrdersFail": "Nie udało się pobrać listy zamówień.",
     "tableDate": "Data utworzenia",
-    "tableWeight": "Waga",
+    "tableWeight": "Waga (kg)",
     "tableDestination": "Cel",
     "tableTracking": "Tracking",
     "tableStatus": "Status",
@@ -195,6 +195,25 @@
       "page": "Strona",
       "of": "z",
       "showing": "Wyświetlanie"
+    },
+    "logs": {
+      "title": "Logi Powiadomień",
+      "description": "Historia komunikacji wychodzącej z systemu (E-mail oraz SMS).",
+      "emailTab": "E-mail",
+      "smsTab": "SMS",
+      "table": {
+        "date": "Data Nadania",
+        "orderNumber": "Nr Zlecenia",
+        "recipientEmail": "Odbiorca (E-mail)",
+        "recipientPhone": "Odbiorca (Telefon)",
+        "content": "Treść / Komunikat błędu",
+        "status": "Status"
+      },
+      "emptyEmail": "Brak wysłanych powiadomień E-mail.",
+      "emptySms": "Brak wysłanych powiadomień SMS.",
+      "fetchError": "Nie udało się pobrać logów z serwera powiadomień. Sprawdź konsolę.",
+      "errorPrefix": "Błąd:",
+      "noContent": "Brak treści"
     }
   },
   "courier": {

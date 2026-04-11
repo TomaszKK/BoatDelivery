@@ -38,7 +38,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
 [
   {
     "eventType": "ORDER_CREATED",
-    "orderId": "UUID",
+    "orderId": "123e4567-e89b-12d3-a456-426614174000",
     "trackingNumber": "BD-ABCD-001",
     "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
@@ -48,7 +48,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
   
   {
     "eventType": "ROUTE_ASSIGNED_DELIVERY",
-    "orderId": "UUID",
+    "orderId": "123e4567-e89b-12d3-a456-426614174000",
     "trackingNumber": "BD-ABCD-001",
     "targetAudience": ["COURIER"],
     "courierEmail": "kurier.tomasz@boatdelivery.pl",
@@ -58,7 +58,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
   
   {
     "eventType": "IN_TRANSIT_FOR_PACKAGE",
-    "orderId": "UUID",
+    "orderId": "123e4567-e89b-12d3-a456-426614174000",
     "trackingNumber": "BD-ABCD-001",
     "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
@@ -69,7 +69,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
   
   {
     "eventType": "ORDER_RECEIVED_FROM_CUSTOMER",
-    "orderId": "UUID",
+    "orderId": "123e4567-e89b-12d3-a456-426614174000",
     "trackingNumber": "BD-ABCD-001",
     "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
@@ -78,7 +78,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
  
   {
     "eventType": "IN_TRANSIT_TO_CUSTOMER",
-    "orderId": "UUID",
+    "orderId": "123e4567-e89b-12d3-a456-426614174000",
     "trackingNumber": "BD-ABCD-001",
     "targetAudience": ["CUSTOMER"],
     "customerEmail": "klient@mail.pl",
@@ -90,7 +90,7 @@ Aby przetestować obwód bez konieczności stawiania serwisu zamówień (Order S
   
   {
     "eventType": "DELIVERY_COMPLETED",
-    "orderId": "UUID",
+    "orderId": "123e4567-e89b-12d3-a456-426614174000",
     "trackingNumber": "BD-ABCD-001",
     "targetAudience": ["CUSTOMER"],
     "customerEmail": "odbiorca@mail.pl",
