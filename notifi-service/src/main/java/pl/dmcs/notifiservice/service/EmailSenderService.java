@@ -88,6 +88,23 @@ public class EmailSenderService {
         return text;
     }
 
+    // --- PROCES ODBIORCY PACZKI ---
+
+    public String sendRecipientOrderCreatedEmail(String to, String ref, String recipientName, String senderName) {
+        String subject = "Ktoś nadał do Ciebie paczkę! Nr: " + ref;
+        String text = String.format("Cześć %s,\n\nUżytkownik %s właśnie nadał do Ciebie paczkę nr: %s. Poinformujemy Cię, gdy wyruszy w trasę.\n\nPozdrawiamy,\nZespół BoatDelivery", recipientName, senderName, ref);
+        sendEmail(to, subject, text);
+        return text;
+    }
+
+    public String sendRecipientInTransitEmail(String to, String ref, String recipientName, String courierPhone) {
+        String subject = "Paczka do Ciebie jest już w drodze! Nr: " + ref;
+        String text = String.format("Cześć %s,\n\nKurier jedzie do Ciebie z paczką nr: %s. Telefon do kuriera: %s.\n\nPozdrawiamy,\nZespół BoatDelivery", recipientName, ref, courierPhone);
+        sendEmail(to, subject, text);
+        return text;
+    }
+
+
     // --- PROCES KURIERA ---
 
     public String sendRouteAssignedEmail(String to, java.math.BigDecimal distance, Integer duration) {

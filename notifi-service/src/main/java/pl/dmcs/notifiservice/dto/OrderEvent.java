@@ -13,10 +13,14 @@ public record OrderEvent(
         Integer estimatedDurationMin,// Czas trasy kuriera w minetach?
         String customerEmail,        // E-mail klienta
         String courierEmail,         // E-mail kuriera
+        String recipientEmail,        // E-mail odbiorcy paczki
         String customerPhone,        // Telefon klienta
         String courierPhone,         // Telefon kuriera
+        String recipientPhone,        // Telefon odbiorcy paczki
         String firstName,
         String lastName,
+        String recipientFirstName,
+        String recipientLastName,
         String pickupAddress,        // Adres nadania
         String deliveryAddress       // Adres docelowy
 ) {}

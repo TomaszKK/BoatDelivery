@@ -78,6 +78,35 @@ public class EmailNotificationListener {
                 }
             }
 
+            // Obsługa wiadomości do odbiorcy paczki
+            if (event.targetAudience() != null && event.targetAudience().contains("RECIPIENT") && event.recipientEmail() != null) {
+
+                String recipientLogContext = "MAIL ODBIORCY:\n";
+
+                switch (event.eventType()) {
+                    case "ORDER_CREATED" -> {
+                        String mailContent = emailSenderService.sendRecipientOrderCreatedEmail(event.recipientEmail(), event.trackingNumber(), event.recipientFirstName(), event.firstName());
+                        generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + recipientLogContext + mailContent;
+                    }
+                    case "IN_TRANSIT_TO_CUSTOMER" -> {
+                        String mailContent = emailSenderService.sendRecipientInTransitEmail(event.recipientEmail(), event.trackingNumber(), event.recipientFirstName(), event.courierPhone());
+                        generatedEmailContent = (generatedEmailContent.equals("Brak wysłanego e-maila") ? "" : generatedEmailContent + "\n---\n") + recipientLogContext + mailContent;
+
+                        // Opcjonalnie: SMS do odbiorcy
+                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer kuriera: %s", event.trackingNumber(), event.courierPhone());
+                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.recipientPhone(), smsMsg);
+                    }
+                }
+
+                // Dopisujemy odbiorcę do logów bazy danych
+                if (logRecipientEmail.equals("BRAK DANYCH")) {
+                    logRecipientEmail = event.recipientEmail();
+                } else {
+                    logRecipientEmail += " ORAZ ODBIORCA: " + event.recipientEmail();
+                }
+            }
+
+
             // Obsluga wiadomosci do kuriera
             if (event.targetAudience() != null && event.targetAudience().contains("COURIER")) {
                 if(event.courierEmail() != null && !event.targetAudience().contains("CUSTOMER")) {
