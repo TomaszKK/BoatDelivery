@@ -12,8 +12,14 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTranslation } from "react-i18next";
 
 // ProtectedRoute component - chroni dostęp do stron tylko dla zalogowanych użytkowników
-const ProtectedRoute = ({ children, isLogged }: { children: React.ReactNode; isLogged: boolean }) => {
-  if (!isLogged) {
+const ProtectedRoute = ({ 
+  children, 
+  isAllowed 
+}: { 
+  children: React.ReactNode; 
+  isAllowed: boolean;
+}) => {
+  if (!isAllowed) {
     return <Navigate to={Pathnames.customer.home} replace />;
   }
   return children;
@@ -40,7 +46,7 @@ export const RoutesComponent = () => {
     if (!isLogged) return Pathnames.customer.home;
     if (isAdmin) return Pathnames.admin.dashboard;
     if (isCourier) return Pathnames.courier.route;
-    if (isCustomer) return Pathnames.customer.orders;
+    if (isCustomer) return Pathnames.customer["mine-orders"];
     return Pathnames.customer.home;
   };
 
@@ -50,7 +56,7 @@ export const RoutesComponent = () => {
     </Layout>
   );
 
-  return (
+return (
     <Routes>
       {/* ROOT */}
       <Route path="/" element={<Navigate to={getHomePath()} replace />} />
@@ -66,7 +72,7 @@ export const RoutesComponent = () => {
           key={path}
           path={path}
           element={
-            <ProtectedRoute isLogged={isLogged}>
+            <ProtectedRoute isAllowed={isLogged && isAdmin}>
               {withLayout(Component)}
             </ProtectedRoute>
           }
@@ -79,7 +85,7 @@ export const RoutesComponent = () => {
           key={path}
           path={path}
           element={
-            <ProtectedRoute isLogged={isLogged}>
+            <ProtectedRoute isAllowed={isLogged && isCustomer}>
               {withLayout(Component)}
             </ProtectedRoute>
           }
@@ -92,7 +98,7 @@ export const RoutesComponent = () => {
           key={path}
           path={path}
           element={
-            <ProtectedRoute isLogged={isLogged}>
+            <ProtectedRoute isAllowed={isLogged && isCourier}>
               {withLayout(Component)}
             </ProtectedRoute>
           }

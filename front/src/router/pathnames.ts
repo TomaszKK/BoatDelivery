@@ -9,8 +9,8 @@ export const Pathnames = {
   customer: {
     home: "/home",
     track: "/track",
-    orders: "/orders",
-    ordersDetails: "/orders/:trackingNumber",
+    "mine-orders": "/mine-orders",
+    "orders-details": "/orders/:trackingNumber",
     profile: "/profile",
   },
   admin: {

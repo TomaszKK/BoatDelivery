@@ -36,11 +36,11 @@ export const customerRoutes: RouteType[] = [
     Component: ProfilePage,
   },
   {
-    path: Pathnames.customer.orders,
+    path: Pathnames.customer["mine-orders"],
     Component: MyOrdersPage,
   },
   {
-    path: Pathnames.customer.ordersDetails,
+    path: Pathnames.customer["orders-details"],
     Component: OrderDetailsPage,
   },
 ];
