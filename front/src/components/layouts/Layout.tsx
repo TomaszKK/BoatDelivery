@@ -40,6 +40,7 @@ import {
   UsersIcon,
   MapPinIcon,
   Settings2,
+  ScrollTextIcon,
 } from "lucide-react";
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -186,6 +187,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                             className="hover:text-primary flex items-center gap-2"
                           >
                             <PackageIcon className="h-5 w-5" /> {t("admin.fleet.title") || "Fleet"}
+                          </Link>
+                        </SheetClose>
+                        <SheetClose asChild>
+                          <Link
+                            to={Pathnames.admin.logs}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <ScrollTextIcon className="h-5 w-5" /> {t("admin.logs.title") || "Logi Powiadomień"}
                           </Link>
                         </SheetClose>
                       </>
@@ -346,6 +355,21 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{t("admin.fleet.title") || "Fleet"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.admin.logs)}
+                      >
+                        <ScrollTextIcon className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("admin.logs.title") || "Logi Powiadomień"}</p>
                     </TooltipContent>
                   </Tooltip>
                 </>

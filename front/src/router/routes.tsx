@@ -9,6 +9,7 @@ import { CourierRoutePage } from "@/pages/CourierRoutePage";
 import { HomePage } from "@/pages/HomePage";
 import { AdminRoutingPage } from "@/pages/AdminRoutingPage";
 import { AdminOrdersPage } from "@/pages/AdminOrdersPage";
+import { AdminLogsPage } from "@/pages/AdminLogsPage";
 
 export type RouteType = {
   path: string;
@@ -76,5 +77,9 @@ export const adminRoutes: RouteType[] = [
   {
     path: Pathnames.admin.fleet,
     Component: AdminFleetPage,
+  },
+  {
+    path: Pathnames.admin.logs,
+    Component: AdminLogsPage,
   },
 ];

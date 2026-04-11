@@ -62,7 +62,7 @@
     "newOrder": "New Order",
     "yourOrders": "Your Orders",
     "weight": "Weight",
-    "volume": "Volume",
+    "volume": "Volume (m3)",
     "pickup": "Pickup",
     "delivery": "Delivery",
     "street": "Street",
@@ -187,6 +187,25 @@
       "page": "Page",
       "of": "of",
       "showing": "Showing"
+    },
+    "logs": {
+      "title": "Notification Logs",
+      "description": "History of outgoing system communications (E-mail and SMS).",
+      "emailTab": "E-mail",
+      "smsTab": "SMS",
+      "table": {
+        "date": "Sent Date",
+        "orderNumber": "Order No.",
+        "recipientEmail": "Recipient (E-mail)",
+        "recipientPhone": "Recipient (Phone)",
+        "content": "Content / Error Message",
+        "status": "Status"
+      },
+      "emptyEmail": "No E-mail notifications sent.",
+      "emptySms": "No SMS notifications sent.",
+      "fetchError": "Failed to fetch logs from the notification server. Check the console.",
+      "errorPrefix": "Error:",
+      "noContent": "No content"
     }
   },
   "courier": {

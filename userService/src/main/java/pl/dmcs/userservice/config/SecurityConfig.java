@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/transport/courier/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transport/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/transport").permitAll()
+                        .requestMatchers("/api/user/internal/**").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
                         jwt.jwtAuthenticationConverter(jwtAuthConverter())
