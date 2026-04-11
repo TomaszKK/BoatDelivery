@@ -3,9 +3,28 @@ import type { ApiResponseType } from "@/types/ApiResponseType";
 import type { OrderResponseDTO, TrackedOrder } from "@/types/OrderType";
 import type { User } from "@/types/UserType";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
+import type { Transport } from "@/types/TransportType";
 
 export interface PaymentSessionResponse {
   checkoutUrl: string;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  numberOfElements: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface UserCountByType {
+  totalUsers: number;
+  customerCount: number;
+  courierCount: number;
+  adminCount: number;
 }
 
 export const api = {
@@ -79,4 +98,44 @@ export const api = {
     ),
 
   getAllUsers: (): ApiResponseType<User[]> => apiForAuthenticated.get("/user"),
+
+  getAllUsersPaged: (page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
+    apiForAuthenticated.get(`/user/paginated?page=${page}&size=${size}`),
+
+  getUsersByTypePaged: (userType: string, page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
+    apiForAuthenticated.get(`/user/paginated/by-type?userType=${userType}&page=${page}&size=${size}`),
+
+  getUserCountByType: (): ApiResponseType<UserCountByType> =>
+    apiForAuthenticated.get("/user/stats/count-by-type"),
+
+  deleteUser: (userId: string) =>
+    apiForAuthenticated.delete(`/user/${userId}`),
+
+  // Transport endpoints
+  getAllTransports: (): ApiResponseType<Transport[]> =>
+    apiForAuthenticated.get("/transport"),
+
+  getAllTransportsPaged: (page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<Transport>> =>
+    apiForAuthenticated.get(`/transport/paginated?page=${page}&size=${size}`),
+
+  getTransportById: (id: string): ApiResponseType<Transport> =>
+    apiForAuthenticated.get(`/transport/${id}`),
+
+  getTransportCountTotal: (): ApiResponseType<number> =>
+    apiForAuthenticated.get("/transport/count"),
+
+  createTransport: (transportData: any): ApiResponseType<Transport> =>
+    apiForAuthenticated.post("/transport", transportData),
+
+  updateTransport: (id: string, transportData: any): ApiResponseType<Transport> =>
+    apiForAuthenticated.put(`/transport/${id}`, transportData),
+
+  deleteTransport: (id: string) =>
+    apiForAuthenticated.delete(`/transport/${id}`),
+
+  assignTransportToCourier: (transportId: string, courierId: string) =>
+    apiForAuthenticated.post(`/transport/${transportId}/assign/${courierId}`),
+
+  unassignTransport: (transportId: string) =>
+    apiForAuthenticated.post(`/transport/${transportId}/unassign`),
 };

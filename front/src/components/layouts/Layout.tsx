@@ -189,6 +189,14 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                             <UsersIcon className="h-5 w-5" /> {t("manageUsers")}
                           </Link>
                         </SheetClose>
+                        <SheetClose asChild>
+                          <Link
+                            to={Pathnames.admin.fleet}
+                            className="hover:text-primary flex items-center gap-2"
+                          >
+                            <PackageIcon className="h-5 w-5" /> {t("admin.fleet.title") || "Fleet"}
+                          </Link>
+                        </SheetClose>
                       </>
                     )}
 
@@ -346,6 +354,21 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{t("manageUsers")}</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(Pathnames.admin.fleet)}
+                      >
+                        <PackageIcon className="h-5 w-5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t("admin.fleet.title") || "Fleet"}</p>
                     </TooltipContent>
                   </Tooltip>
                 </>

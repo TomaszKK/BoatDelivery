@@ -18,5 +18,6 @@ export const Pathnames = {
     dashboard: "/dashboard",
     routing: "/routing",
     accounts: "/accounts",
+    fleet: "/fleet",
   },
 };

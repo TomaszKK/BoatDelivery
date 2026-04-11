@@ -85,7 +85,7 @@ public class OrderService {
     public OrderMinimalizedResponseDTO getOrderByTrackingNumberMinimalized(String trackingNumber) {
         Order order = Order.<Order>find("trackingNumber", trackingNumber).firstResultOptional()
                 .orElseThrow(() -> new ResourceNotFoundException("Order with tracking number " + trackingNumber + " not found"));
-        verifyOwnership(order);
+        // Nie sprawdzamy właściciela - to endpoint publiczny (@PermitAll)
         return orderMapper.toMinimalizedDto(order);
     }
 

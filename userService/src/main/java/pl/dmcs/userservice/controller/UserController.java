@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import pl.dmcs.userservice.dto.request.UpdateUserRequest;
 import pl.dmcs.userservice.dto.request.UserRequest;
+import pl.dmcs.userservice.dto.response.PaginatedResponse;
+import pl.dmcs.userservice.dto.response.UserCountByTypeDTO;
 import pl.dmcs.userservice.dto.response.UserResponse;
 import pl.dmcs.userservice.mapper.TransportMapper;
 import pl.dmcs.userservice.mapper.UserMapper;
@@ -75,6 +78,73 @@ public class UserController {
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
+    }
+    
+    @GetMapping("/paginated")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<PaginatedResponse<UserResponse>> getAllUsersPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+        
+        Page<User> usersPage = userService.getAllUsersPaged(page, size);
+        List<UserResponse> responses = usersPage.getContent().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        
+        PaginatedResponse<UserResponse> response = PaginatedResponse.<UserResponse>builder()
+                .content(responses)
+                .page(usersPage.getNumber())
+                .size(usersPage.getSize())
+                .totalElements(usersPage.getTotalElements())
+                .totalPages(usersPage.getTotalPages())
+                .numberOfElements(usersPage.getNumberOfElements())
+                .hasNext(usersPage.hasNext())
+                .hasPrevious(usersPage.hasPrevious())
+                .build();
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/paginated/by-type")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<PaginatedResponse<UserResponse>> getUsersByTypePaged(
+            @RequestParam UserType userType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+        
+        Page<User> usersPage = userService.getUsersByTypePaged(userType, page, size);
+        List<UserResponse> responses = usersPage.getContent().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        
+        PaginatedResponse<UserResponse> response = PaginatedResponse.<UserResponse>builder()
+                .content(responses)
+                .page(usersPage.getNumber())
+                .size(usersPage.getSize())
+                .totalElements(usersPage.getTotalElements())
+                .totalPages(usersPage.getTotalPages())
+                .numberOfElements(usersPage.getNumberOfElements())
+                .hasNext(usersPage.hasNext())
+                .hasPrevious(usersPage.hasPrevious())
+                .build();
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/stats/count-by-type")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<UserCountByTypeDTO> getUserCountByType() {
+        return ResponseEntity.ok(userService.getUserCountByType());
     }
 
     @GetMapping("/internal/couriers")

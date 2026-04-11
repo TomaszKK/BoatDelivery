@@ -13,7 +13,7 @@ import java.util.UUID;
 @Builder
 public class TransportResponse {
     private UUID id;
-    private UUID courierId;
+    private CourierDTO courier;
     private TransportType transportType;
     private String brand;
     private String model;
@@ -23,5 +23,18 @@ public class TransportResponse {
     private Double consumption;
     private String licensePlate;
     private String color;
+
+    // Nested DTO dla kuriera bez transportów
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CourierDTO {
+        private UUID id;
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String phoneNumber;
+    }
 }
 

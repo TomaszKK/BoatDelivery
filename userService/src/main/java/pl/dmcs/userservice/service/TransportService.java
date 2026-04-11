@@ -4,6 +4,9 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.dmcs.userservice.dto.request.TransportRequest;
 import pl.dmcs.userservice.exception.InvalidOperationException;
@@ -36,6 +39,11 @@ public class TransportService {
     public List<Transport> getAllTransports() {
         return transportRepository.findAll();
     }
+    
+    public Page<Transport> getAllTransportsPaged(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return transportRepository.findAll(pageable);
+    }
 
     public Transport getTransportById(UUID id) {
         return transportRepository.findById(id)
@@ -51,6 +59,22 @@ public class TransportService {
         }
 
         return transportRepository.findByCourierId(courierId);
+    }
+    
+    public Page<Transport> getTransportsByCourierIdPaged(UUID courierId, int page, int size) {
+        User courier = userRepository.findById(courierId)
+                .orElseThrow(() -> new ResourceNotFoundException("Courier", "id", courierId));
+
+        if (courier.getUserType() != UserType.COURIER) {
+            throw new InvalidOperationException("Użytkownik o id " + courierId + " nie jest kurierem");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        return transportRepository.findByCourierId(courierId, pageable);
+    }
+    
+    public long getTotalTransportCount() {
+        return transportRepository.count();
     }
 
     @Transactional
@@ -87,10 +111,37 @@ public class TransportService {
     }
 
     @Transactional
+    public Transport createTransportWithoutCourier(Transport transport) {
+        log.info("Próba dodania transportu bez kuriera: type={}, brand={}, model={}",
+                transport.getTransportType(), transport.getBrand(), transport.getModel());
+
+        try {
+            if (transport.getId() == null) {
+                transport.setId(UUID.randomUUID());
+                log.info("Wygenerowano nowy UUID dla transportu: {}", transport.getId());
+            }
+
+            transport.setCourier(null);
+            Transport saved = transportRepository.save(transport);
+            log.info("Transport zapisany z ID: {}", saved.getId());
+
+            return saved;
+        } catch (Exception e) {
+            log.error("Błąd podczas dodawania transportu: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @Transactional
     public Transport updateTransport(UUID id, TransportRequest updateRequest) {
         Transport existingTransport = getTransportById(id);
         transportMapper.updateEntityFromDto(updateRequest, existingTransport);
         return transportRepository.save(existingTransport);
+    }
+
+    @Transactional
+    public Transport saveTransport(Transport transport) {
+        return transportRepository.save(transport);
     }
 
     @Transactional
@@ -99,4 +150,5 @@ public class TransportService {
         transportRepository.deleteById(id);
     }
 }
+
 
