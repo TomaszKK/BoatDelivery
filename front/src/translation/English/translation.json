@@ -237,7 +237,12 @@
     "stopCompleted": "Completed",
     "stops": "Stops",
     "noStops": "No stops assigned to this route.",
-    "drivingPath": "Driving Path"
+    "drivingPath": "Driving Path",
+    "noActiveRoute": "You have no active route assigned. Please wait for the next assignment from the system.",
+    "noActiveRouteDesc": "Once a route is assigned to you, it will appear here with all the details and instructions. In the meantime, please check your notifications for any updates on new assignments.",
+    "depot": "depot",
+    "completed": "Completed",
+    "pending": "Pending"
   },
   "edit": "Edit",
   "editProfile": "Edit Profile",

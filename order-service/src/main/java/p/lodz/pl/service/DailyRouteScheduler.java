@@ -48,6 +48,18 @@ public class DailyRouteScheduler {
     @RestClient
     UserServiceClient userServiceClient;
 
+    // Zdefiniowana Główna Sortownia (Urząd Celno-Skarbowy, Lodowa 97)
+    public static Location createDepotLocation() {
+        Location depot = new Location();
+        depot.latitude = new BigDecimal("51.745000");
+        depot.longitude = new BigDecimal("19.495000");
+        depot.streetAddress = "Lodowa 97";
+        depot.postalCode = "93-232";
+        depot.city = "Łódź";
+        depot.country = "Polska";
+        return depot;
+    }
+
     @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
     public void optimizeMidnightRoutes() {
@@ -153,9 +165,6 @@ public class DailyRouteScheduler {
 
             routeIndex++;
         }
-
-        LOG.infof("Prepared %d orders for routing across %d couriers.",
-                allOrdersToRoute.size(), couriers.size());
     }
 
     private void executeOptimization() throws ExecutionException, InterruptedException {
@@ -182,6 +191,7 @@ public class DailyRouteScheduler {
 
         RoutePlan problem = new RoutePlan(routes, stops);
         RoutePlan optimizedPlan = routeOptimizationService.optimizeRoutes(problem, currentAlgo);
+        Location depot = createDepotLocation();
 
         for (Route optRoute : optimizedPlan.routes) {
             Route realRoute = routeRepository.findById(optRoute.id);
@@ -194,7 +204,15 @@ public class DailyRouteScheduler {
             }
 
             double totalRouteDistance = 0.0;
-            Instant currentTime = Instant.now().truncatedTo(ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS);
+            Instant currentTime = Instant.now().truncatedTo(ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS); // Start o 08:00 CEST z bazy
+
+            Location firstLoc = getTargetLocation(optRoute.stops.getFirst().order);
+            if (firstLoc != null) {
+                double distanceToFirst = Util.calculateDistance(depot, firstLoc);
+                totalRouteDistance += (distanceToFirst / 1000.0);
+                long travelTime = (long) ((distanceToFirst / 1000.0) * 2);
+                currentTime = currentTime.plus(travelTime, ChronoUnit.MINUTES);
+            }
 
             for (int i = 0; i < optRoute.stops.size(); i++) {
                 RouteStop optStop = optRoute.stops.get(i);
@@ -216,10 +234,9 @@ public class DailyRouteScheduler {
 
                 realStop.estimatedArrivalTime = currentTime;
                 realStop.stopSequence = i;
-
                 realStop.route = realRoute;
 
-                currentTime = currentTime.plus(5, ChronoUnit.MINUTES);
+                currentTime = currentTime.plus(10, ChronoUnit.MINUTES); // 10 minut na obsługę punktu
 
                 if (realStop.order != null) {
                     if (realStop.order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE) {
@@ -230,6 +247,14 @@ public class DailyRouteScheduler {
                 }
             }
 
+            Location lastLoc = getTargetLocation(optRoute.stops.getLast().order);
+            if (lastLoc != null) {
+                double distanceToDepot = Util.calculateDistance(lastLoc, depot);
+                totalRouteDistance += (distanceToDepot / 1000.0);
+                long travelTime = (long) ((distanceToDepot / 1000.0) * 2);
+                currentTime = currentTime.plus(travelTime, ChronoUnit.MINUTES);
+            }
+
             realRoute.totalDistanceKm = BigDecimal.valueOf(totalRouteDistance);
             realRoute.estimatedDurationMin = (int) ChronoUnit.MINUTES.between(
                     Instant.now().truncatedTo(ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS),
@@ -238,15 +263,20 @@ public class DailyRouteScheduler {
         }
 
         routeStopRepository.flush();
-
         LOG.info("Optimization completed and saved with alg: " + currentAlgo);
     }
 
-    private Location getTargetLocation(Order order) {
+    public static Location getTargetLocation(Order order) {
         if (order == null) return null;
-        if (order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE || order.status == OrderStatus.ROUTE_ASSIGNED_RECEIVE) {
+        if (order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE || order.status == OrderStatus.ROUTE_ASSIGNED_RECEIVE || order.status == OrderStatus.ORDER_CREATED) {
             return order.pickupLocation;
         }
         return order.deliveryLocation;
+    }
+
+    public static boolean isDelivery(Order order) {
+        return order.status == OrderStatus.IN_SORTING_CENTER ||
+                order.status == OrderStatus.CALCULATING_ROUTE_DELIVERY ||
+                order.status == OrderStatus.ROUTE_ASSIGNED_DELIVERY;
     }
 }

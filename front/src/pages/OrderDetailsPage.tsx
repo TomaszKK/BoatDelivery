@@ -18,6 +18,9 @@ import {
   ArrowLeft,
   Check,
   X,
+  User,
+  Phone,
+  Mail
 } from "lucide-react";
 
 const STATUS_FLOW: OrderStatus[] = [
@@ -112,6 +115,7 @@ export const OrderDetailsPage = () => {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* LEWA KOLUMNA */}
           <div className="flex flex-col gap-6">
+            
             {/* Informacje o paczce */}
             <Card>
               <CardHeader className="pb-3">
@@ -144,6 +148,32 @@ export const OrderDetailsPage = () => {
               </CardContent>
             </Card>
 
+            {/* DANE ODBIORCY - NOWA KARTA */}
+            {order.recipientFirstName && (
+              <Card className="border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/10">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg text-emerald-700 dark:text-emerald-500">
+                    <User className="h-5 w-5" />
+                    {t("orders.recipientData", "Dane Odbiorcy")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                  <div className="flex items-center gap-3">
+                    <User className="h-4 w-4 text-emerald-600/60" />
+                    <span className="font-bold text-base">{order.recipientFirstName} {order.recipientLastName}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-emerald-600/60" />
+                    <span className="font-mono">{order.recipientPhone}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-emerald-600/60" />
+                    <span>{order.recipientEmail}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <MapComponent
               pickupLocation={order.pickupLocation}
               deliveryLocation={order.deliveryLocation}
@@ -152,7 +182,7 @@ export const OrderDetailsPage = () => {
 
           {/* PRAWA KOLUMNA */}
           <div className="flex flex-col gap-6">
-            {/* Adresy (W jednym rzędzie na większych ekranach, pod sobą na mniejszych) */}
+            {/* Adresy */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-1">
               {/* Pickup */}
               {order.pickupLocation && (

@@ -40,4 +40,16 @@ public class Order extends ControlledEntity {
     @JoinColumn(name = "delivery_location_id", referencedColumnName = "id")
     public Location deliveryLocation;
 
+    @Column(name = "recipient_first_name")
+    public String recipientFirstName;
+
+    @Column(name = "recipient_last_name")
+    public String recipientLastName;
+
+    @Column(name = "recipient_email")
+    public String recipientEmail;
+
+    @Column(name = "recipient_phone")
+    public String recipientPhone;
+
 }

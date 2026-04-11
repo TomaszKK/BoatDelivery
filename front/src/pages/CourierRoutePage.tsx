@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useCourierRoute } from "@/hooks/useCourierRoute";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,8 @@ import {
   CheckCircle2,
   Clock,
   Map as MapIcon,
+  User,
+  Phone
 } from "lucide-react";
 import { RouteMapModal } from "@/components/RouteMapModal";
 
@@ -28,6 +30,13 @@ export const CourierRoutePage = () => {
   }, [fetchRoutes]);
 
   const activeRoute = routes.length > 0 ? routes[0] : null;
+
+  const sortedStops = useMemo(() => {
+    if (!activeRoute || !activeRoute.stops) return [];
+    return [...activeRoute.stops].sort(
+      (a, b) => a.stopSequence - b.stopSequence,
+    );
+  }, [activeRoute]);
 
   const handleStartRoute = async () => {
     if (!activeRoute) return;
@@ -73,7 +82,7 @@ export const CourierRoutePage = () => {
   const isRouteInProgress = activeRoute.status === "IN_PROGRESS";
   const isRouteCompleted = activeRoute.status === "COMPLETED";
 
-  const areAllStopsCompleted = activeRoute.stops.every((stop) => {
+  const areAllStopsCompleted = sortedStops.every((stop) => {
     const status = stop.order.status;
     return (
       status === "ORDER_RECEIVED_FROM_CUSTOMER" ||
@@ -85,7 +94,6 @@ export const CourierRoutePage = () => {
   return (
     <div className="text-foreground min-h-screen p-6">
       <div className="mx-auto max-w-4xl space-y-6">
-        {/* NAGŁÓWEK TRASY */}
         <div className="border-border/50 flex flex-col gap-6 border-b pb-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
@@ -128,7 +136,6 @@ export const CourierRoutePage = () => {
           </div>
 
           <div className="flex flex-row items-center gap-3 self-start md:self-center">
-            {/* PRZYCISK: POKAŻ MAPĘ */}
             <Button
               variant="outline"
               onClick={() => setIsMapOpen(true)}
@@ -138,7 +145,6 @@ export const CourierRoutePage = () => {
               {t("courier.showMap")}
             </Button>
 
-            {/* PRZYCISK: ROZPOCZNIJ TRASĘ */}
             {isRoutePending && (
               <Button
                 onClick={handleStartRoute}
@@ -150,7 +156,6 @@ export const CourierRoutePage = () => {
               </Button>
             )}
 
-            {/* PRZYCISK: ZAKOŃCZ ZMIANĘ */}
             {isRouteInProgress && (
               <Button
                 onClick={handleFinishRoute}
@@ -168,7 +173,6 @@ export const CourierRoutePage = () => {
           </div>
         </div>
 
-        {/* LISTA PRZYSTANKÓW (OŚ CZASU) */}
         <Card className="border-border/50 overflow-hidden shadow-sm">
           <CardHeader className="bg-muted/30 border-b pb-4">
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -177,82 +181,84 @@ export const CourierRoutePage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-8">
-            {activeRoute.stops.length === 0 ? (
+            {sortedStops.length === 0 ? (
               <p className="text-muted-foreground py-8 text-center italic">
                 {t("courier.emptyRoute")}
               </p>
             ) : (
               <div className="border-muted relative ml-4 space-y-8 border-l-2 pb-6 dark:border-slate-800">
-                {activeRoute.stops
-                  .sort((a, b) => a.stopSequence - b.stopSequence)
-                  .map((stop) => {
-                    const order = stop.order;
-                    const isPickup = [
-                      "CALCULATING_ROUTE_RECEIVE",
-                      "ROUTE_ASSIGNED_RECEIVE",
-                      "IN_TRANSIT_FOR_PACKAGE",
-                    ].includes(order.status);
+                {sortedStops.map((stop) => {
+                  const order = stop.order;
+                  
+                  const isPickup = [
+                    "ORDER_CREATED",
+                    "CALCULATING_ROUTE_RECEIVE",
+                    "ROUTE_ASSIGNED_RECEIVE",
+                    "IN_TRANSIT_FOR_PACKAGE",
+                    "ORDER_RECEIVED_FROM_CUSTOMER",
+                    "IN_SORTING_CENTER"
+                  ].includes(order.status);
 
-                    const targetLoc = isPickup
-                      ? order.pickupLocation
-                      : order.deliveryLocation;
+                  const targetLoc = isPickup
+                    ? order.pickupLocation
+                    : order.deliveryLocation;
 
-                    const isCompleted = [
-                      "ORDER_RECEIVED_FROM_CUSTOMER",
-                      "DELIVERY_COMPLETED",
-                      "IN_SORTING_CENTER",
-                    ].includes(order.status);
+                  const isCompleted = [
+                    "ORDER_RECEIVED_FROM_CUSTOMER",
+                    "DELIVERY_COMPLETED",
+                    "IN_SORTING_CENTER",
+                  ].includes(order.status);
 
-                    return (
-                      <div
-                        key={stop.id}
-                        className={`relative pl-8 transition-all duration-300 ${isCompleted ? "opacity-60 grayscale-[0.5]" : "opacity-100"}`}
+                  return (
+                    <div
+                      key={stop.id}
+                      className={`relative pl-8 transition-all duration-300 ${isCompleted ? "opacity-60 grayscale-[0.5]" : "opacity-100"}`}
+                    >
+                      <span
+                        className={`${
+                          isCompleted
+                            ? "border-green-600 bg-green-600 text-white shadow-sm"
+                            : "bg-background border-primary text-primary"
+                        } ring-background absolute top-1 -left-[17px] flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold ring-4 transition-all`}
                       >
-                        {/* Kółko na osi czasu */}
-                        <span
-                          className={`${
-                            isCompleted
-                              ? "border-green-600 bg-green-600 text-white shadow-sm"
-                              : "bg-background border-primary text-primary"
-                          } ring-background absolute top-1 -left-[17px] flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-bold ring-4 transition-all`}
-                        >
-                          {isCompleted ? (
-                            <CheckCircle2 className="h-5 w-5" />
-                          ) : (
-                            stop.stopSequence + 1
-                          )}
-                        </span>
+                        {isCompleted ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          stop.stopSequence + 1
+                        )}
+                      </span>
 
-                        {/* Treść przystanku */}
-                        <div
-                          className={`bg-card flex flex-col gap-3 rounded-xl border p-5 shadow-sm transition-all hover:shadow-md ${
-                            isCompleted
-                              ? "border-green-500/20 bg-green-500/5"
-                              : "border-border/50"
-                          }`}
-                        >
-                          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant={isPickup ? "default" : "secondary"}
-                                  className={`px-2 py-0 text-[10px] font-bold tracking-tight uppercase ${
-                                    !isPickup && !isCompleted
-                                      ? "border-red-500/20 bg-red-500/10 text-red-600"
-                                      : ""
-                                  }`}
-                                >
-                                  {isPickup
-                                    ? t("courier.typePickup")
-                                    : t("courier.typeDelivery")}
-                                </Badge>
-                                {stop.estimatedArrivalTime && (
-                                  <span className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-2 py-0.5 text-xs font-bold">
-                                    <Clock className="mr-1 h-3 w-3" />
-                                    {formatTime(stop.estimatedArrivalTime)}
-                                  </span>
-                                )}
-                              </div>
+                      <div
+                        className={`bg-card flex flex-col gap-3 rounded-xl border p-5 shadow-sm transition-all hover:shadow-md ${
+                          isCompleted
+                            ? "border-green-500/20 bg-green-500/5"
+                            : "border-border/50"
+                        }`}
+                      >
+                        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={isPickup ? "default" : "secondary"}
+                                className={`px-2 py-0 text-[10px] font-bold tracking-tight uppercase ${
+                                  !isPickup && !isCompleted
+                                    ? "border-red-500/20 bg-red-500/10 text-red-600"
+                                    : ""
+                                }`}
+                              >
+                                {isPickup
+                                  ? t("courier.typePickup")
+                                  : t("courier.typeDelivery")}
+                              </Badge>
+                              {stop.estimatedArrivalTime && (
+                                <span className="text-muted-foreground bg-muted/50 flex items-center rounded-full px-2 py-0.5 text-xs font-bold">
+                                  <Clock className="mr-1 h-3 w-3" />
+                                  {formatTime(stop.estimatedArrivalTime)}
+                                </span>
+                              )}
+                            </div>
+
+                            <div>
                               <h4 className="pt-1 text-lg leading-tight font-bold">
                                 {targetLoc?.streetAddress ||
                                   t("orders.noAddress")}
@@ -262,54 +268,66 @@ export const CourierRoutePage = () => {
                               </p>
                             </div>
 
-                            <Badge
-                              variant="outline"
-                              className="bg-muted/30 self-start px-2 font-mono text-[11px] tracking-tight"
-                            >
-                              {order.trackingNumber}
-                            </Badge>
-                          </div>
-
-                          {/* Stopka karty: Dane paczki + Akcja */}
-                          <div className="bg-muted/30 border-border/10 mt-2 flex flex-col justify-between gap-4 rounded-lg border p-3 text-sm sm:flex-row sm:items-center">
-                            <div className="text-muted-foreground flex flex-row items-center gap-4 font-bold">
-                              <div className="flex items-center gap-1.5">
-                                <Package className="text-primary h-4 w-4" />
-                                <span>{order.weight} kg</span>
+                            {order.recipientFirstName && (
+                              <div className="mt-2 flex flex-wrap items-center gap-4 text-xs font-medium text-muted-foreground bg-muted/30 p-2 rounded-md border border-border/40 w-fit">
+                                <div className="flex items-center gap-1.5">
+                                  <User className="h-3.5 w-3.5 text-emerald-500" />
+                                  <span>{order.recipientFirstName} {order.recipientLastName}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <Phone className="h-3.5 w-3.5 text-blue-500" />
+                                  <span>{order.recipientPhone}</span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <ArrowRight className="text-primary h-4 w-4" />
-                                <span className="text-xs">
-                                  {t(`orders.${order.status}`, order.status)}
-                                </span>
-                              </div>
-                            </div>
-
-                            {!isCompleted && isRouteInProgress && (
-                              <Button
-                                size="sm"
-                                className="h-9 w-full bg-green-600 px-4 font-bold text-white transition-all hover:bg-green-700 sm:w-auto"
-                                onClick={() => handleCompleteStop(stop.id)}
-                                disabled={isLoading}
-                              >
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                {isPickup
-                                  ? t("courier.markCollected")
-                                  : t("courier.markDelivered")}
-                              </Button>
                             )}
                           </div>
+
+                          <Badge
+                            variant="outline"
+                            className="bg-muted/30 self-start px-2 font-mono text-[11px] tracking-tight"
+                          >
+                            {order.trackingNumber}
+                          </Badge>
+                        </div>
+
+                        <div className="bg-muted/30 border-border/10 mt-2 flex flex-col justify-between gap-4 rounded-lg border p-3 text-sm sm:flex-row sm:items-center">
+                          <div className="text-muted-foreground flex flex-row items-center gap-4 font-bold">
+                            <div className="flex items-center gap-1.5">
+                              <Package className="text-primary h-4 w-4" />
+                              <span>{order.weight} kg</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <ArrowRight className="text-primary h-4 w-4" />
+                              <span className="text-xs">
+                                {t(`orders.${order.status}`, order.status)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {!isCompleted && isRouteInProgress && (
+                            <Button
+                              size="sm"
+                              className="h-9 w-full bg-green-600 px-4 font-bold text-white transition-all hover:bg-green-700 sm:w-auto"
+                              onClick={() => handleCompleteStop(stop.id)}
+                              disabled={isLoading}
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              {isPickup
+                                ? t("courier.markCollected")
+                                : t("courier.markDelivered")}
+                            </Button>
+                          )}
                         </div>
                       </div>
-                    );
-                  })}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* MODAL Z MAPĄ DROGOWĄ */}
       <RouteMapModal
         isOpen={isMapOpen}
         onClose={() => setIsMapOpen(false)}

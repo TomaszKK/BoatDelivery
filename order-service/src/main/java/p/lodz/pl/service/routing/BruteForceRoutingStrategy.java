@@ -2,12 +2,11 @@ package p.lodz.pl.service.routing;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import p.lodz.pl.model.Location;
-import p.lodz.pl.model.Order;
 import p.lodz.pl.model.Route;
 import p.lodz.pl.model.RouteStop;
 import p.lodz.pl.model.enums.AlgorithmType;
-import p.lodz.pl.model.enums.OrderStatus;
 import p.lodz.pl.model.RoutePlan;
+import p.lodz.pl.service.DailyRouteScheduler;
 import p.lodz.pl.util.Util;
 
 import java.util.ArrayList;
@@ -93,23 +92,30 @@ public class BruteForceRoutingStrategy implements RoutingStrategy {
 
     private double calculateTotalDistance(List<RouteStop> stops) {
         double distance = 0;
+        if (stops == null || stops.isEmpty()) return 0;
+
+        Location depot = DailyRouteScheduler.createDepotLocation();
+
+        Location firstLoc = DailyRouteScheduler.getTargetLocation(stops.getFirst().order);
+        if (firstLoc != null) {
+            distance += Util.calculateDistance(depot, firstLoc);
+        }
+
         for (int i = 0; i < stops.size() - 1; i++) {
-            Location loc1 = getTargetLocation(stops.get(i).order);
-            Location loc2 = getTargetLocation(stops.get(i + 1).order);
+            Location loc1 = DailyRouteScheduler.getTargetLocation(stops.get(i).order);
+            Location loc2 = DailyRouteScheduler.getTargetLocation(stops.get(i + 1).order);
 
             if (loc1 != null && loc2 != null) {
                 distance += Util.calculateDistance(loc1, loc2);
             }
         }
-        return distance;
-    }
 
-    private Location getTargetLocation(Order order) {
-        if (order == null) return null;
-        if (order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE || order.status == OrderStatus.ROUTE_ASSIGNED_RECEIVE) {
-            return order.pickupLocation;
+        Location lastLoc = DailyRouteScheduler.getTargetLocation(stops.getLast().order);
+        if (lastLoc != null) {
+            distance += Util.calculateDistance(lastLoc, depot);
         }
-        return order.deliveryLocation;
+
+        return distance;
     }
 
     @Override
