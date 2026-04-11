@@ -13,6 +13,10 @@ public record OrderResponseDTO(
         BigDecimal weight,
         BigDecimal volume,
         Instant createdAt,
+        String recipientFirstName,
+        String recipientLastName,
+        String recipientEmail,
+        String recipientPhone,
         LocationResponseDTO pickupLocation,
         LocationResponseDTO deliveryLocation
 ) {}

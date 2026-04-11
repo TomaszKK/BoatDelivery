@@ -31,6 +31,10 @@ export interface OrderRequestDTO {
   customerId: string;
   weight: number;
   volume: number;
+  recipientFirstName: string;
+  recipientLastName: string
+    recipientEmail: string;
+  recipientPhone: string;
   pickupLocation: LocationRequestDTO;
   deliveryLocation: LocationRequestDTO;
 }
@@ -42,6 +46,10 @@ export interface OrderResponseDTO {
   weight: number;
   volume: number;
   createdAt: string;
+    recipientFirstName: string;
+    recipientLastName: string
+    recipientEmail: string;
+    recipientPhone: string;
   pickupLocation: LocationResponseDTO;
   deliveryLocation: LocationResponseDTO;
 }

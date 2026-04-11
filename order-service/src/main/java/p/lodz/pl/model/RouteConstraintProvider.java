@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import p.lodz.pl.model.enums.OrderStatus;
+import p.lodz.pl.service.DailyRouteScheduler;
 import p.lodz.pl.util.Util;
 
 import java.util.List;
@@ -31,19 +31,29 @@ public class RouteConstraintProvider implements ConstraintProvider {
         return factory.forEach(Route.class)
                 .filter(route -> route.stops != null && route.maxCargoCapacity != null)
                 .filter(route -> {
-                    double peakLoad = 0.0;
-                    double endLoad = 0.0;
+                    double currentLoad = 0.0;
+
+                    for (RouteStop stop : route.stops) {
+                        if (stop.order != null && stop.order.weight != null) {
+                            if (DailyRouteScheduler.isDelivery(stop.order)) {
+                                currentLoad += stop.order.weight.doubleValue();
+                            }
+                        }
+                    }
+
+                    double peakLoad = currentLoad;
 
                     for (RouteStop stop : route.stops) {
                         if (stop.order != null && stop.order.weight != null) {
                             double weight = stop.order.weight.doubleValue();
-                            boolean isDelivery = stop.order.status == OrderStatus.IN_SORTING_CENTER;
 
-                            if (isDelivery) {
-                                peakLoad += weight;
+                            if (DailyRouteScheduler.isDelivery(stop.order)) {
+                                currentLoad -= weight;
                             } else {
-                                endLoad += weight;
-                                peakLoad = Math.max(peakLoad, endLoad);
+                                currentLoad += weight;
+                                if (currentLoad > peakLoad) {
+                                    peakLoad = currentLoad;
+                                }
                             }
                         }
                     }
@@ -56,27 +66,32 @@ public class RouteConstraintProvider implements ConstraintProvider {
     private int calculateDistanceForRoute(Route route) {
         int totalDistance = 0;
         List<RouteStop> stops = route.stops;
-        if (stops == null || stops.size() < 2) return 0;
+        if (stops == null || stops.isEmpty()) return 0;
+
+        Location depot = DailyRouteScheduler.createDepotLocation();
+
+        Location firstLoc = DailyRouteScheduler.getTargetLocation(stops.getFirst().order);
+        if (firstLoc != null) {
+            totalDistance += Util.calculateDistance(depot, firstLoc);
+        }
 
         for (int i = 0; i < stops.size() - 1; i++) {
             if (stops.get(i).order != null && stops.get(i + 1).order != null) {
-                Location loc1 = getTargetLocation(stops.get(i).order);
-                Location loc2 = getTargetLocation(stops.get(i + 1).order);
+                Location loc1 = DailyRouteScheduler.getTargetLocation(stops.get(i).order);
+                Location loc2 = DailyRouteScheduler.getTargetLocation(stops.get(i + 1).order);
 
                 if (loc1 != null && loc2 != null) {
                     totalDistance += Util.calculateDistance(loc1, loc2);
                 }
             }
         }
-        return totalDistance;
-    }
 
-    private Location getTargetLocation(Order order) {
-        if (order == null) return null;
-        if (order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE || order.status == OrderStatus.ROUTE_ASSIGNED_RECEIVE) {
-            return order.pickupLocation;
+        Location lastLoc = DailyRouteScheduler.getTargetLocation(stops.getLast().order);
+        if (lastLoc != null) {
+            totalDistance += Util.calculateDistance(lastLoc, depot);
         }
-        return order.deliveryLocation;
+
+        return totalDistance;
     }
 
     private Constraint balanceCourierLoad(ConstraintFactory factory) {

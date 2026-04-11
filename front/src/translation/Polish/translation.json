@@ -245,7 +245,12 @@
     "stopCompleted": "Zakończone",
     "stops": "Przystanki",
     "noStops": "Brak przystanków przypisanych do tej trasy.",
-    "drivingPath": "Trasa jazdy"
+    "drivingPath": "Trasa jazdy",
+    "noActiveRoute": "Nie masz przypisanej żadnej aktywnej trasy. Proszę czekać na kolejne przypisanie od systemu.",
+    "noActiveRouteDesc": "Kiedy trasa zostanie przypisana do Ciebie, pojawi się tutaj ze wszystkimi szczegółami i instrukcjami. W międzyczasie sprawdzaj swoje powiadomienia, aby być na bieżąco z nowymi przypisaniami.",
+    "depot": "baza",
+    "completed": "Zakończone",
+    "pending": "Do zrobienia"
   },
   "loading": "Ładowanie...",
   "roles": {

@@ -14,8 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-import { Plus, Package, MapPin, Calendar, Inbox } from "lucide-react";
-
+import { Plus, Package, MapPin, Calendar, Inbox, User } from "lucide-react";
 export const MyOrdersPage = () => {
   const { t } = useTranslation();
   const { orders, getMineOrders } = useOrder();
@@ -29,7 +28,6 @@ export const MyOrdersPage = () => {
   return (
     <div className="text-foreground min-h-screen p-6">
       <div className="mx-auto max-w-5xl">
-        {/* HEADER */}
         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <h2 className="text-3xl font-bold tracking-tight">
             {t("orders.yourOrders")}
@@ -43,7 +41,6 @@ export const MyOrdersPage = () => {
           </Button>
         </div>
 
-        {/* WIDOK BRAKU ZAMÓWIEŃ */}
         {!orders || orders.length === 0 ? (
           <Card className="flex flex-col items-center justify-center border-dashed p-12 text-center shadow-sm">
             <Inbox className="text-muted-foreground/50 mb-4 h-12 w-12" />
@@ -52,7 +49,6 @@ export const MyOrdersPage = () => {
             </p>
           </Card>
         ) : (
-          /* LISTA ZAMÓWIEŃ */
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {orders.map((o) => {
               const isCanceled = o.status === "ORDER_CANCELED";
@@ -83,14 +79,26 @@ export const MyOrdersPage = () => {
                   </CardHeader>
 
                   <CardContent className="space-y-3 pt-4">
-                    <div className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <Package className="h-4 w-4" />
-                      <span>
-                        {t("orders.weightInfo")}{" "}
-                        <span className="text-foreground font-medium">
-                          {o.weight} kg
+                    <div className="flex gap-6">
+                      <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <Package className="h-4 w-4" />
+                        <span>
+                          {t("orders.weightInfo")}{" "}
+                          <span className="text-foreground font-medium">
+                            {o.weight} kg
+                          </span>
                         </span>
-                      </span>
+                      </div>
+                      
+                      {/* DANE ODBIORCY (SKRÓT) */}
+                      {o.recipientFirstName && (
+                        <div className="text-muted-foreground flex items-center gap-2 text-sm">
+                          <User className="h-4 w-4" />
+                          <span className="text-foreground font-medium truncate max-w-[120px]">
+                            {o.recipientFirstName} {o.recipientLastName}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {o.deliveryLocation && (

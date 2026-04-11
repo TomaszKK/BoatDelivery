@@ -21,10 +21,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   ChevronLeft,
   ChevronRight,
   PackageSearch,
   Archive,
+  User,
+  Mail,
+  Phone
 } from "lucide-react";
 import { api } from "@/api/api";
 import { toast } from "sonner";
@@ -75,150 +84,181 @@ export const AdminOrdersPage = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            {t("admin.allOrders")}
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            {t("admin.allOrdersDesc")} ({totalElements})
-          </p>
-        </div>
-
-        {/* FILTROWANIE PO STATUSIE */}
-        <div className="w-full md:w-64">
-          <Select value={statusFilter} onValueChange={handleStatusChange}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("admin.filterByStatus")} />
-            </SelectTrigger>
-            <SelectContent>
-              {ORDER_STATUSES.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status === "ALL"
-                    ? t("admin.allStatuses")
-                    : t(`orders.${status}`, status)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Card>
-        <CardContent className="p-0">
-          <div className="rounded-md border-0">
-            <Table>
-              <TableHeader className="bg-muted/50">
-                <TableRow>
-                  <TableHead className="w-[180px]">
-                    {t("admin.tableTracking")}
-                  </TableHead>
-                  <TableHead>{t("admin.tableDate")}</TableHead>
-                  <TableHead>{t("admin.tableWeight")}</TableHead>
-                  <TableHead>{t("admin.tableDestination")}</TableHead>
-                  <TableHead>{t("admin.tableStatus")}</TableHead>
-                  <TableHead className="text-right">
-                    {t("admin.tableActions")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-muted-foreground h-32 text-center"
-                    >
-                      {t("admin.loadingData")}
-                    </TableCell>
-                  </TableRow>
-                ) : orders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center">
-                      <div className="text-muted-foreground flex flex-col items-center justify-center">
-                        <PackageSearch className="mb-2 h-8 w-8 opacity-20" />
-                        <p>{t("admin.noOrdersFound")}</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  orders.map((order) => {
-                    const date = new Date(order.createdAt).toLocaleDateString();
-                    return (
-                      <TableRow
-                        key={order.trackingNumber}
-                        className="hover:bg-muted/30"
-                      >
-                        <TableCell className="font-mono font-medium">
-                          {order.trackingNumber}
-                        </TableCell>
-                        <TableCell>{date}</TableCell>
-                        <TableCell>{order.weight} kg</TableCell>
-                        <TableCell
-                          className="max-w-[200px] truncate"
-                          title={order.deliveryLocation?.city}
-                        >
-                          {order.deliveryLocation?.city}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-background">
-                            {t(`orders.${order.status}`, order.status)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => archiveOrder(order.trackingNumber)}
-                            title={t("admin.archiveOrderAction")}
-                          >
-                            <Archive className="text-muted-foreground hover:text-primary h-4 w-4 transition-colors" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-
-        {/* PAGINACJA */}
-        {totalPages > 0 && (
-          <div className="bg-muted/20 flex items-center justify-between border-t px-6 py-4">
-            <p className="text-muted-foreground text-sm">
-              {t("admin.showingPage")}{" "}
-              <span className="text-foreground font-medium">
-                {currentPage + 1}
-              </span>{" "}
-              {t("admin.of")}{" "}
-              <span className="text-foreground font-medium">{totalPages}</span>
+    <TooltipProvider>
+      <div className="mx-auto max-w-6xl space-y-6 p-6">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              {t("admin.allOrders")}
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              {t("admin.allOrdersDesc")} ({totalElements})
             </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrevPage}
-                disabled={currentPage === 0 || isLoading}
-              >
-                <ChevronLeft className="mr-1 h-4 w-4" />
-                {t("admin.prev")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNextPage}
-                disabled={currentPage >= totalPages - 1 || isLoading}
-              >
-                {t("admin.next")}
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Button>
-            </div>
           </div>
-        )}
-      </Card>
-    </div>
+
+          <div className="w-full md:w-64">
+            <Select value={statusFilter} onValueChange={handleStatusChange}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("admin.filterByStatus")} />
+              </SelectTrigger>
+              <SelectContent>
+                {ORDER_STATUSES.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status === "ALL"
+                      ? t("admin.allStatuses")
+                      : t(`orders.${status}`, status)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Card>
+          <CardContent className="p-0">
+            <div className="rounded-md border-0">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="w-[180px]">
+                      {t("admin.tableTracking")}
+                    </TableHead>
+                    <TableHead>{t("admin.tableDate")}</TableHead>
+                    <TableHead>{t("admin.tableWeight")}</TableHead>
+                    <TableHead>{t("admin.tableDestination")}</TableHead>
+                    <TableHead>{t("admin.tableStatus")}</TableHead>
+                    <TableHead className="text-right">
+                      {t("admin.tableActions")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="text-muted-foreground h-32 text-center"
+                      >
+                        {t("admin.loadingData")}
+                      </TableCell>
+                    </TableRow>
+                  ) : orders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center">
+                        <div className="text-muted-foreground flex flex-col items-center justify-center">
+                          <PackageSearch className="mb-2 h-8 w-8 opacity-20" />
+                          <p>{t("admin.noOrdersFound")}</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    orders.map((order) => {
+                      const date = new Date(order.createdAt).toLocaleDateString();
+                      return (
+                        <TableRow
+                          key={order.trackingNumber}
+                          className="hover:bg-muted/30"
+                        >
+                          <TableCell className="font-mono font-medium">
+                            {order.trackingNumber}
+                          </TableCell>
+                          <TableCell>{date}</TableCell>
+                          <TableCell>{order.weight} kg</TableCell>
+                          <TableCell className="max-w-[250px] truncate">
+                            <div className="flex items-center gap-2">
+                              <span title={order.deliveryLocation?.city}>{order.deliveryLocation?.city}</span>
+                              
+                              {/* TOOLTIP Z DANYMI ODBIORCY */}
+                              {order.recipientFirstName && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="bg-emerald-500/10 text-emerald-600 rounded-full p-1 cursor-help hover:bg-emerald-500/20 transition-colors">
+                                      <User className="h-3.5 w-3.5" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="p-3 w-max" side="right">
+                                    <p className="font-bold border-b pb-1 mb-2 border-border/50 text-sm">
+                                      {t("orders.recipientData", "Odbiorca")}
+                                    </p>
+                                    {/* Ustawiamy flex-col i gap aby wymusić pionowy układ */}
+                                    <div className="flex flex-col gap-2"> 
+                                      <div className="flex items-center gap-2 text-sm">
+                                        <User className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                                        <span className="font-medium">{order.recipientFirstName} {order.recipientLastName}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm">
+                                        <Phone className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                                        <span className="font-mono">{order.recipientPhone}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm">
+                                        <Mail className="h-3.5 w-3.5 opacity-50 shrink-0" />
+                                        <span className="truncate">{order.recipientEmail}</span>
+                                      </div>
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-background">
+                              {t(`orders.${order.status}`, order.status)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => archiveOrder(order.trackingNumber)}
+                              title={t("admin.archiveOrderAction")}
+                            >
+                              <Archive className="text-muted-foreground hover:text-primary h-4 w-4 transition-colors" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+
+          {totalPages > 0 && (
+            <div className="bg-muted/20 flex items-center justify-between border-t px-6 py-4">
+              <p className="text-muted-foreground text-sm">
+                {t("admin.showingPage")}{" "}
+                <span className="text-foreground font-medium">
+                  {currentPage + 1}
+                </span>{" "}
+                {t("admin.of")}{" "}
+                <span className="text-foreground font-medium">{totalPages}</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 0 || isLoading}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  {t("admin.prev")}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage >= totalPages - 1 || isLoading}
+                >
+                  {t("admin.next")}
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 };
