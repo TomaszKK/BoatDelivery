@@ -48,7 +48,7 @@ public class OrderEventPublisher {
             LOG.error("Nie udało się pobrać danych klienta z user-service dla id: " + order.customerId, e);
         }
 
-        // 2. Pobieranie danych Kuriera (jeśli został podany)
+        // 2. Pobieranie danych Kuriera
         if (courierId != null) {
             try {
                 courier = userServiceClient.getUserById(courierId);
@@ -72,6 +72,12 @@ public class OrderEventPublisher {
         // Określenie odbiorców komunikatu
         List<String> targetAudience = new ArrayList<>();
         targetAudience.add("CUSTOMER");
+
+        // Zawsze wysyłamy info do odbiorcy, jeśli podano jego maila
+        if (order.recipientEmail != null && !order.recipientEmail.isBlank()) {
+            targetAudience.add("RECIPIENT");
+        }
+
         if (courierId != null) {
             targetAudience.add("COURIER");
         }
@@ -84,13 +90,16 @@ public class OrderEventPublisher {
                 null, null,
                 customerEmail,
                 courierEmail,
+                order.recipientEmail,
                 customerPhone,
                 courierPhone,
+                order.recipientPhone,
                 firstName, lastName,
+                order.recipientFirstName,
+                order.recipientLastName,
                 pickup,
                 delivery
         );
-
         OutgoingRabbitMQMetadata metadata = OutgoingRabbitMQMetadata.builder()
                 .withRoutingKey("order." + order.status.name().toLowerCase())
                 .build();
