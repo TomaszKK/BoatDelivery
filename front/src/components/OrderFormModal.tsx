@@ -58,7 +58,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
         volume: z
             .number({ message: t("validation.positiveVolume", "Objętość musi być dodatnia") })
             .positive(t("validation.positiveVolume", "Objętość musi być dodatnia")),
-        // DODANE POLA ODBIORCY
         recipientFirstName: z.string().min(2, t("validation.required", "Wymagane")),
         recipientLastName: z.string().min(2, t("validation.required", "Wymagane")),
         recipientEmail: z.string().email(t("validation.email", "Niepoprawny email")),
