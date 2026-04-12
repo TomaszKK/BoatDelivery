@@ -1672,7 +1672,7 @@
     "smtpServer":  {
 
                    },
-    "loginTheme":  "boat-theme",
+    "loginTheme":  "keycloakify-starter",
     "accountTheme":  "",
     "adminTheme":  "",
     "emailTheme":  "",
