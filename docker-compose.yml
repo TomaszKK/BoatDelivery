@@ -133,42 +133,42 @@ services:
       jaeger:
         condition: service_started
 
-  user-service-2:
-    build: ./userService
-    container_name: user-service-2
-    expose:
-      - "8081"
-    env_file:
-      - ./userService/.env.docker
-    environment:
-      SPRING_PROFILES_ACTIVE: test-dev
-      APP_SYNC_ENABLED: "false"
-      APP_SYNC_ENVIRONMENT: test-dev
-      APP_SYNC_MIGRATE_ON_STARTUP: "false"
-      APP_SYNC_KEYCLOAK_ADMIN_URL: http://keycloak:8060
-      APP_SYNC_KEYCLOAK_ADMIN_USERNAME: admin
-      APP_SYNC_KEYCLOAK_ADMIN_PASSWORD: admin
-      APP_SYNC_KEYCLOAK_REALM: boat-delivery-realm
-      APP_SYNC_DEFAULT_PASSWORD: "password123"
-      OTEL_SDK_DISABLED: "false"
-      OTEL_TRACES_EXPORTER: otlp
-      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
-      OTEL_SERVICE_NAME: user-service-2
-      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=user-service-2,service.namespace=boat-delivery
-      OTEL_METRICS_EXPORTER: none
-      OTEL_PROPAGATORS: tracecontext,baggage
-      OTEL_TRACE_SAMPLER: always_on
-      OTEL_INSTRUMENTATION_SERVLET_ENABLED: "true"
-      OTEL_INSTRUMENTATION_HTTP_SERVER_ENABLED: "true"
-      OTEL_JAVA_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      eureka:
-        condition: service_healthy
-      jaeger:
-        condition: service_started
+#  user-service-2:
+#    build: ./userService
+#    container_name: user-service-2
+#    expose:
+#      - "8081"
+#    env_file:
+#      - ./userService/.env.docker
+#    environment:
+#      SPRING_PROFILES_ACTIVE: test-dev
+#      APP_SYNC_ENABLED: "false"
+#      APP_SYNC_ENVIRONMENT: test-dev
+#      APP_SYNC_MIGRATE_ON_STARTUP: "false"
+#      APP_SYNC_KEYCLOAK_ADMIN_URL: http://keycloak:8060
+#      APP_SYNC_KEYCLOAK_ADMIN_USERNAME: admin
+#      APP_SYNC_KEYCLOAK_ADMIN_PASSWORD: admin
+#      APP_SYNC_KEYCLOAK_REALM: boat-delivery-realm
+#      APP_SYNC_DEFAULT_PASSWORD: "password123"
+#      OTEL_SDK_DISABLED: "false"
+#      OTEL_TRACES_EXPORTER: otlp
+#      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+#      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+#      OTEL_SERVICE_NAME: user-service-2
+#      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=user-service-2,service.namespace=boat-delivery
+#      OTEL_METRICS_EXPORTER: none
+#      OTEL_PROPAGATORS: tracecontext,baggage
+#      OTEL_TRACE_SAMPLER: always_on
+#      OTEL_INSTRUMENTATION_SERVLET_ENABLED: "true"
+#      OTEL_INSTRUMENTATION_HTTP_SERVER_ENABLED: "true"
+#      OTEL_JAVA_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      eureka:
+#        condition: service_healthy
+#      jaeger:
+#        condition: service_started
 
   order-service:
     build: ./order-service
