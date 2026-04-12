@@ -4,8 +4,7 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Wyjątek: Dopuść pliki JAR w docker/keycloak/providers (MUSI BYĆ PRZED *.jar)
-!docker/keycloak/providers/*.jar
+
 
 # Package Files #
 *.jar
@@ -14,7 +13,8 @@
 .idea/
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-
+# Wyjątek: Dopuść pliki JAR w docker/keycloak/providers (MUSI BYĆ PRZED *.jar)
+!docker/keycloak/providers/*.jar
 # ---> Maven
 target/
 pom.xml.tag
