@@ -4,7 +4,6 @@ import com.stripe.exception.EventDataObjectDeserializationException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
-import com.stripe.model.Invoice;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -18,6 +17,8 @@ import pl.dmcs.paymentservice.dto.PaymentRequest;
 import pl.dmcs.paymentservice.model.PaymentStatus;
 import pl.dmcs.paymentservice.model.PaymentTransaction;
 import pl.dmcs.paymentservice.repository.PaymentTransactionRepository;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.Charge;
 
 
 import java.math.BigDecimal;
@@ -131,22 +132,21 @@ public class PaymentService {
                     transactionRepository.saveAndFlush(transaction);
                     System.out.println("SUKCES: Baza danych zaktualizowana na PAID!");
                 } catch (Exception e) {
-                    System.err.println("=========================================");
-                    System.err.println("KRYTYCZNY BŁĄD ZAPISU DO BAZY DANYCH!");
                     System.err.println("Wiadomość: " + e.getMessage());
-                    System.err.println("Prawdopodobnie kolumna 'status' w tabeli PostgreSQL jest typu integer (liczba), a Spring próbuje tam wstawić tekst 'PAID'.");
-                    System.err.println("=========================================");
 
                 }
 
 
-                String invoiceUrl = null;
-                if (session.getInvoice() != null) {
+                String documentUrl = null;
+                if (session.getPaymentIntent() != null) {
                     try {
-                        Invoice invoice = Invoice.retrieve(session.getInvoice());
-                        invoiceUrl = invoice.getInvoicePdf();
+                        PaymentIntent pi = PaymentIntent.retrieve(session.getPaymentIntent());
+                        if (pi.getLatestCharge() != null) {
+                            Charge charge = Charge.retrieve(pi.getLatestCharge());
+                            documentUrl = charge.getReceiptUrl();
+                        }
                     } catch (Exception e) {
-                        System.err.println("Błąd pobierania faktury ze Stripe: " + e.getMessage());
+                        System.err.println("Błąd pobierania pokwitowania ze Stripe: " + e.getMessage());
                     }
                 }
 
@@ -161,7 +161,7 @@ public class PaymentService {
                         customerEmail,
                         pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
                         transaction.getAmount(),
-                        invoiceUrl
+                        documentUrl
                 );
 
                 try {
@@ -179,7 +179,7 @@ public class PaymentService {
                 System.err.println("Blad: Obiekt sesji to null po deserializacji.");
             }
         } else {
-            System.out.println("Zignorowano zdarzenie Stripe typu: " + event.getType());
+            //System.out.println("Zignorowano zdarzenie Stripe typu: " + event.getType());
         }
     }
 }
