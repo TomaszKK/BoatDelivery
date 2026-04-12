@@ -7,5 +7,9 @@ RUN mvn package -DskipTests
 # run
 FROM eclipse-temurin:21-jdk
 WORKDIR /app
+
+# Download OpenTelemetry Java Agent
+RUN curl -L -o opentelemetry-javaagent.jar https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.5.0/opentelemetry-javaagent.jar
+
 COPY --from=builder /app/target/quarkus-app/ /app/
-CMD ["java", "-jar", "/app/quarkus-run.jar"]
+CMD ["java", "-javaagent:/app/opentelemetry-javaagent.jar", "-jar", "/app/quarkus-run.jar"]
