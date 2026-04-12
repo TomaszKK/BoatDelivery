@@ -78,15 +78,27 @@ services:
       - "8080:8080"
     env_file:
       - ./springGateway/.env.docker
+    environment:
+      OTEL_SDK_DISABLED: "false"
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_SERVICE_NAME: gateway
+      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=gateway,service.namespace=boat-delivery
+      OTEL_METRICS_EXPORTER: none
+      OTEL_PROPAGATORS: tracecontext,baggage
+      OTEL_TRACE_SAMPLER: always_on
     depends_on:
       eureka:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   user-service:
     build: ./userService
-    container_name: user-service
+    container_name: user-service-1
     expose:
       - "8081"
     env_file:
@@ -101,11 +113,62 @@ services:
       APP_SYNC_KEYCLOAK_ADMIN_PASSWORD: admin
       APP_SYNC_KEYCLOAK_REALM: boat-delivery-realm
       APP_SYNC_DEFAULT_PASSWORD: "password123"
+      OTEL_SDK_DISABLED: "false"
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_SERVICE_NAME: user-service-1
+      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=user-service-1,service.namespace=boat-delivery
+      OTEL_METRICS_EXPORTER: none
+      OTEL_PROPAGATORS: tracecontext,baggage
+      OTEL_TRACE_SAMPLER: always_on
+      OTEL_INSTRUMENTATION_SERVLET_ENABLED: "true"
+      OTEL_INSTRUMENTATION_HTTP_SERVER_ENABLED: "true"
+      OTEL_JAVA_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
     depends_on:
       postgres:
         condition: service_healthy
       eureka:
         condition: service_healthy
+      jaeger:
+        condition: service_started
+
+#  user-service-2:
+#    build: ./userService
+#    container_name: user-service-2
+#    expose:
+#      - "8081"
+#    env_file:
+#      - ./userService/.env.docker
+#    environment:
+#      SPRING_PROFILES_ACTIVE: test-dev
+#      APP_SYNC_ENABLED: "false"
+#      APP_SYNC_ENVIRONMENT: test-dev
+#      APP_SYNC_MIGRATE_ON_STARTUP: "false"
+#      APP_SYNC_KEYCLOAK_ADMIN_URL: http://keycloak:8060
+#      APP_SYNC_KEYCLOAK_ADMIN_USERNAME: admin
+#      APP_SYNC_KEYCLOAK_ADMIN_PASSWORD: admin
+#      APP_SYNC_KEYCLOAK_REALM: boat-delivery-realm
+#      APP_SYNC_DEFAULT_PASSWORD: "password123"
+#      OTEL_SDK_DISABLED: "false"
+#      OTEL_TRACES_EXPORTER: otlp
+#      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+#      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+#      OTEL_SERVICE_NAME: user-service-2
+#      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=user-service-2,service.namespace=boat-delivery
+#      OTEL_METRICS_EXPORTER: none
+#      OTEL_PROPAGATORS: tracecontext,baggage
+#      OTEL_TRACE_SAMPLER: always_on
+#      OTEL_INSTRUMENTATION_SERVLET_ENABLED: "true"
+#      OTEL_INSTRUMENTATION_HTTP_SERVER_ENABLED: "true"
+#      OTEL_JAVA_LOGGING_AUTO_INSTRUMENTATION_ENABLED: "true"
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#      eureka:
+#        condition: service_healthy
+#      jaeger:
+#        condition: service_started
 
   order-service:
     build: ./order-service
@@ -114,6 +177,16 @@ services:
       - "8082"
     env_file:
       - ./order-service/.env.docker
+    environment:
+      OTEL_SDK_DISABLED: "false"
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_SERVICE_NAME: order-service
+      OTEL_RESOURCE_ATTRIBUTES: service.instance.id=order-service,service.namespace=boat-delivery
+      OTEL_METRICS_EXPORTER: none
+      OTEL_PROPAGATORS: tracecontext,baggage
+      OTEL_TRACE_SAMPLER: always_on
     depends_on:
       postgres:
         condition: service_healthy
@@ -121,6 +194,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+      jaeger:
+        condition: service_started
 
   notification-service:
     build: ./notifi-service
@@ -182,6 +257,25 @@ services:
     depends_on:
       - payment-service
     restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+      - "14250:14250"
+    volumes:
+      - ./docker/jaeger/ui-config.json:/etc/jaeger/ui-config.json:ro
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      QUERY_UI_CONFIG_PATH: /etc/jaeger/ui-config.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:16686/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   keycloak-init:
     image: curlimages/curl:latest

@@ -1,0 +1,12 @@
+{
+  "menu": [
+    {
+      "label": "About Jaeger",
+      "url": "https://www.jaegertracing.io/docs/latest/"
+    }
+  ],
+  "theme": {
+    "dark": false
+  }
+}
+
