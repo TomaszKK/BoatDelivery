@@ -7,6 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { QrCode, Smartphone, ExternalLink } from "lucide-react";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
 
 type Props = {
@@ -25,6 +27,7 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
   const { t } = useTranslation();
   const mapRef = useRef<google.maps.Map | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [showQR, setShowQR] = useState(false);
 
   const stopsData = useMemo(() => {
     if (!route || !route.stops) return [];
@@ -61,6 +64,18 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
       });
   }, [route]);
 
+  const navigationUrl = useMemo(() => {
+    const pendingStops = stopsData.filter(s => !s.isCompleted).slice(0, 9);
+    
+    if (pendingStops.length === 0) return "";
+
+    const origin = `${DEPOT_LOCATION.lat},${DEPOT_LOCATION.lng}`;
+    const destination = `${DEPOT_LOCATION.lat},${DEPOT_LOCATION.lng}`;
+    const waypoints = pendingStops.map(s => `${s.lat},${s.lng}`).join("|");
+
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&waypoints=${encodeURIComponent(waypoints)}&travelmode=driving`;
+  }, [stopsData]);
+
   useEffect(() => {
     if (isOpen && stopsData.length >= 1) {
       const directionsService = new window.google.maps.DirectionsService();
@@ -94,16 +109,66 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="flex h-[85vh] w-11/12 max-w-4xl flex-col overflow-hidden p-0">
-        <DialogHeader className="p-6 pb-2">
-          <DialogTitle className="flex items-center justify-between text-2xl">
-            <span>{t("courier.routeMapTitle", "Mapa Trasy")}</span>
-            <span className="text-muted-foreground text-sm font-normal">
-              {stopsData.length} {t("courier.stopsCount", "przystanków")} + 1 {t("courier.depot", "baza")}
-            </span>
-          </DialogTitle>
+        <DialogHeader className="p-4 md:p-6 pb-2">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <DialogTitle className="flex items-center gap-2 text-xl md:text-2xl">
+              <span>{t("courier.routeMapTitle", "Mapa Trasy")}</span>
+              <span className="text-muted-foreground text-sm font-normal">
+                ({stopsData.length} {t("courier.stopsCount", "przystanków")} + {t("courier.depot", "baza")})
+              </span>
+            </DialogTitle>
+
+            {navigationUrl && (
+              <div className="flex items-center gap-2 self-start md:self-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowQR(true)}
+                  className="bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700"
+                >
+                  <QrCode className="w-4 h-4 mr-2" />
+                  {t("courier.showQR", "Skanuj QR")}
+                </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => window.open(navigationUrl, "_blank")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  {t("courier.showMap", "Nawiguj")} <ExternalLink className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="relative flex-1 border-t border-b">
+          
+          {showQR && (
+            <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+              <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t("courier.qrTitle", "Zeskanuj, aby nawigować")}</h3>
+                <div className="bg-white p-2 rounded-lg border">
+                  {/* ZERO ZALEŻNOŚCI - czysty tag IMG + otwarte API */}
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(navigationUrl)}`} 
+                    alt="QR Code" 
+                    className="w-[200px] h-[200px]"
+                  />
+                </div>
+                <p className="mt-4 text-xs text-center text-gray-500 max-w-[250px]">
+                  {t("courier.qrInstructions", "Ze względu na limity Google Maps, kod zawiera do 9 najbliższych, nieukończonych punktów.")}
+                </p>
+                <Button 
+                  className="mt-6 w-full" 
+                  onClick={() => setShowQR(false)}
+                >
+                  {t("courier.hideQR", "Ukryj kod QR")}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}
             onLoad={(map) => {
@@ -145,10 +210,7 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
 
             <MarkerF
               position={{ lat: DEPOT_LOCATION.lat, lng: DEPOT_LOCATION.lng }}
-              label={{
-                text: "🏠",
-                fontSize: "18px",
-              }}
+              label={{ text: "🏠", fontSize: "18px" }}
               title={DEPOT_LOCATION.address}
               zIndex={100}
             />
@@ -176,7 +238,7 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
         <div className="text-muted-foreground bg-card flex flex-wrap justify-center gap-6 p-4 text-sm">
           <div className="flex items-center gap-2">
             <span className="text-lg">🏠</span>
-            <span className="font-semibold text-foreground">{t("courier.depot")} (Lodowa 97)</span>
+            <span className="font-semibold text-foreground">{t("courier.depot", "Baza")} (Lodowa 97)</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-blue-600"></div>
@@ -184,11 +246,11 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
           </div>
           <div className="flex items-center gap-2">
              <div className="h-3 w-3 rounded-full bg-red-500"></div>
-            <span>{t("courier.pending")}</span>
+            <span>{t("courier.pending", "Do zrobienia")}</span>
           </div>
            <div className="flex items-center gap-2">
              <div className="h-3 w-3 rounded-full bg-green-500"></div>
-            <span>{t("courier.completed")}</span>
+            <span>{t("courier.completed", "Ukończone")}</span>
           </div>
         </div>
       </DialogContent>

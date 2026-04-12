@@ -60,7 +60,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
         volume: z
             .number({ message: t("validation.positiveVolume", "Objętość musi być dodatnia") })
             .positive(t("validation.positiveVolume", "Objętość musi być dodatnia")),
-        // DODANE POLA ODBIORCY
         recipientFirstName: z.string().min(2, t("validation.required", "Wymagane")),
         recipientLastName: z.string().min(2, t("validation.required", "Wymagane")),
         recipientEmail: z.string().email(t("validation.email", "Niepoprawny email")),
@@ -101,26 +100,28 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
             customerId: user.id,
         };
 
-      try {
-        // Zakładam, że createOrder zwraca utworzony obiekt z backendu (z ID lub trackingNumber)
-        const createdOrder = await createOrder(payload);
-        reset();
-        onClose();
+        try {
+            const createdOrder = await createOrder(payload);
 
-        // Tymczasowo obliczamy kwotę (np. na podstawie wagi).
-        const calculatedAmount = data.weight * 5 + data.volume * 10;
+            if (!createdOrder || !createdOrder.id) {
+                throw new Error("Missing order ID in response");
+            }
 
-        // Przekierowanie na nową podstronę płatności, przekazując dane w 'state'
-        navigate(`/payment/${createdOrder.id}`, {
-          state: {
-            amount: calculatedAmount,
-            customerEmail: user.email
-          }
-        });
-      } catch (error) {
-        console.error("There was an error creating the order:", error);
-        toast.error("Błąd podczas tworzenia zamówienia.");
-      }
+            reset();
+            onClose();
+
+            const calculatedAmount = data.weight * 5 + data.volume * 10;
+
+            navigate(`/payment/${createdOrder.id}`, {
+                state: {
+                    amount: calculatedAmount,
+                    customerEmail: user.email
+                }
+            });
+        } catch (error) {
+            console.error("There was an error creating the order:", error);
+            toast.error("Błąd podczas tworzenia zamówienia.");
+        }
     };
 
     const handleOpenChange = (open: boolean) => {
@@ -148,7 +149,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
                 ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-                        {/* 1. DANE ODBIORCY */}
                         <div className="space-y-4">
                             <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
                                 <User className="h-4 w-4 text-emerald-500" />
@@ -206,7 +206,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
 
                         <Separator />
 
-                        {/* 2. WAGA I OBJĘTOŚĆ */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
                                 <label className="text-sm leading-none font-medium">
@@ -256,7 +255,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
 
                         <Separator />
 
-                        {/* 3. PICKUP LOCATION */}
                         <div className="space-y-4">
                             <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
                                 <MapPin className="h-4 w-4 text-blue-500" />
@@ -357,7 +355,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
 
                         <Separator />
 
-                        {/* 4. DELIVERY LOCATION */}
                         <div className="space-y-4">
                             <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
                                 <Flag className="h-4 w-4 text-red-500" />
