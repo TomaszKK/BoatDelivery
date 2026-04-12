@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    background-color: #f8fafc !important;
+}
+
+#kc-header,
+#kc-locale,
+.login-pf-page-header {
+    display: none !important;
+}
+
+.login-pf-page, 
+#kc-container-wrapper, 
+#kc-main, 
+#kc-content, 
+#kc-content-wrapper {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+    display: block !important;
+}
+
+.card-pf {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
