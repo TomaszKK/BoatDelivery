@@ -10,6 +10,8 @@ import { HomePage } from "@/pages/HomePage";
 import { AdminRoutingPage } from "@/pages/AdminRoutingPage";
 import { AdminOrdersPage } from "@/pages/AdminOrdersPage";
 import { AdminLogsPage } from "@/pages/AdminLogsPage";
+import { PaymentPage } from "@/pages/PaymentPage";
+import { PaymentSuccessPage } from "@/pages/PaymentSuccessPage";
 
 export type RouteType = {
   path: string;
@@ -43,6 +45,23 @@ export const customerRoutes: RouteType[] = [
   {
     path: Pathnames.customer["orders-details"],
     Component: OrderDetailsPage,
+  },
+  {
+    path: Pathnames.customer["payment-success"],
+    Component: PaymentSuccessPage,
+  },
+  {
+    path: Pathnames.customer["payment-cancel"],
+    Component: () => (
+      <div className="mt-20 text-center">
+        <h1 className="text-2xl font-bold text-red-500">Płatność anulowana</h1>
+        <p className="mt-2">Twoje zamówienie nie zostało opłacone.</p>
+      </div>
+    ),
+  },
+  {
+    path: Pathnames.customer["payment-details"],
+    Component: PaymentPage,
   },
 ];
 

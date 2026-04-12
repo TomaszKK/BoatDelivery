@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { getAllCountries } from "@/utils/countries";
 import Select from "react-select";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 import {
     Dialog,
@@ -41,6 +42,7 @@ const formatOptionLabel = ({ label, cca2 }: any) => (
 export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
     const { t } = useTranslation();
     const { createOrder } = useOrder();
+    const navigate = useNavigate();
     const { user, loading: isUserLoading } = useProfile();
     const countries = getAllCountries();
 
@@ -99,13 +101,26 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
             customerId: user.id,
         };
 
-        try {
-            await createOrder(payload);
-            reset();
-            onClose();
-        } catch (error) {
-            console.error("There was an error creating the order:", error);
-        }
+      try {
+        // Zakładam, że createOrder zwraca utworzony obiekt z backendu (z ID lub trackingNumber)
+        const createdOrder = await createOrder(payload);
+        reset();
+        onClose();
+
+        // Tymczasowo obliczamy kwotę (np. na podstawie wagi).
+        const calculatedAmount = data.weight * 5 + data.volume * 10;
+
+        // Przekierowanie na nową podstronę płatności, przekazując dane w 'state'
+        navigate(`/payment/${createdOrder.id}`, {
+          state: {
+            amount: calculatedAmount,
+            customerEmail: user.email
+          }
+        });
+      } catch (error) {
+        console.error("There was an error creating the order:", error);
+        toast.error("Błąd podczas tworzenia zamówienia.");
+      }
     };
 
     const handleOpenChange = (open: boolean) => {

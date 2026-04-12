@@ -1,18 +1,25 @@
 package pl.dmcs.paymentservice.service;
 
+import com.stripe.exception.EventDataObjectDeserializationException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.dmcs.paymentservice.config.RabbitMQConfig;
+import pl.dmcs.paymentservice.dto.PaymentEvent;
 import pl.dmcs.paymentservice.dto.PaymentRequest;
+import pl.dmcs.paymentservice.model.PaymentStatus;
 import pl.dmcs.paymentservice.model.PaymentTransaction;
 import pl.dmcs.paymentservice.repository.PaymentTransactionRepository;
-import com.stripe.exception.EventDataObjectDeserializationException;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.Charge;
+
 
 import java.math.BigDecimal;
 
@@ -20,7 +27,7 @@ import java.math.BigDecimal;
 public class PaymentService {
 
     private final PaymentTransactionRepository transactionRepository;
-    private final org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${stripe.webhook-secret}")
     private String webhookSecret;
@@ -28,10 +35,11 @@ public class PaymentService {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
-    public PaymentService(PaymentTransactionRepository transactionRepository, org.springframework.amqp.rabbit.core.RabbitTemplate rabbitTemplate) {
+    public PaymentService(PaymentTransactionRepository transactionRepository, RabbitTemplate rabbitTemplate) {
         this.transactionRepository = transactionRepository;
         this.rabbitTemplate = rabbitTemplate;
     }
+
 
     @Transactional
     public String createPaymentSession(PaymentRequest request) throws StripeException {
@@ -50,6 +58,7 @@ public class PaymentService {
                 .setCancelUrl(cancelUrl)
                 .setCustomerEmail(request.customerEmail())
                 .putMetadata("order_id", request.orderId().toString())
+                .setInvoiceCreation(SessionCreateParams.InvoiceCreation.builder().setEnabled(true).build())
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)
@@ -75,10 +84,10 @@ public class PaymentService {
                 .stripeSessionId(session.getId())
                 .amount(request.amount())
                 .currency("PLN")
-                .status(pl.dmcs.paymentservice.model.PaymentStatus.PENDING)
+                .status(PaymentStatus.PENDING)
                 .build();
 
-        transactionRepository.save(transaction);
+        transactionRepository.saveAndFlush(transaction);
 
         return session.getUrl();
     }
@@ -107,38 +116,70 @@ public class PaymentService {
                 String sessionId = session.getId();
                 System.out.println("System rozpoznal sesje z Webhooka: " + sessionId);
 
-                PaymentTransaction transaction = transactionRepository.findByStripeSessionId(sessionId)
-                        .orElseThrow(() -> new RuntimeException("Nie znaleziono transakcji o ID: " + sessionId));
 
-                transaction.setStatus(pl.dmcs.paymentservice.model.PaymentStatus.COMPLETED);
-                transactionRepository.save(transaction);
+                PaymentTransaction transaction;
+                try {
+                    transaction = transactionRepository.findByStripeSessionId(sessionId)
+                            .orElseThrow(() -> new RuntimeException("Nie znaleziono transakcji o ID: " + sessionId));
+                } catch (Exception e) {
+                    System.err.println("Błąd pobierania z bazy: " + e.getMessage());
+                    return;
+                }
 
-                System.out.println("=========================================");
-                System.out.println("PLATNOSC ZAKSIEGOWANA!");
-                System.out.println("Zamowienie: " + transaction.getOrderId());
-                System.out.println("Kwota: " + transaction.getAmount() + " PLN");
-                System.out.println("=========================================");
 
-                pl.dmcs.paymentservice.dto.PaymentEvent eventMsg =
-                        new pl.dmcs.paymentservice.dto.PaymentEvent(
-                                transaction.getOrderId(),
-                                pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
-                                transaction.getAmount()
-                        );
+                try {
+                    transaction.setStatus(PaymentStatus.PAID);
+                    transactionRepository.saveAndFlush(transaction);
+                    System.out.println("SUKCES: Baza danych zaktualizowana na PAID!");
+                } catch (Exception e) {
+                    System.err.println("Wiadomość: " + e.getMessage());
 
-                rabbitTemplate.convertAndSend(
-                        pl.dmcs.paymentservice.config.RabbitMQConfig.EXCHANGE_NAME,
-                        pl.dmcs.paymentservice.config.RabbitMQConfig.ROUTING_KEY_COMPLETED,
-                        eventMsg
+                }
+
+
+                String documentUrl = null;
+                if (session.getPaymentIntent() != null) {
+                    try {
+                        PaymentIntent pi = PaymentIntent.retrieve(session.getPaymentIntent());
+                        if (pi.getLatestCharge() != null) {
+                            Charge charge = Charge.retrieve(pi.getLatestCharge());
+                            documentUrl = charge.getReceiptUrl();
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Błąd pobierania pokwitowania ze Stripe: " + e.getMessage());
+                    }
+                }
+
+                if (session.getCustomerDetails() == null || session.getCustomerDetails().getEmail() == null) {
+                    throw new RuntimeException("KRYTYCZNY BŁĄD INTEGRACJI: Stripe nie zwrócił adresu e-mail klienta. Przerwano wysyłkę powiadomienia do RabbitMQ.");
+                }
+                String customerEmail = session.getCustomerDetails().getEmail();
+
+
+                PaymentEvent eventMsg = new PaymentEvent(
+                        transaction.getOrderId(),
+                        customerEmail,
+                        pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
+                        transaction.getAmount(),
+                        documentUrl
                 );
 
-                System.out.println("Wyslano zdarzenie do RabbitMQ: " + eventMsg);
+                try {
+                    rabbitTemplate.convertAndSend(
+                            RabbitMQConfig.EXCHANGE_NAME,
+                            RabbitMQConfig.ROUTING_KEY_COMPLETED,
+                            eventMsg
+                    );
+                    System.out.println("Wysłano zdarzenie do RabbitMQ: " + eventMsg);
+                } catch (Exception e) {
+                    System.err.println("Błąd komunikacji z RabbitMQ: " + e.getMessage());
+                }
 
             } else {
                 System.err.println("Blad: Obiekt sesji to null po deserializacji.");
             }
         } else {
-            System.out.println("Zignorowano zdarzenie Stripe typu: " + event.getType());
+            //System.out.println("Zignorowano zdarzenie Stripe typu: " + event.getType());
         }
     }
 }
