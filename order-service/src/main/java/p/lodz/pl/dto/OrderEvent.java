@@ -9,7 +9,7 @@ public record OrderEvent(
         UUID orderId,
         String trackingNumber,
         List<String> targetAudience,
-        java.math.BigDecimal totalDistanceKm,
+        BigDecimal totalDistanceKm,
         Integer estimatedDurationMin,
         String customerEmail,
         String courierEmail,

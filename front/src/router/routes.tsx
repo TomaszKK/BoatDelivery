@@ -10,6 +10,9 @@ import { HomePage } from "@/pages/HomePage";
 import { AdminRoutingPage } from "@/pages/AdminRoutingPage";
 import { AdminOrdersPage } from "@/pages/AdminOrdersPage";
 import { AdminLogsPage } from "@/pages/AdminLogsPage";
+import { PaymentPage } from "@/pages/PaymentPage";
+import { PaymentSuccessPage } from "@/pages/PaymentSuccessPage";
+import { PaymentCancelPage } from "@/pages/PaymentCancelPage";
 
 export type RouteType = {
   path: string;
@@ -31,11 +34,15 @@ export const publicRoutes: RouteType[] = [
   },
 ];
 
-export const customerRoutes: RouteType[] = [
+// NOWA TABLICA: Strony dostępne dla każdego ZALOGOWANEGO usera, niezależnie od roli
+export const sharedProtectedRoutes: RouteType[] = [
   {
     path: Pathnames.customer.profile,
     Component: ProfilePage,
   },
+];
+
+export const customerRoutes: RouteType[] = [
   {
     path: Pathnames.customer["mine-orders"],
     Component: MyOrdersPage,
@@ -44,13 +51,21 @@ export const customerRoutes: RouteType[] = [
     path: Pathnames.customer["orders-details"],
     Component: OrderDetailsPage,
   },
+  {
+    path: Pathnames.customer["payment-success"],
+    Component: PaymentSuccessPage,
+  },
+  {
+      path: Pathnames.customer["payment-cancel"],
+      Component: PaymentCancelPage,
+    },
+  {
+    path: Pathnames.customer["payment-details"],
+    Component: PaymentPage,
+  },
 ];
 
 export const courierRoutes: RouteType[] = [
-  {
-    path: Pathnames.customer.profile,
-    Component: ProfilePage,
-  },
   {
     path: Pathnames.courier.route,
     Component: CourierRoutePage,

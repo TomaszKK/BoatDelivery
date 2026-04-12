@@ -331,5 +331,18 @@
     "stepInTransit": "In Transit",
     "stepDelivered": "Delivered",
     "orderCanceledMsg": "This order has been canceled"
+  },
+  "payment": {
+    "missingData": "Missing required payment data.",
+    "backToOrders": "Back to orders",
+    "completePayment": "Complete payment",
+    "savedNeedsPayment": "Order saved, but requires payment before we can dispatch a courier.",
+    "toPay": "To pay:",
+    "successTitle": "Payment successful!",
+    "successDesc": "Thank you for your payment. Expect an email notification shortly - a courier will be dispatched to pick up the package.",
+    "processing": "Processing...",
+    "payAmount": "Pay {{amount}} PLN",
+    "cancelTitle": "Payment Cancelled",
+    "cancelDesc": "Your order has not been paid for."
   }
 }

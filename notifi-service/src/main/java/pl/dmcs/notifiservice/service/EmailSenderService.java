@@ -49,6 +49,13 @@ public class EmailSenderService {
         }
     }
 
+    public String sendInvoiceEmail(String to, String ref, String invoiceUrl) {
+        String subject = "Potwierdzenie płatności i faktura za zlecenie nr: " + ref;
+        String text = String.format("Cześć,\n\nDziękujemy za opłacenie zlecenia nr %s.\n\nTwoja faktura jest dostępna do pobrania pod tym linkiem:\n%s\n\nPozdrawiamy,\nZespół BoatDelivery", ref, invoiceUrl);
+        sendEmail(to, subject, text);
+        return text;
+    }
+
     // --- PROCES ODBIORU ---
 
     public String sendOrderCreatedEmail(String to, String ref, String name) {

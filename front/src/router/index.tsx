@@ -5,13 +5,13 @@ import {
   publicRoutes,
   customerRoutes,
   courierRoutes,
+  sharedProtectedRoutes,
 } from "./routes";
 import { Pathnames } from "./pathnames";
 import { useKeycloak } from "@/hooks/useKeycloak";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useTranslation } from "react-i18next";
 
-// ProtectedRoute component - chroni dostęp do stron tylko dla zalogowanych użytkowników
 const ProtectedRoute = ({ 
   children, 
   isAllowed 
@@ -64,6 +64,19 @@ return (
       {/* PUBLIC */}
       {publicRoutes.map(({ path, Component }) => (
         <Route key={path} path={path} element={withLayout(Component)} />
+      ))}
+
+      {/* SHARED PROTECTED (Dostępne dla KAŻDEGO zalogowanego, np. Profil) */}
+      {sharedProtectedRoutes.map(({ path, Component }) => (
+        <Route
+          key={path}
+          path={path}
+          element={
+            <ProtectedRoute isAllowed={isLogged}>
+              {withLayout(Component)}
+            </ProtectedRoute>
+          }
+        />
       ))}
 
       {/* ADMIN - Protected */}

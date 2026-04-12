@@ -114,7 +114,7 @@ export const RouteMapModal: React.FC<Props> = ({ isOpen, onClose, route }) => {
             <DialogTitle className="flex items-center gap-2 text-xl md:text-2xl">
               <span>{t("courier.routeMapTitle", "Mapa Trasy")}</span>
               <span className="text-muted-foreground text-sm font-normal">
-                ({stopsData.length} {t("courier.stopsCount", "przystanków")} + Baza)
+                ({stopsData.length} {t("courier.stopsCount", "przystanków")} + {t("courier.depot", "baza")})
               </span>
             </DialogTitle>
 

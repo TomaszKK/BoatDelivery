@@ -40,6 +40,7 @@ export interface OrderRequestDTO {
 }
 
 export interface OrderResponseDTO {
+  id: string;
   trackingNumber: string;
   customerId: string;
   status: OrderStatus;

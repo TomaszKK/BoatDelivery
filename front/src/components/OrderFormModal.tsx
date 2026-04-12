@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { getAllCountries } from "@/utils/countries";
 import Select from "react-select";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 import {
     Dialog,
@@ -41,6 +42,7 @@ const formatOptionLabel = ({ label, cca2 }: any) => (
 export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
     const { t } = useTranslation();
     const { createOrder } = useOrder();
+    const navigate = useNavigate();
     const { user, loading: isUserLoading } = useProfile();
     const countries = getAllCountries();
 
@@ -99,11 +101,26 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
         };
 
         try {
-            await createOrder(payload);
+            const createdOrder = await createOrder(payload);
+
+            if (!createdOrder || !createdOrder.id) {
+                throw new Error("Missing order ID in response");
+            }
+
             reset();
             onClose();
+
+            const calculatedAmount = data.weight * 5 + data.volume * 10;
+
+            navigate(`/payment/${createdOrder.id}`, {
+                state: {
+                    amount: calculatedAmount,
+                    customerEmail: user.email
+                }
+            });
         } catch (error) {
             console.error("There was an error creating the order:", error);
+            toast.error("Błąd podczas tworzenia zamówienia.");
         }
     };
 
@@ -132,7 +149,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
                 ) : (
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-                        {/* 1. DANE ODBIORCY */}
                         <div className="space-y-4">
                             <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
                                 <User className="h-4 w-4 text-emerald-500" />
@@ -190,7 +206,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
 
                         <Separator />
 
-                        {/* 2. WAGA I OBJĘTOŚĆ */}
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
                                 <label className="text-sm leading-none font-medium">
@@ -240,7 +255,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
 
                         <Separator />
 
-                        {/* 3. PICKUP LOCATION */}
                         <div className="space-y-4">
                             <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
                                 <MapPin className="h-4 w-4 text-blue-500" />
@@ -341,7 +355,6 @@ export const OrderFormModal = ({ isOpen, onClose }: OrderFormModalProps) => {
 
                         <Separator />
 
-                        {/* 4. DELIVERY LOCATION */}
                         <div className="space-y-4">
                             <h3 className="text-muted-foreground flex items-center gap-2 text-sm font-semibold">
                                 <Flag className="h-4 w-4 text-red-500" />
