@@ -10,7 +10,9 @@ import "@/index.css";
 
 const Register = lazy(() => import("./pages/Register"));
 const Login = lazy(() => import("./pages/Login"));
-const LoginResetPassword = lazy(() => import("./pages/LoginResetPassword")); // <-- DODANE
+const LoginResetPassword = lazy(() => import("./pages/LoginResetPassword"));
+const LoginVerifyEmail = lazy(() => import("./pages/LoginVerifyEmail"));
+const LoginUpdatePassword = lazy(() => import("./pages/LoginUpdatePassword"));
 
 export default function KcPage(props: { kcContext: KcContext }) {
   const { kcContext } = props;
@@ -21,17 +23,17 @@ export default function KcPage(props: { kcContext: KcContext }) {
       {(() => {
         switch (kcContext.pageId) {
           case "login.ftl":
-            return (
-              <Login {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />
-            );
+            return <Login {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />;
           case "register.ftl":
-            return (
-              <Register {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />
-            );
+            return <Register {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />;
           case "login-reset-password.ftl":
-            return (
-              <LoginResetPassword {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />
-            );
+            return <LoginResetPassword {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />;
+          case "login-verify-email.ftl":
+            return <LoginVerifyEmail {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />;
+          
+          case "login-update-password.ftl":
+            return <LoginUpdatePassword {...{ kcContext, i18n, classes }} Template={Template} doUseDefaultCss={false} />;
+            
           default:
             return (
               <DefaultPage 

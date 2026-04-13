@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom"; // Dodano useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { Pathnames } from "@/router/pathnames";
 import { ModeToggle } from "../ModeToggle";
 import { AuthButtons } from "../auth/AuthButtons";
@@ -34,7 +34,6 @@ import { Toaster } from "@/components/ui/sonner";
 import {
   LanguagesIcon,
   MenuIcon,
-  PackageSearchIcon,
   PackageIcon,
   LayoutDashboardIcon,
   UsersIcon,
@@ -52,12 +51,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
   const { isCustomer, isCourier, isAdmin } = useUserRoles();
   const isLogged = keycloak.isLogged;
 
-  // Wyciąganie nazwy usera
   const tokenParsed = (keycloak as any)?.tokenParsed;
   const username =
     tokenParsed?.preferred_username || tokenParsed?.given_name || "Użytkownik";
 
-  // Dynamiczne ustalenie tekstu roli
   let activeRoleLabel = "customer";
   if (isAdmin) activeRoleLabel = "admin";
   else if (isCourier) activeRoleLabel = "courier";

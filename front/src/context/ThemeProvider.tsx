@@ -20,39 +20,49 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
+const getThemeFromCookie = (key: string): Theme | null => {
+  const match = document.cookie.match(new RegExp(`(^| )${key}=([^;]+)`));
+  if (match && (match[2] === "dark" || match[2] === "light" || match[2] === "system")) {
+    return match[2] as Theme;
+  }
+  return null;
+};
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
-  );
+  
+  const [theme, setTheme] = useState<Theme>(() => {
+    const cookieTheme = getThemeFromCookie(storageKey);
+    if (cookieTheme) return cookieTheme;
+    
+    return (localStorage.getItem(storageKey) as Theme) || defaultTheme;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
 
     root.classList.remove("light", "dark");
 
+    let activeTheme = theme;
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-
-      root.classList.add(systemTheme);
-      return;
+      activeTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
 
-    root.classList.add(theme);
-  }, [theme]);
+    root.classList.add(activeTheme);
+    
+    localStorage.setItem(storageKey, theme);
+    document.cookie = `${storageKey}=${activeTheme}; path=/; max-age=31536000; SameSite=Lax`;
+    
+  }, [theme, storageKey]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      setTheme(newTheme);
     },
   };
 
