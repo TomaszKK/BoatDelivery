@@ -42,7 +42,7 @@ const STATUS_FLOW: OrderStatus[] = [
 export const OrderDetailsPage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation(); // ZAINICJOWANY HOOK
+  const location = useLocation();
   const { trackingNumber } = useParams<{ trackingNumber: string }>();
 
   const countiresMap = useMemo(() => {
@@ -50,7 +50,7 @@ export const OrderDetailsPage = () => {
   }, [i18n.language]);
 
   const { getOrderByTrackingNumber, order } = useOrder();
-  const { user } = useProfile(); // POBRANIE DANYCH UŻYTKOWNIKA
+  const { user } = useProfile();
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
