@@ -22,13 +22,14 @@ public class PaymentCleanupService {
     public void cancelExpiredPayments() {
         LocalDateTime threshold = LocalDateTime.now().minusHours(24);
 
-        transactionRepository.findAll().stream()
-                .filter(t -> t.getStatus() == PaymentStatus.PENDING && t.getCreatedAt().isBefore(threshold))
-                .forEach(t -> {
-                    t.setStatus(PaymentStatus.CANCELED);
-                    transactionRepository.save(t);
-                });
+        int updatedRows = transactionRepository.updateStatusForExpiredPending(
+                PaymentStatus.CANCELED,
+                PaymentStatus.PENDING,
+                threshold
+        );
 
-        System.out.println("CLEANUP: Przeskanowano płatności starsze niż 24h.");
+        if (updatedRows > 0) {
+            System.out.println("CLEANUP: Anulowano " + updatedRows + " przeterminowanych płatności.");
+        }
     }
 }

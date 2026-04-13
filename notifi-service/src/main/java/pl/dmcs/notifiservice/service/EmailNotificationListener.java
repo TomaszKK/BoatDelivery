@@ -93,7 +93,7 @@ public class EmailNotificationListener {
                         sseNotificationService.pushNotificationToFrontend("Kurier odebrał paczkę: " + event.trackingNumber());
                     }
                     case IN_TRANSIT_TO_CUSTOMER -> {
-                        generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.deliveryAddress(), event.courierPhone());
+                        generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
                         sseNotificationService.pushNotificationToFrontend("Paczka w drodze do doręczenia: " + event.trackingNumber());
 
 //                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.trackingNumber(), event.courierPhone());

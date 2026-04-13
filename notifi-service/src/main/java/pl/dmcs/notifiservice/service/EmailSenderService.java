@@ -81,9 +81,9 @@ public class EmailSenderService {
 
     // --- PROCES DOSTAWY ---
 
-    public String sendInTransitToCustomerEmail(String to, String ref, String name, String address, String phone) {
+    public String sendInTransitToCustomerEmail(String to, String ref, String name) {
         String subject = "Paczka w drodze do odbiorcy! Nr: " + ref;
-        String text = String.format("Cześć %s,\n\nTwoja paczka nr: %s wyruszyła w trasę do odbiorcy!\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref, phone, address);
+        String text = String.format("Cześć %s,\n\nTwoja paczka nr: %s wyruszyła w trasę do odbiorcy!\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
         sendEmail(to, subject, text);
         return text;
     }

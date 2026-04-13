@@ -19,7 +19,7 @@ public class PaymentEventListener {
     public void handlePayment(byte[] messageBytes) {
         try {
 
-            String message = new String(messageBytes);
+            String message = new String(messageBytes, java.nio.charset.StandardCharsets.UTF_8);
             System.out.println("QUARKUS ODEBRAŁ EVENT Z RABBITA: " + message);
 
             JsonObject payload = new JsonObject(message);
