@@ -81,9 +81,9 @@ public class EmailSenderService {
 
     // --- PROCES DOSTAWY ---
 
-    public String sendInTransitToCustomerEmail(String to, String ref, String name, String address, String phone) {
-        String subject = "Paczka w drodze do Ciebie! Nr: " + ref;
-        String text = String.format("Cześć %s,\n\nTwoja paczka nr: %s wyruszyła w trasę do: %s. Telefon kuriera do kontaktu %s.\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref, phone, address);
+    public String sendInTransitToCustomerEmail(String to, String ref, String name) {
+        String subject = "Paczka w drodze do odbiorcy! Nr: " + ref;
+        String text = String.format("Cześć %s,\n\nTwoja paczka nr: %s wyruszyła w trasę do odbiorcy!\n\nPozdrawiamy,\nZespół BoatDelivery", name, ref);
         sendEmail(to, subject, text);
         return text;
     }
@@ -107,6 +107,12 @@ public class EmailSenderService {
     public String sendRecipientInTransitEmail(String to, String ref, String recipientName, String courierPhone) {
         String subject = "Paczka do Ciebie jest już w drodze! Nr: " + ref;
         String text = String.format("Cześć %s,\n\nKurier jedzie do Ciebie z paczką nr: %s. Telefon do kuriera: %s.\n\nPozdrawiamy,\nZespół BoatDelivery", recipientName, ref, courierPhone);
+        sendEmail(to, subject, text);
+        return text;
+    }
+    public String sendRecipientOrderDelivered(String to, String ref, String recipientName) {
+        String subject = "Doręczono paczkę nr: " + ref;
+        String text = String.format("Cześć %s,\n\nPaczka nr: %s została doręczona. Dziękujemy!\n\nPozdrawiamy,\nZespół BoatDelivery", recipientName, ref);
         sendEmail(to, subject, text);
         return text;
     }

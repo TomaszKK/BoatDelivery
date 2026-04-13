@@ -35,6 +35,12 @@ spring:
     servlet:
       load-on-startup: 1
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWT_JWK_SET_URI:http://localhost:8060/realms/boat-delivery-realm/protocol/openid-connect/certs}
+
 smsapi:
   token: ${SMSAPI_TOKEN}
   sender: Test # JUDASZE Z SMSAPI NIE POWALAJA ZMIENIC NAZWY BEZ AKTYWACJI KONTA FIRMOWEGO!!!!!!!!
