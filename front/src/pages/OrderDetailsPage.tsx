@@ -80,6 +80,8 @@ export const OrderDetailsPage = () => {
   const currentStatusIndex = STATUS_FLOW.indexOf(order.status as OrderStatus);
 
   const { amount } = location.state || {};
+  const calculatedAmount = (order.weight * 5) + (order.volume * 10);
+  const finalAmount = amount ? Number(amount) : calculatedAmount;
 
   return (
     <div className="min-h-screen p-6 text-gray-900 dark:text-gray-100">
@@ -122,7 +124,7 @@ export const OrderDetailsPage = () => {
             {order.status === "WAITING_FOR_PAYMENT" && user && (
               <PaymentButton
                 orderId={order.id}
-                amount={amount}
+                amount={finalAmount}
                 customerEmail={user.email}
               />
             )}
