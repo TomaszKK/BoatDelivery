@@ -79,7 +79,6 @@ export const OrderDetailsPage = () => {
   const isCanceled = order.status === "ORDER_CANCELED";
   const currentStatusIndex = STATUS_FLOW.indexOf(order.status as OrderStatus);
 
-  // Wyciągamy kwotę ze state (jeśli przyszliśmy tu z kalkulatora)
   const { amount } = location.state || {};
 
   return (
@@ -106,7 +105,6 @@ export const OrderDetailsPage = () => {
             </div>
           </div>
 
-          {/* KONTENER NA STATUS I PRZYCISK PŁATNOŚCI */}
           <div className="flex flex-col items-end gap-3">
             <Badge
               variant={isCanceled ? "destructive" : "default"}
@@ -121,11 +119,10 @@ export const OrderDetailsPage = () => {
               {t(`orders.${order.status}`)}
             </Badge>
 
-            {/* WARUNKOWY PRZYCISK PŁATNOŚCI ZABEZPIECZONY PRZED BRAKIEM USERA */}
             {order.status === "WAITING_FOR_PAYMENT" && user && (
               <PaymentButton
                 orderId={order.id}
-                amount={amount ? Number(amount) : 75.00} // Fallback na 75 PLN w razie odświeżenia strony
+                amount={amount}
                 customerEmail={user.email}
               />
             )}
@@ -255,7 +252,7 @@ export const OrderDetailsPage = () => {
               )}
             </div>
 
-            {/* OŚ CZASU (TIMELINE) */}
+            {/* OŚ CZASU */}
             <Card>
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
