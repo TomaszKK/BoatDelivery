@@ -1,6 +1,7 @@
 package p.lodz.pl.model.enums;
 
 public enum OrderStatus {
+    WAITING_FOR_PAYMENT,
     ORDER_CREATED,
     CALCULATING_ROUTE_RECEIVE,
     ROUTE_ASSIGNED_RECEIVE,

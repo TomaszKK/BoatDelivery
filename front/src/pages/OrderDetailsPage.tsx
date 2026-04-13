@@ -1,10 +1,12 @@
 import { useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useOrder } from "@/hooks/useOrder";
+import { useProfile } from "@/hooks/useProfile";
 import { getCountryMap } from "@/utils/countries";
 import MapComponent from "@/components/MapComponent";
 import type { OrderStatus } from "@/types/OrderType";
+import PaymentButton from "@/components/payment/PaymentButton";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +26,7 @@ import {
 } from "lucide-react";
 
 const STATUS_FLOW: OrderStatus[] = [
+  "WAITING_FOR_PAYMENT",
   "ORDER_CREATED",
   "CALCULATING_ROUTE_RECEIVE",
   "ROUTE_ASSIGNED_RECEIVE",
@@ -39,6 +42,7 @@ const STATUS_FLOW: OrderStatus[] = [
 export const OrderDetailsPage = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation(); // ZAINICJOWANY HOOK
   const { trackingNumber } = useParams<{ trackingNumber: string }>();
 
   const countiresMap = useMemo(() => {
@@ -46,6 +50,7 @@ export const OrderDetailsPage = () => {
   }, [i18n.language]);
 
   const { getOrderByTrackingNumber, order } = useOrder();
+  const { user } = useProfile(); // POBRANIE DANYCH UŻYTKOWNIKA
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -74,6 +79,9 @@ export const OrderDetailsPage = () => {
   const isCanceled = order.status === "ORDER_CANCELED";
   const currentStatusIndex = STATUS_FLOW.indexOf(order.status as OrderStatus);
 
+  // Wyciągamy kwotę ze state (jeśli przyszliśmy tu z kalkulatora)
+  const { amount } = location.state || {};
+
   return (
     <div className="min-h-screen p-6 text-gray-900 dark:text-gray-100">
       <div className="mx-auto max-w-4xl">
@@ -98,24 +106,36 @@ export const OrderDetailsPage = () => {
             </div>
           </div>
 
-          <Badge
-            variant={isCanceled ? "destructive" : "default"}
-            className={`px-4 py-1.5 text-sm ${
-              !isCanceled && order.status === "DELIVERY_COMPLETED"
-                ? "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
-                : !isCanceled
-                  ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-                  : ""
-            }`}
-          >
-            {t(`orders.${order.status}`)}
-          </Badge>
+          {/* KONTENER NA STATUS I PRZYCISK PŁATNOŚCI */}
+          <div className="flex flex-col items-end gap-3">
+            <Badge
+              variant={isCanceled ? "destructive" : "default"}
+              className={`px-4 py-1.5 text-sm ${
+                !isCanceled && order.status === "DELIVERY_COMPLETED"
+                  ? "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+                  : !isCanceled
+                    ? "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                    : ""
+              }`}
+            >
+              {t(`orders.${order.status}`)}
+            </Badge>
+
+            {/* WARUNKOWY PRZYCISK PŁATNOŚCI ZABEZPIECZONY PRZED BRAKIEM USERA */}
+            {order.status === "WAITING_FOR_PAYMENT" && user && (
+              <PaymentButton
+                orderId={order.id}
+                amount={amount ? Number(amount) : 75.00} // Fallback na 75 PLN w razie odświeżenia strony
+                customerEmail={user.email}
+              />
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* LEWA KOLUMNA */}
           <div className="flex flex-col gap-6">
-            
+
             {/* Informacje o paczce */}
             <Card>
               <CardHeader className="pb-3">
@@ -148,7 +168,7 @@ export const OrderDetailsPage = () => {
               </CardContent>
             </Card>
 
-            {/* DANE ODBIORCY - NOWA KARTA */}
+            {/* DANE ODBIORCY */}
             {order.recipientFirstName && (
               <Card className="border-emerald-500/20 bg-emerald-50/50 dark:bg-emerald-950/10">
                 <CardHeader className="pb-3">

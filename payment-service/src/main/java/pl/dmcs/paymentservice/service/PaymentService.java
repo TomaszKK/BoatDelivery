@@ -21,6 +21,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.Charge;
 
 
+
 import java.math.BigDecimal;
 
 @Service
@@ -43,8 +44,21 @@ public class PaymentService {
 
     @Transactional
     public String createPaymentSession(PaymentRequest request) throws StripeException {
-        if (transactionRepository.findByOrderId(request.orderId()).isPresent()) {
-            throw new IllegalStateException("Transakcja dla tego zamówienia już istnieje!");
+
+        PaymentTransaction transaction = transactionRepository.findByOrderId(request.orderId()).orElse(null); // Szukanie zamowienia w bazie
+
+        if (transaction != null) {
+            if (transaction.getStatus() == PaymentStatus.PAID) {
+                throw new IllegalStateException("To zamówienie zostało już opłacone!");
+            }
+
+        } else {
+            transaction = PaymentTransaction.builder()
+                    .orderId(request.orderId())
+                    .amount(request.amount())
+                    .currency("PLN")
+                    .status(PaymentStatus.PENDING)
+                    .build();
         }
 
         long amountInCents = request.amount().multiply(new BigDecimal("100")).longValue();
@@ -79,13 +93,8 @@ public class PaymentService {
 
         Session session = Session.create(params);
 
-        PaymentTransaction transaction = PaymentTransaction.builder()
-                .orderId(request.orderId())
-                .stripeSessionId(session.getId())
-                .amount(request.amount())
-                .currency("PLN")
-                .status(PaymentStatus.PENDING)
-                .build();
+        transaction.setStripeSessionId(session.getId());
+        transaction.setStatus(PaymentStatus.PENDING);
 
         transactionRepository.saveAndFlush(transaction);
 
@@ -159,7 +168,7 @@ public class PaymentService {
                 PaymentEvent eventMsg = new PaymentEvent(
                         transaction.getOrderId(),
                         customerEmail,
-                        pl.dmcs.paymentservice.dto.PaymentStatus.PAID,
+                        PaymentStatus.PAID,
                         transaction.getAmount(),
                         documentUrl
                 );

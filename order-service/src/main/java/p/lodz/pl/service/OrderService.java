@@ -49,7 +49,7 @@ public class OrderService {
     @Transactional
     public OrderResponseDTO createOrder(OrderRequestDTO requestDTO, HerePosition pickupPos, HerePosition deliveryPos) {
         Order order = orderMapper.toEntity(requestDTO);
-        order.status = OrderStatus.ORDER_CREATED;
+        order.status = OrderStatus.WAITING_FOR_PAYMENT;
         order.trackingNumber = generateTrackingNumber();
 
         order.customerId = UUID.fromString(jwt.getSubject());
@@ -61,8 +61,24 @@ public class OrderService {
         order.deliveryLocation.longitude = deliveryPos.lng();
 
         order.persist();
-        eventPublisher.publishOrderChange(order);
+
         return orderMapper.toDto(order);
+    }
+
+    @Transactional
+    public void markOrderAsPaid(java.util.UUID orderId) {
+        Order order = Order.findById(orderId);
+
+        if (order != null && order.status == OrderStatus.WAITING_FOR_PAYMENT) {
+            order.status = OrderStatus.ORDER_CREATED;
+            order.persist();
+
+            eventPublisher.publishOrderChange(order);
+
+            System.out.println("Zlecenie " + orderId + " opłacone pomyślnie. Paczka trafia do obiegu.");
+        } else {
+            System.err.println("Nie można zaktualizować statusu dla zamówienia: " + orderId);
+        }
     }
 
     public List<OrderResponseDTO> getOrders() {

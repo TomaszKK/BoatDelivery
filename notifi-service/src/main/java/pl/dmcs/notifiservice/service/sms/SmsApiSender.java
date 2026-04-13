@@ -20,7 +20,7 @@ public class SmsApiSender implements SmsSender {
 
     public SmsApiSender(
             @Value("${smsapi.token}") String apiToken,
-            @Value("${smsapi.sender}") String senderName) {
+            @Value("Test") String senderName) {
         this.apiToken = apiToken;
         this.senderName = senderName;
         this.httpClient = HttpClient.newBuilder()

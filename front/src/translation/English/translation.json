@@ -58,6 +58,7 @@
     "to": "To",
     "from": "From",
     "created": "Created",
+    "WAITING_FOR_PAYMENT": "Waiting for payment",
     "ORDER_CREATED": "Order Created",
     "ORDER_ACCEPTED": "Order Accepted",
     "ORDER_IN_TRANSIT": "Order In Transit",

@@ -10,11 +10,9 @@ import pl.dmcs.notifiservice.model.SmsLog;
 import pl.dmcs.notifiservice.repository.NotificationLogRepository;
 import pl.dmcs.notifiservice.repository.SmsLogRepository;
 import pl.dmcs.notifiservice.service.sms.SmsSender;
-import pl.dmcs.notifiservice.config.RabbitMQConfig;
 import pl.dmcs.notifiservice.dto.PaymentEvent;
 import pl.dmcs.notifiservice.dto.PaymentStatus;
 
-import java.beans.EventHandler;
 import java.util.UUID;
 
 @Service
@@ -98,8 +96,8 @@ public class EmailNotificationListener {
                         generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.deliveryAddress(), event.courierPhone());
                         sseNotificationService.pushNotificationToFrontend("Paczka w drodze do doręczenia: " + event.trackingNumber());
 
-                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.trackingNumber(), event.courierPhone());
-                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.customerPhone(), smsMsg);
+//                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.trackingNumber(), event.courierPhone());
+//                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.customerPhone(), smsMsg);
                     }
                     case DELIVERY_COMPLETED -> {
                         generatedEmailContent = emailSenderService.sendDeliveryCompletedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
@@ -128,6 +126,11 @@ public class EmailNotificationListener {
                         String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer kuriera: %s", event.trackingNumber(), event.courierPhone());
                         dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.recipientPhone(), smsMsg);
                     }
+                    case DELIVERY_COMPLETED ->{
+                        String mailContent = emailSenderService.sendRecipientOrderDelivered(event.recipientEmail(), event.trackingNumber(), event.recipientFirstName());
+                        generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + RECIPIENT_LOG_PREFIX + mailContent;
+                    }
+
                 }
 
                 if (logRecipientEmail.equals(NO_DATA)) {
@@ -221,7 +224,6 @@ public class EmailNotificationListener {
     @RabbitListener(queues = RabbitMQConfig.PAYMENT_QUEUE)
     public void handlePaymentEvent(PaymentEvent event) {
         try {
-            // Zobacz jak czysto to teraz wygląda:
             if (PaymentStatus.PAID.equals(event.status())) {
                 String trackingRef = event.orderId().toString().substring(0, 8);
 
