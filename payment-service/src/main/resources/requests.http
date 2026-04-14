@@ -1,9 +1,0 @@
-### TESTOWA SESJA PLATNOSCI
-POST http://localhost:8084/api/payments/create-session
-Content-Type: application/json
-
-{
-  "orderId": "123e4267-e89b-12d3-a456-426614174103",
-  "amount": 150.50,
-  "customerEmail": "klient@mail.com"
-}

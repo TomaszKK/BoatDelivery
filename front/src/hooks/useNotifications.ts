@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
+import i18n from "i18next";
 
 export const useNotifications = () => {
   useEffect(() => {
@@ -8,10 +9,17 @@ export const useNotifications = () => {
     );
 
     eventSource.addEventListener("order-update", (event) => {
-      toast.info("Aktualizacja z systemu", {
-        description: event.data,
-        duration: 5000, // Czas znikania powiadomienia
-      });
+      try {
+        const payload = JSON.parse(event.data);
+
+
+        toast.info(i18n.t(`sse.titles.${payload.type}`, "Powiadomienie systemowe"), {
+          description: i18n.t(`sse.messages.${payload.type}`, { data: payload.data }),
+          duration: 5000,
+        });
+      } catch (error) {
+        console.error("Błąd dekodowania JSON z SSE:", error);
+      }
     });
 
     eventSource.onerror = (error) => {

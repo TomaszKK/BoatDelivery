@@ -26,9 +26,15 @@ public class AuditListener {
     }
 
     private String getCurrentUser() {
-        if (securityIdentity == null || securityIdentity.isAnonymous()) {
+        try {
+            if (securityIdentity != null && !securityIdentity.isAnonymous()) {
+                return securityIdentity.getPrincipal().getName();
+            }
+        } catch (jakarta.enterprise.context.ContextNotActiveException e) {
+            return "system";
+        } catch (Exception e) {
             return "system";
         }
-        return securityIdentity.getPrincipal().getName();
+        return "system";
     }
 }

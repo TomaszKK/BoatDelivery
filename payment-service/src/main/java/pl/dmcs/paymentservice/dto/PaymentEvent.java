@@ -1,4 +1,5 @@
 package pl.dmcs.paymentservice.dto;
+import pl.dmcs.paymentservice.model.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.util.UUID;

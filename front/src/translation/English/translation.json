@@ -58,6 +58,7 @@
     "to": "To",
     "from": "From",
     "created": "Created",
+    "WAITING_FOR_PAYMENT": "Waiting for payment",
     "ORDER_CREATED": "Order Created",
     "ORDER_ACCEPTED": "Order Accepted",
     "ORDER_IN_TRANSIT": "Order In Transit",
@@ -344,5 +345,29 @@
     "payAmount": "Pay {{amount}} PLN",
     "cancelTitle": "Payment Cancelled",
     "cancelDesc": "Your order has not been paid for."
+  },
+  "sse": {
+    "titles": {
+      "ORDER_CREATED": "Order Created",
+      "IN_TRANSIT_FOR_PACKAGE": "Package Pickup",
+      "ORDER_RECEIVED_FROM_CUSTOMER": "Package Collected",
+      "IN_TRANSIT_TO_CUSTOMER": "Package in Transit",
+      "DELIVERY_COMPLETED": "Delivery Completed",
+      "ORDER_CANCELED": "Order Canceled",
+      "ROUTE_ASSIGNED": "New Route Assigned",
+      "COURIER_ORDER_CANCELED": "Courier Alert - Cancellation",
+      "PAYMENT_PAID": "Payment Processed"
+    },
+    "messages": {
+      "ORDER_CREATED": "The order for package {{data}} has been received.",
+      "IN_TRANSIT_FOR_PACKAGE": "The courier is on their way to pick up package: {{data}}.",
+      "ORDER_RECEIVED_FROM_CUSTOMER": "The courier has collected package: {{data}}.",
+      "IN_TRANSIT_TO_CUSTOMER": "Package {{data}} is on its way to delivery.",
+      "DELIVERY_COMPLETED": "Package {{data}} has been delivered successfully.",
+      "ORDER_CANCELED": "The shipment order for package {{data}} has been canceled.",
+      "ROUTE_ASSIGNED": "A delivery route has been assigned for package: {{data}}.",
+      "COURIER_ORDER_CANCELED": "Route update! Package canceled: {{data}}.",
+      "PAYMENT_PAID": "Payment for order {{data}} was successful. The invoice has been sent."
+    }
   }
 }
