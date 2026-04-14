@@ -16,12 +16,18 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             emailForgotTitle: "Forgot Password?",
             emailInstruction: "Enter your email address and we will send you instructions on how to reset your password.",
             doSubmit: "Send reset link",
-            doChange: "Change Password",
             
             updatePasswordTitle: "Set new password",
             passwordNew: "New password",
             passwordConfirm: "Confirm new password",
+            logoutOtherSessions: "Log out from all devices",
+            doCancel: "Cancel",
+            doUpdatePassword: "Update Password",
             
+            "usernameExistsMessage": "Username already exists.",
+            "emailExistsMessage": "Email already exists.",
+            "error-phoneNumber-exists": "This phone number is already registered.",
+            "error-user-attribute-already-exists": "This value is already registered.",
             "error-phoneNumber-invalid-format": "Invalid phone number format. It must start with +48 followed by 9 digits.",
             "error-invalid-password": "Password is too weak or invalid.",
 
@@ -46,12 +52,18 @@ const { useI18n, ofTypeI18n } = i18nBuilder
             emailForgotTitle: "Nie pamiętasz hasła?",
             emailInstruction: "Wpisz swój adres e-mail (lub login), a wyślemy Ci instrukcję resetowania hasła.",
             doSubmit: "Wyślij link",
-            doChange: "Zmień hasło",
+            doUpdatePassword: "Zaktualizuj hasło",
             
             updatePasswordTitle: "Ustaw nowe hasło",
             passwordNew: "Nowe hasło",
             passwordConfirm: "Potwierdź nowe hasło",
+            logoutOtherSessions: "Wyloguj ze wszystkich urządzeń",
+            doCancel: "Anuluj",
             
+            "usernameExistsMessage": "Nazwa użytkownika jest już zajęta.",
+            "emailExistsMessage": "Adres e-mail jest już zajęty.",
+            "error-phoneNumber-exists": "Ten numer telefonu jest już zarejestrowany.",
+            "error-user-attribute-already-exists": "Ta wartość jest już zarejestrowana przez innego użytkownika.",
             "error-phoneNumber-invalid-format": "Nieprawidłowy format numeru telefonu. Musi zaczynać się od +48 i składać z 9 cyfr.",
             "error-invalid-password": "Hasło jest zbyt słabe lub nieprawidłowe.",
 

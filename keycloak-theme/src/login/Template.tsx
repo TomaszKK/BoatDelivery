@@ -21,6 +21,10 @@ const getLangFromCookie = (): string | null => {
   return null;
 };
 
+const FRONTEND_URL = window.location.origin.includes("localhost")
+  ? "http://localhost:5173"
+  : window.location.origin;
+
 export default function Template(props: TemplateProps<KcContext, I18n>) {
   const { kcContext, i18n, children } = props;
   const { locale } = kcContext;
@@ -67,10 +71,6 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
       document.cookie = `vite-ui-lang=${currentLang}; path=/; max-age=31536000; SameSite=Lax`;
     }
   }, [locale]);
-
-  const FRONTEND_URL = window.location.origin.includes("localhost")
-    ? "http://localhost:5173"
-    : window.location.origin;
 
   return (
     <div className="bg-background text-foreground grid min-h-[100dvh] grid-rows-[auto_1fr_auto] font-sans antialiased">

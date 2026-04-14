@@ -19,6 +19,8 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
   const formData = (kcContext as any).register?.formData || {};
   const [loading, setLoading] = useState(false);
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
+  
+  const [modifiedFields, setModifiedFields] = useState<Record<string, boolean>>({});
 
   const registerSchema = z.object({
     firstName: z.string().min(1, { message: msgStr("valRequired") }),
@@ -61,8 +63,27 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
     form.submit();
   };
 
-  const hasError = (field: string) => !!localErrors[field] || messagesPerField.existsError(field);
-  const getError = (field: string) => localErrors[field] || messagesPerField.getFirstError(field);
+  const handleClearError = (fieldName: string) => {
+      setModifiedFields(prev => ({ ...prev, [fieldName]: true }));
+      setLocalErrors(prev => ({ ...prev, [fieldName]: "" }));
+  };
+
+  const getFieldError = (name: string) => {
+    if (localErrors[name]) return localErrors[name];
+    
+    if (modifiedFields[name]) return undefined;
+
+    const altName = name.includes("user.attributes.") ? name.replace("user.attributes.", "") : `user.attributes.${name}`;
+    
+    if (messagesPerField.existsError(name)) {
+        try { return messagesPerField.getFirstError(name); } catch { return "Wartość jest nieprawidłowa lub zajęta."; }
+    }
+    if (messagesPerField.existsError(altName)) {
+        try { return messagesPerField.getFirstError(altName); } catch { return "Wartość jest nieprawidłowa lub zajęta."; }
+    }
+    
+    return undefined;
+  };
 
   const getSafeMessage = (summary: string | undefined) => {
     if (!summary) return "";
@@ -104,15 +125,25 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
                 <Label className="font-bold">{msg("firstName")}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input name="firstName" defaultValue={formData.firstName ?? ""} className={`pl-10 h-12 bg-background ${hasError('firstName') ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
+                  <Input 
+                    name="firstName" 
+                    defaultValue={formData.firstName ?? ""} 
+                    onChange={() => handleClearError('firstName')}
+                    className={`pl-10 h-12 bg-background ${getFieldError('firstName') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                  />
                 </div>
-                {hasError('firstName') && <p className="text-xs font-bold text-destructive">{getError('firstName')}</p>}
+                {getFieldError('firstName') && <p className="text-xs font-bold text-destructive">{getFieldError('firstName')}</p>}
               </div>
               
               <div className="space-y-2">
                 <Label className="font-bold">{msg("lastName")}</Label>
-                <Input name="lastName" defaultValue={formData.lastName ?? ""} className={`h-12 bg-background ${hasError('lastName') ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
-                {hasError('lastName') && <p className="text-xs font-bold text-destructive">{getError('lastName')}</p>}
+                <Input 
+                    name="lastName" 
+                    defaultValue={formData.lastName ?? ""} 
+                    onChange={() => handleClearError('lastName')}
+                    className={`h-12 bg-background ${getFieldError('lastName') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                />
+                {getFieldError('lastName') && <p className="text-xs font-bold text-destructive">{getFieldError('lastName')}</p>}
               </div>
 
               {!realm.registrationEmailAsUsername && (
@@ -120,9 +151,14 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
                   <Label className="font-bold">{msg("username")}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                    <Input name="username" defaultValue={formData.username ?? ""} className={`pl-10 h-12 bg-background ${hasError('username') ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
+                    <Input 
+                        name="username" 
+                        defaultValue={formData.username ?? ""} 
+                        onChange={() => handleClearError('username')}
+                        className={`pl-10 h-12 bg-background ${getFieldError('username') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                    />
                   </div>
-                  {hasError('username') && <p className="text-xs font-bold text-destructive">{getError('username')}</p>}
+                  {getFieldError('username') && <p className="text-xs font-bold text-destructive">{getFieldError('username')}</p>}
                 </div>
               )}
 
@@ -130,9 +166,15 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
                 <Label className="font-bold">{msg("email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input name="email" type="email" defaultValue={formData.email ?? ""} className={`pl-10 h-12 bg-background ${hasError('email') ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
+                  <Input 
+                    name="email" 
+                    type="email" 
+                    defaultValue={formData.email ?? ""} 
+                    onChange={() => handleClearError('email')}
+                    className={`pl-10 h-12 bg-background ${getFieldError('email') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                  />
                 </div>
-                {hasError('email') && <p className="text-xs font-bold text-destructive">{getError('email')}</p>}
+                {getFieldError('email') && <p className="text-xs font-bold text-destructive">{getFieldError('email')}</p>}
               </div>
 
               <div className="space-y-2">
@@ -143,28 +185,39 @@ export default function Register(props: PageProps<Extract<KcContext, { pageId: "
                     name="user.attributes.phoneNumber" 
                     defaultValue={formData["user.attributes.phoneNumber"] ?? "+48"} 
                     placeholder="+48 123 456 789"
-                    className={`pl-10 h-12 bg-background ${hasError('phone') || hasError('user.attributes.phoneNumber') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                    onChange={() => handleClearError('user.attributes.phoneNumber')}
+                    className={`pl-10 h-12 bg-background ${getFieldError('user.attributes.phoneNumber') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
                   />
                 </div>
-                {(hasError('phone') || hasError('user.attributes.phoneNumber')) && (
-                  <p className="text-xs font-bold text-destructive">{getError('phone') || getError('user.attributes.phoneNumber')}</p>
+                {getFieldError('user.attributes.phoneNumber') && (
+                  <p className="text-xs font-bold text-destructive">{getFieldError('user.attributes.phoneNumber')}</p>
                 )}
               </div>
               
               <div className="space-y-2">
                 <Label className="font-bold">{msg("password")}</Label>
                 <div className="relative"><Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input name="password" type="password" className={`pl-10 h-12 bg-background ${hasError('password') ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
+                  <Input 
+                    name="password" 
+                    type="password" 
+                    onChange={() => handleClearError('password')}
+                    className={`pl-10 h-12 bg-background ${getFieldError('password') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                  />
                 </div>
-                {hasError('password') && <p className="text-xs font-bold text-destructive">{getError('password')}</p>}
+                {getFieldError('password') && <p className="text-xs font-bold text-destructive">{getFieldError('password')}</p>}
               </div>
 
               <div className="space-y-2">
                 <Label className="font-bold">{msg("passwordConfirm")}</Label>
                 <div className="relative"><Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-                  <Input name="password-confirm" type="password" className={`pl-10 h-12 bg-background ${hasError('password-confirm') || hasError('passwordConfirm') ? 'border-destructive focus-visible:ring-destructive' : ''}`} />
+                  <Input 
+                    name="password-confirm" 
+                    type="password" 
+                    onChange={() => handleClearError('password-confirm')}
+                    className={`pl-10 h-12 bg-background ${getFieldError('password-confirm') ? 'border-destructive focus-visible:ring-destructive' : ''}`} 
+                  />
                 </div>
-                {(hasError('password-confirm') || hasError('passwordConfirm')) && <p className="text-xs font-bold text-destructive">{getError('password-confirm') || getError('passwordConfirm')}</p>}
+                {getFieldError('password-confirm') && <p className="text-xs font-bold text-destructive">{getFieldError('password-confirm')}</p>}
               </div>
             </div>
 
