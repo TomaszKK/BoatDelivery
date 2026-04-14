@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import Keycloak, { type KeycloakTokenParsed } from "keycloak-js";
 
 interface KeycloakUser extends KeycloakTokenParsed {
@@ -50,9 +43,7 @@ const initKeycloakInstance = (): Keycloak => {
   return keycloakInstance;
 };
 
-export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [keycloak, setKeycloak] = useState<KeycloakState>({ isLogged: false });
   const [isInitialized, setIsInitialized] = useState(false);
   const initRef = useRef(false);
@@ -65,38 +56,29 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const instance = initKeycloakInstance();
 
-        // ==========================================
-        // Obsługa wylogowania
-        // ==========================================
         instance.onAuthLogout = () => {
           console.log("User logged out");
           localStorage.removeItem("accessToken");
           setKeycloak({ isLogged: false });
         };
 
-        // ==========================================
-        // Automatyczne odświeżanie tokena!
-        // ==========================================
         instance.onTokenExpired = () => {
           console.log("Token expired, trying to refresh...");
-          instance
-            .updateToken(30)
-            .then((refreshed) => {
-              if (refreshed && instance.token) {
-                localStorage.setItem("accessToken", instance.token);
-                setKeycloak({
-                  isLogged: true,
-                  token: instance.token,
-                  user: instance.tokenParsed as KeycloakUser,
-                  realmAccess: instance.realmAccess,
-                });
-              }
-            })
-            .catch(() => {
-              console.warn("Failed to refresh token. Logging out.");
-              localStorage.removeItem("accessToken");
-              setKeycloak({ isLogged: false });
-            });
+          instance.updateToken(30).then((refreshed) => {
+            if (refreshed && instance.token) {
+              localStorage.setItem("accessToken", instance.token);
+              setKeycloak({
+                isLogged: true,
+                token: instance.token,
+                user: instance.tokenParsed as KeycloakUser,
+                realmAccess: instance.realmAccess,
+              });
+            }
+          }).catch(() => {
+            console.warn("Failed to refresh token. Logging out.");
+            localStorage.removeItem("accessToken");
+            setKeycloak({ isLogged: false });
+          });
         };
 
         if (initStarted) {
@@ -104,7 +86,6 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
           if (storedToken) {
             try {
               const decoded = JSON.parse(atob(storedToken.split(".")[1]));
-              // Sprawdź czy zdekodowany token już nie wygasł!
               const isExpired = decoded.exp && decoded.exp * 1000 < Date.now();
 
               if (!isExpired) {
@@ -120,7 +101,6 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
                 localStorage.removeItem("accessToken");
               }
             } catch {
-              // Ignore decode error
             }
           }
 
@@ -173,7 +153,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = useCallback(() => {
     try {
       const instance = initKeycloakInstance();
-      instance.login();
+      instance.login({ redirectUri: `${window.location.origin}/` });
     } catch (error) {
       console.error("Error calling login:", error);
     }
@@ -182,7 +162,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
   const register = useCallback(() => {
     try {
       const instance = initKeycloakInstance();
-      instance.register();
+      instance.register({ redirectUri: `${window.location.origin}/` });
     } catch (error) {
       console.error("Error calling register:", error);
     }
@@ -193,9 +173,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
       const instance = initKeycloakInstance();
       if (instance) {
         localStorage.removeItem("accessToken");
-        instance.logout({
-          redirectUri: `${window.location.origin}/`,
-        });
+        instance.logout({ redirectUri: `${window.location.origin}/` });
       }
     } catch (error) {
       console.error("Error calling logout:", error);
@@ -215,10 +193,8 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const instance = initKeycloakInstance();
       if (instance.isTokenExpired(5)) {
-        // Token wygaśnie za mniej niż 5 sekund, odśwież go
         await instance.updateToken(30);
       } else {
-        // Wymuś refresh nawet jeśli token jeszcze nie wygasł
         await instance.updateToken(-1);
       }
 
@@ -247,11 +223,7 @@ export const KeycloakProvider: React.FC<{ children: React.ReactNode }> = ({
     isLogged: keycloak.isLogged,
   };
 
-  return (
-    <KeycloakContext.Provider value={contextValue}>
-      {children}
-    </KeycloakContext.Provider>
-  );
+  return <KeycloakContext.Provider value={contextValue}>{children}</KeycloakContext.Provider>;
 };
 
 export const useKeycloak = (): KeycloakContextType => {
