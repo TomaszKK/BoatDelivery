@@ -349,5 +349,29 @@
     "payAmount": "Zapłać {{amount}} PLN",
     "cancelTitle": "Płatność anulowana",
     "cancelDesc": "Twoje zamówienie nie zostało opłacone."
+  },
+  "sse": {
+    "titles": {
+      "ORDER_CREATED": "Utworzono Zlecenie",
+      "IN_TRANSIT_FOR_PACKAGE": "Odbiór Paczki",
+      "ORDER_RECEIVED_FROM_CUSTOMER": "Paczka Odebrana",
+      "IN_TRANSIT_TO_CUSTOMER": "Paczka w Drodze",
+      "DELIVERY_COMPLETED": "Doręczenie",
+      "ORDER_CANCELED": "Anulowano Zlecenie",
+      "ROUTE_ASSIGNED": "Nowa Trasa",
+      "COURIER_ORDER_CANCELED": "Uwaga Kurier - Anulacja",
+      "PAYMENT_PAID": "Płatność Zaksięgowana"
+    },
+    "messages": {
+      "ORDER_CREATED": "Zlecenie dla paczki {{data}} zostało przyjęte.",
+      "IN_TRANSIT_FOR_PACKAGE": "Kurier jedzie po odbiór paczki: {{data}}.",
+      "ORDER_RECEIVED_FROM_CUSTOMER": "Kurier odebrał paczkę: {{data}}.",
+      "IN_TRANSIT_TO_CUSTOMER": "Paczka {{data}} jest w drodze do doręczenia.",
+      "DELIVERY_COMPLETED": "Paczka {{data}} została dostarczona.",
+      "ORDER_CANCELED": "Zlecenie nadania paczki {{data}} zostało anulowane.",
+      "ROUTE_ASSIGNED": "Trasa przydzielona dla paczki: {{data}}.",
+      "COURIER_ORDER_CANCELED": "Zmiana w trasie! Anulowano paczkę: {{data}}.",
+      "PAYMENT_PAID": "Płatność za zlecenie {{data}} zakończona sukcesem. Wysłano fakturę."
+    }
   }
 }

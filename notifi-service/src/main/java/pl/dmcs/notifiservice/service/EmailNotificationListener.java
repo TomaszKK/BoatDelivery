@@ -82,30 +82,30 @@ public class EmailNotificationListener {
                 switch (currentEvent) {
                     case ORDER_CREATED -> {
                         generatedEmailContent = emailSenderService.sendOrderCreatedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Utworzono zlecenie nadania paczki: " + event.trackingNumber());
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
                     }
                     case IN_TRANSIT_FOR_PACKAGE -> {
                         generatedEmailContent = emailSenderService.sendInTransitForPackageEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.pickupAddress(), event.courierPhone());
-                        sseNotificationService.pushNotificationToFrontend("Kurier jedzie po odbiór: " + event.trackingNumber());
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
                     }
                     case ORDER_RECEIVED_FROM_CUSTOMER -> {
                         generatedEmailContent = emailSenderService.sendOrderReceivedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Kurier odebrał paczkę: " + event.trackingNumber());
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
                     }
                     case IN_TRANSIT_TO_CUSTOMER -> {
                         generatedEmailContent = emailSenderService.sendInTransitToCustomerEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Paczka w drodze do doręczenia: " + event.trackingNumber());
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
 
 //                        String smsMsg = String.format("Dzien dobry, paczke %s doreczy dzis kurier BoadDelivery. Numer telefonu kuriera: %s", event.trackingNumber(), event.courierPhone());
 //                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.customerPhone(), smsMsg);
                     }
                     case DELIVERY_COMPLETED -> {
                         generatedEmailContent = emailSenderService.sendDeliveryCompletedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Paczka dostarczona: " + event.trackingNumber());
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
                     }
                     case ORDER_CANCELED -> {
                         generatedEmailContent = emailSenderService.sendCancellationEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
-                        sseNotificationService.pushNotificationToFrontend("Zlecenie anulowane: " + event.trackingNumber());
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
                     }
 
                 }
@@ -152,12 +152,12 @@ public class EmailNotificationListener {
                     case ROUTE_ASSIGNED_RECEIVE, ROUTE_ASSIGNED_DELIVERY -> {
                         String courierEmailContent = emailSenderService.sendRouteAssignedEmail(event.courierEmail(), event.totalDistanceKm(), event.estimatedDurationMin());
                         generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + COURIER_LOG_PREFIX + courierEmailContent;
-                        sseNotificationService.pushNotificationToFrontend(String.format("Nowa trasa przydzielona! Dystans: %.1f km, Czas: %d min.", event.totalDistanceKm(), event.estimatedDurationMin()));
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
                     }
                     case ORDER_CANCELED -> {
                         String courierEmailContent = emailSenderService.sendCourierCancellationEmail(event.courierEmail(), event.trackingNumber(), event.deliveryAddress());
                         generatedEmailContent = (generatedEmailContent.equals(DEFAULT_EMAIL_CONTENT) ? "" : generatedEmailContent + "\n---\n") + COURIER_LOG_PREFIX + courierEmailContent;
-                        sseNotificationService.pushNotificationToFrontend("UWAGA! Anulacja paczki " + event.trackingNumber() + " - zmiana w trasie.");
+                        sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
 
                         String smsMsg = String.format("Zlecenie %s anulowane! Pomiń adres: %s.", event.trackingNumber(), event.deliveryAddress());
                         dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.courierPhone(), smsMsg);
@@ -223,9 +223,9 @@ public class EmailNotificationListener {
     }
     @RabbitListener(queues = RabbitMQConfig.PAYMENT_QUEUE)
     public void handlePaymentEvent(PaymentEvent event) {
+        String trackingRef = event.orderId().toString().substring(0, 8);
         try {
             if (PaymentStatus.PAID.equals(event.status())) {
-                String trackingRef = event.orderId().toString().substring(0, 8);
 
                 String mailContent = emailSenderService.sendInvoiceEmail(
                         event.customerEmail(),
@@ -233,7 +233,7 @@ public class EmailNotificationListener {
                         event.invoiceUrl()
                 );
 
-                sseNotificationService.pushNotificationToFrontend("Płatność zaksięgowana, faktura wysłana.");
+                sseNotificationService.pushNotificationToFrontend("PAYMENT_PAID", trackingRef);
                 System.out.println("Wysłano fakturę na maila: " + event.customerEmail());
 
                 NotificationLog dbLog = NotificationLog.builder()
@@ -253,7 +253,7 @@ public class EmailNotificationListener {
                 NotificationLog errorLog = NotificationLog.builder()
                         .orderId(event.orderId())
                         .recipientEmail(event.customerEmail())
-                        .trackingNumber(event.orderId().toString().substring(0, 8))
+                        .trackingNumber(trackingRef)
                         .messageContent("BŁĄD WYSYŁKI FAKTURY")
                         .status(NotificationStatus.ERROR)
                         .errorMessage(e.getMessage())
