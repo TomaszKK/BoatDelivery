@@ -87,6 +87,10 @@ public class EmailNotificationListener {
                     case IN_TRANSIT_FOR_PACKAGE -> {
                         generatedEmailContent = emailSenderService.sendInTransitForPackageEmail(event.customerEmail(), event.trackingNumber(), event.firstName(), event.pickupAddress(), event.courierPhone());
                         sseNotificationService.pushNotificationToFrontend(currentEvent.name(), event.trackingNumber());
+
+                        String smsMsg = String.format("Dzien dobry, kurier dzis bedzie po paczke %s. Numer kuriera: %s", event.trackingNumber(), event.courierPhone());
+                        dispatchAndLogSms(event.orderId(), event.trackingNumber(), event.customerPhone(), smsMsg);
+
                     }
                     case ORDER_RECEIVED_FROM_CUSTOMER -> {
                         generatedEmailContent = emailSenderService.sendOrderReceivedEmail(event.customerEmail(), event.trackingNumber(), event.firstName());
