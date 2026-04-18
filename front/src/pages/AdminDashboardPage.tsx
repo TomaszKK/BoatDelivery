@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import type { OrderStatus } from "@/types/OrderType";
 
-// Konfiguracja kolorów i ikon
 const getStatusConfig = (status: OrderStatus) => {
   switch (status) {
     case "WAITING_FOR_PAYMENT": return { color: "bg-yellow-500", icon: Clock };
@@ -44,7 +43,6 @@ export const AdminDashboardPage = () => {
     fetchStats();
   }, [fetchStats]);
 
-  // Tablica gwarantująca logiczną kolejność wyświetlania na ekranie
   const allStatuses: OrderStatus[] = [
     "WAITING_FOR_PAYMENT",
     "ORDER_CREATED",
@@ -80,7 +78,6 @@ export const AdminDashboardPage = () => {
             const config = getStatusConfig(status);
             const Icon = config.icon;
             
-            // Pobieramy wartość. Backend gwarantuje nam zera dla pustych statusów, ale na wszelki wypadek dajemy fallback.
             const count = stats && stats[status] !== undefined ? stats[status] : 0;
 
             return (
@@ -88,7 +85,6 @@ export const AdminDashboardPage = () => {
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <div className="space-y-1 pr-2">
                     <CardTitle className="text-sm font-semibold text-slate-700 h-10 leading-tight line-clamp-2">
-                      {/* Magia i18n - tłumaczymy statusy! */}
                       {t(`status.${status}`)}
                     </CardTitle>
                   </div>
