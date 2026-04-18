@@ -36,8 +36,6 @@ public class NotificationController {
         return sseService.createEmitter();
     }
 
-    // --- NOWE ENDPOINTY DLA PANELU ADMINA NA FRONCIE ---
-
     @GetMapping("/logs/email")
     public ResponseEntity<List<NotificationLogDTO>> getEmailLogs() {
         List<NotificationLogDTO> logs = emailLogRepository.findAllByOrderByCreatedAtDesc().stream()

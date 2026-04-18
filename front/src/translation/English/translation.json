@@ -233,7 +233,9 @@
       "emptySms": "No SMS notifications sent.",
       "fetchError": "Failed to fetch logs from the notification server. Check the console.",
       "errorPrefix": "Error:",
-      "noContent": "No content"
+      "noContent": "No content",
+      "searchEmail": "Search by e-mail or tracking number...",
+      "searchPhone": "Search by phone or tracking number..."
     }
   },
   "courier": {

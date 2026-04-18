@@ -260,7 +260,9 @@
       "emptySms": "Brak wysłanych powiadomień SMS.",
       "fetchError": "Nie udało się pobrać logów z serwera powiadomień. Sprawdź konsolę.",
       "errorPrefix": "Błąd:",
-      "noContent": "Brak treści"
+      "noContent": "Brak treści",
+      "searchEmail": "Szukaj po e-mailu lub numerze paczki...",
+      "searchPhone": "Szukaj po numerze telefonu lub paczki..."
     }
   },
   "courier": {
