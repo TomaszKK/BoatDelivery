@@ -10,6 +10,7 @@ import p.lodz.pl.service.DailyRouteScheduler;
 import p.lodz.pl.util.Util;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
         for (Route origRoute : problem.routes) {
             Route clonedRoute = new Route();
             clonedRoute.id = origRoute.id;
-            clonedRoute.maxCargoCapacity = origRoute.maxCargoCapacity != null ? origRoute.maxCargoCapacity : 1000.0;
+            clonedRoute.maxCargoCapacity = origRoute.maxCargoCapacity != null ? origRoute.maxCargoCapacity : 0.0;
             clonedRoute.stops = new ArrayList<>();
             solution.routes.add(clonedRoute);
         }
@@ -64,8 +65,13 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
             double minDistance = Double.MAX_VALUE;
 
             for (Route candidateRoute : solution.routes) {
-                Location currentLoc = currentCourierLocations.get(candidateRoute);
                 double maxCapacity = candidateRoute.maxCargoCapacity;
+
+                if (maxCapacity <= 0) {
+                    continue;
+                }
+
+                Location currentLoc = currentCourierLocations.get(candidateRoute);
 
                 for (RouteStop candidateStop : unassignedStops) {
                     double orderWeight = 0.0;
@@ -105,7 +111,15 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
 
             if (bestStop == null || bestRoute == null) {
                 bestStop = unassignedStops.getFirst();
-                bestRoute = solution.routes.getFirst();
+
+                bestRoute = solution.routes.stream()
+                        .filter(r -> r.maxCargoCapacity > 0)
+                        .min(Comparator.comparingDouble(routePeakLoad::get))
+                        .orElse(null);
+
+                if (bestRoute == null) {
+                    break;
+                }
             }
 
             double addedWeight = 0.0;
