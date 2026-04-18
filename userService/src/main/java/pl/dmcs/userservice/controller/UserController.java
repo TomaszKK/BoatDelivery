@@ -141,6 +141,69 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
     
+    @GetMapping("/search")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<PaginatedResponse<UserResponse>> searchUsers(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+
+        Page<User> usersPage = userService.searchUsers(query, page, size);
+        List<UserResponse> responses = usersPage.getContent().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+
+        PaginatedResponse<UserResponse> response = PaginatedResponse.<UserResponse>builder()
+                .content(responses)
+                .page(usersPage.getNumber())
+                .size(usersPage.getSize())
+                .totalElements(usersPage.getTotalElements())
+                .totalPages(usersPage.getTotalPages())
+                .numberOfElements(usersPage.getNumberOfElements())
+                .hasNext(usersPage.hasNext())
+                .hasPrevious(usersPage.hasPrevious())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search/by-type")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<PaginatedResponse<UserResponse>> searchUsersByType(
+            @RequestParam UserType userType,
+            @RequestParam(required = false, defaultValue = "") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+
+        Page<User> usersPage = userService.searchUsersByType(query, userType, page, size);
+        List<UserResponse> responses = usersPage.getContent().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+
+        PaginatedResponse<UserResponse> response = PaginatedResponse.<UserResponse>builder()
+                .content(responses)
+                .page(usersPage.getNumber())
+                .size(usersPage.getSize())
+                .totalElements(usersPage.getTotalElements())
+                .totalPages(usersPage.getTotalPages())
+                .numberOfElements(usersPage.getNumberOfElements())
+                .hasNext(usersPage.hasNext())
+                .hasPrevious(usersPage.hasPrevious())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/stats/count-by-type")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<UserCountByTypeDTO> getUserCountByType() {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useTransports } from "@/hooks/useTransports";
 import { useUsers } from "@/hooks/useUsers";
 import { useTranslation } from "react-i18next";
@@ -78,8 +78,9 @@ export const AdminFleetPage = () => {
     deleteTransport,
     assignCourier,
     unassignCourier,
-    handlePageChange,
     handleSizeChange,
+    searchTransports: performSearch,
+    fetchTransportsPaged,
   } = useTransports();
   const { users, fetchUsersPaged } = useUsers();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -95,6 +96,7 @@ export const AdminFleetPage = () => {
   const [sortColumn, setSortColumn] = useState<"brand" | "model" | "licensePlate" | "type">("brand");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Funkcja do sortowania kolumny
   const handleSort = (column: "brand" | "model" | "licensePlate" | "type") => {
@@ -114,6 +116,45 @@ export const AdminFleetPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Wyszukuj transporty gdy zmienia się searchTerm - z debouncing
+  useEffect(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      if (searchTerm.trim()) {
+        performSearch(searchTerm, 0, size);
+      } else {
+        fetchTransportsPaged(0, size);
+      }
+    }, 300); // Czeka 300ms zanim wyśle żądanie
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Niestandardowe handlery paginacji i rozmiaru dla wyszukiwania
+  const handlePageChangeWithSearch = (newPage: number) => {
+    if (searchTerm.trim()) {
+      performSearch(searchTerm, newPage, size);
+    } else {
+      fetchTransportsPaged(newPage, size);
+    }
+  };
+
+  const handleSizeChangeWithSearch = (newSize: number) => {
+    if (searchTerm.trim()) {
+      performSearch(searchTerm, 0, newSize);
+    } else {
+      fetchTransportsPaged(0, newSize);
+    }
+  };
+
   const couriers = useMemo(() => users.filter((u) => u.userType === "COURIER"), [users]);
 
   const availableCouriers = useMemo(() => {
@@ -123,15 +164,12 @@ export const AdminFleetPage = () => {
     });
   }, [couriers, transports]);
 
-  const filteredTransports = useMemo(() => {
-    const filtered = transports.filter((transport) =>
-      `${transport.brand} ${transport.model} ${transport.licensePlate}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-    );
+  const displayedTransports = useMemo(() => {
+    // Kopij array aby posortować
+    const displayList = [...transports];
 
     // Sortuj transporty
-    filtered.sort((a, b) => {
+    displayList.sort((a, b) => {
       let valueA: any;
       let valueB: any;
 
@@ -166,27 +204,9 @@ export const AdminFleetPage = () => {
       return 0;
     });
 
-    return filtered;
-  }, [transports, searchTerm, sortColumn, sortDirection]);
+    return displayList;
+  }, [transports, sortColumn, sortDirection]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">{t("common.loading")}</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="rounded-lg bg-destructive/10 p-4">
-          <p className="text-destructive font-semibold">{t("common.error")}</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
 
   const handleAddTransport = async () => {
     const errors: Record<string, string> = {};
@@ -348,7 +368,13 @@ export const AdminFleetPage = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-8">
+    <div className={`container mx-auto max-w-7xl px-4 py-8 transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
+      {error && (
+        <div className="mb-4 rounded-lg bg-destructive/10 p-4">
+          <p className="text-destructive font-semibold">{t("common.error")}</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
+        </div>
+      )}
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold">
@@ -418,7 +444,17 @@ export const AdminFleetPage = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 rounded-lg">
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin">
+                  <ChevronRight className="h-8 w-8 text-primary" />
+                </div>
+                <p className="text-muted-foreground text-sm">{t("common.loading")}</p>
+              </div>
+            </div>
+          )}
           <div className="rounded-lg border overflow-hidden">
             <Table>
               <TableHeader>
@@ -480,8 +516,8 @@ export const AdminFleetPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransports.length > 0 ? (
-                  filteredTransports.map((transport) => (
+                {displayedTransports.length > 0 ? (
+                  displayedTransports.map((transport) => (
                     <TableRow key={transport.id}>
                       <TableCell className="font-medium">{transport.brand}</TableCell>
                       <TableCell>{transport.model}</TableCell>
@@ -579,7 +615,7 @@ export const AdminFleetPage = () => {
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center justify-between gap-4 mt-4">
             <div className="text-sm text-muted-foreground">
               {t("admin.fleet.showing") || "Wyświetlanie"} {page * size + 1} - {Math.min((page + 1) * size, totalCount)} {t("admin.fleet.of") || "z"} {totalCount}
             </div>
@@ -587,7 +623,7 @@ export const AdminFleetPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChange(page - 1)}
+                onClick={() => handlePageChangeWithSearch(page - 1)}
                 disabled={page === 0}
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -598,7 +634,7 @@ export const AdminFleetPage = () => {
                     key={p}
                     variant={page === p ? "default" : "outline"}
                     size="sm"
-                    onClick={() => handlePageChange(p)}
+                    onClick={() => handlePageChangeWithSearch(p)}
                     className="min-w-10"
                   >
                     {p + 1}
@@ -608,7 +644,7 @@ export const AdminFleetPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChange(page + 1)}
+                onClick={() => handlePageChangeWithSearch(page + 1)}
                 disabled={page >= totalPages - 1}
               >
                 <ChevronRight className="h-4 w-4" />
