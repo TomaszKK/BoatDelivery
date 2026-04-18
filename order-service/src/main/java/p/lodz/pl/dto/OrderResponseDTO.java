@@ -19,5 +19,6 @@ public record OrderResponseDTO(
         String recipientEmail,
         String recipientPhone,
         LocationResponseDTO pickupLocation,
-        LocationResponseDTO deliveryLocation
+        LocationResponseDTO deliveryLocation,
+        CourierInfoDTO courierInfo
 ) {}

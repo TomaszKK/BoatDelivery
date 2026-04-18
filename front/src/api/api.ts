@@ -41,14 +41,16 @@ export const api = {
   archiveOrder: (trackingNumber: string) =>
     apiForAuthenticated.delete(`/orders/${trackingNumber}`),
 
-  getOrdersPaged: (page: number = 0, size: number = 10, status?: string) => {
+getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: string) => {
     let url = `/orders?page=${page}&size=${size}`;
     if (status) {
       url += `&status=${status}`;
     }
+    if (search && search.trim() !== "") {
+      url += `&search=${encodeURIComponent(search.trim())}`;
+    }
     return apiForAuthenticated.get(url);
   },
-
   getAdminStats: () => apiForAuthenticated.get("/orders/stats"),
   getOrderByTrackingNumber: (
     trackingNumber: string,
