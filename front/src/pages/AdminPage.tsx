@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useUsers } from "@/hooks/useUsers";
 import { useTranslation } from "react-i18next";
 import {
@@ -60,12 +60,6 @@ const UserTable = ({
 }) => {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
-  const [filters, setFilters] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-  });
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -81,23 +75,12 @@ const UserTable = ({
     }
   };
 
-  const filteredAndSortedUsers = useMemo(() => {
-    let result = users.filter((user) => {
-      const firstName = (user.firstName || "").toLowerCase();
-      const lastName = (user.lastName || "").toLowerCase();
-      const email = (user.email || "").toLowerCase();
-      const phoneNumber = (user.phoneNumber || "").toLowerCase();
-
-      return (
-        firstName.includes(filters.firstName.toLowerCase()) &&
-        lastName.includes(filters.lastName.toLowerCase()) &&
-        email.includes(filters.email.toLowerCase()) &&
-        phoneNumber.includes(filters.phoneNumber.toLowerCase())
-      );
-    });
+  // Sortuj użytkowników (bez filtrowania, bo filtrowanie już robi backend)
+  const displayedUsers = useMemo(() => {
+    const displayList = [...users];
 
     if (sortField && sortOrder) {
-      result.sort((a, b) => {
+      displayList.sort((a, b) => {
         const aValue = (a[sortField] || "").toString().toLowerCase();
         const bValue = (b[sortField] || "").toString().toLowerCase();
 
@@ -107,73 +90,22 @@ const UserTable = ({
       });
     }
 
-    return result;
-  }, [users, filters, sortField, sortOrder]);
+    return displayList;
+  }, [users, sortField, sortOrder]);
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div>
-          <label className="text-sm font-medium">
-            {t("admin.users.firstName") || "Imię"}
-          </label>
-          <Input
-            placeholder={t("admin.users.filterByFirstName") || "Szukaj po imieniu..."}
-            value={filters.firstName}
-            onChange={(e) => setFilters({ ...filters, firstName: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">
-            {t("admin.users.lastName") || "Nazwisko"}
-          </label>
-          <Input
-            placeholder={t("admin.users.filterByLastName") || "Szukaj po nazwisku..."}
-            value={filters.lastName}
-            onChange={(e) => setFilters({ ...filters, lastName: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">
-            {t("admin.users.email") || "Email"}
-          </label>
-          <Input
-            placeholder={t("admin.users.filterByEmail") || "Szukaj po emailu..."}
-            value={filters.email}
-            onChange={(e) => setFilters({ ...filters, email: e.target.value })}
-          />
-        </div>
-        <div>
-          <label className="text-sm font-medium">
-            {t("admin.users.phoneNumber") || "Telefon"}
-          </label>
-          <Input
-            placeholder={t("admin.users.filterByPhone") || "Szukaj po telefonie..."}
-            value={filters.phoneNumber}
-            onChange={(e) => setFilters({ ...filters, phoneNumber: e.target.value })}
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <div>
-          <label className="text-sm font-medium">{t("admin.fleet.itemsPerPage") || "Pozycji na stronę"}:</label>
-          <select
-            value={size}
-            onChange={(e) => onSizeChange(parseInt(e.target.value))}
-            className="px-3 py-1 border rounded-md text-sm ml-2"
-          >
-            <option value={10}>10</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {page * size + 1} - {Math.min((page + 1) * size, totalCount)} {t("admin.fleet.of") || "z"} {totalCount}
-        </div>
-      </div>
-
-      <div className="rounded-lg border overflow-hidden">
+      <div className="rounded-lg border overflow-hidden relative">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 rounded-lg">
+            <div className="flex flex-col items-center gap-2">
+              <div className="animate-spin">
+                <ChevronRight className="h-8 w-8 text-primary" />
+              </div>
+              <p className="text-muted-foreground text-sm">{t("common.loading")}</p>
+            </div>
+          </div>
+        )}
         <Table>
           <TableHeader>
             <TableRow>
@@ -243,8 +175,8 @@ const UserTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedUsers.length > 0 ? (
-              filteredAndSortedUsers.map((user) => (
+            {displayedUsers.length > 0 ? (
+              displayedUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-mono text-sm">{user.id}</TableCell>
                   <TableCell>{user.firstName || "-"}</TableCell>
@@ -280,7 +212,21 @@ const UserTable = ({
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-muted-foreground">
+            {t("admin.fleet.itemsPerPage") || "Pozycji na stronę"}:
+          </label>
+          <select
+            value={size}
+            onChange={(e) => onSizeChange(parseInt(e.target.value))}
+            className="px-2 py-1 border rounded text-sm"
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
         <div className="text-sm text-muted-foreground">
           {t("admin.users.totalUsers") || "Razem użytkowników"}: {totalCount}
         </div>
@@ -333,39 +279,65 @@ export const AdminPage = () => {
     totalCount,
     totalPages,
     countByType,
-    handlePageChange,
-    handleSizeChange,
     fetchUsersByTypePaged,
+    searchUsersByType,
   } = useUsers();
   const [activeTab, setActiveTab] = useState<TabType>("customers");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ id: string; email: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Pobierz użytkowników po typie gdy zmienia się aktywna zakladka
   useEffect(() => {
     const userType = activeTab === "customers" ? "CUSTOMER" : "COURIER";
+    setSearchTerm("");
     fetchUsersByTypePaged(userType, 0, size);
   }, [activeTab]);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">{t("common.loading")}</p>
-      </div>
-    );
-  }
+  // Wyszukuj użytkowników gdy zmienia się searchTerm - z debouncing
+  useEffect(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
 
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="rounded-lg bg-destructive/10 p-4">
-          <p className="text-destructive font-semibold">{t("common.error")}</p>
-          <p className="text-muted-foreground text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
+    const userType = activeTab === "customers" ? "CUSTOMER" : "COURIER";
+
+    debounceTimer.current = setTimeout(() => {
+      if (searchTerm.trim()) {
+        searchUsersByType(userType, searchTerm, 0, size);
+      } else {
+        fetchUsersByTypePaged(userType, 0, size);
+      }
+    }, 300); // Czeka 300ms zanim wyśle żądanie
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]);
+
+  // Niestandardowe handlery paginacji dla wyszukiwania
+  const handlePageChangeWithSearch = (newPage: number) => {
+    const userType = activeTab === "customers" ? "CUSTOMER" : "COURIER";
+    if (searchTerm.trim()) {
+      searchUsersByType(userType, searchTerm, newPage, size);
+    } else {
+      fetchUsersByTypePaged(userType, newPage, size);
+    }
+  };
+
+  const handleSizeChangeWithSearch = (newSize: number) => {
+    const userType = activeTab === "customers" ? "CUSTOMER" : "COURIER";
+    if (searchTerm.trim()) {
+      searchUsersByType(userType, searchTerm, 0, newSize);
+    } else {
+      fetchUsersByTypePaged(userType, 0, newSize);
+    }
+  };
 
   const handleDeleteClick = (user: any) => {
     setUserToDelete({ id: user.id, email: user.email });
@@ -386,7 +358,13 @@ export const AdminPage = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
+    <div className={`container mx-auto max-w-6xl px-4 py-8 transition-opacity duration-200 ${loading ? 'opacity-60 pointer-events-none' : 'opacity-100'}`}>
+      {error && (
+        <div className="mb-4 rounded-lg bg-destructive/10 p-4">
+          <p className="text-destructive font-semibold">{t("common.error")}</p>
+          <p className="text-muted-foreground text-sm">{error}</p>
+        </div>
+      )}
       <div className="mb-8">
         <h1 className="text-4xl font-bold">
           {t("admin.users.title") || "Zarządzanie Użytkownikami"}
@@ -442,6 +420,16 @@ export const AdminPage = () => {
         </div>
       )}
 
+      {/* Search */}
+      <div className="mb-6">
+        <Input
+          placeholder={t("admin.users.search") || "Szukaj po imieniu, nazwisku lub emailu..."}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
       {/* Tab Navigation */}
       <div className="flex gap-2 border-b mb-8">
         <button
@@ -488,8 +476,8 @@ export const AdminPage = () => {
               size={size}
               totalCount={totalCount}
               totalPages={totalPages}
-              onPageChange={handlePageChange}
-              onSizeChange={handleSizeChange}
+              onPageChange={handlePageChangeWithSearch}
+              onSizeChange={handleSizeChangeWithSearch}
               loading={loading}
             />
           </CardContent>
@@ -516,8 +504,8 @@ export const AdminPage = () => {
               size={size}
               totalCount={totalCount}
               totalPages={totalPages}
-              onPageChange={handlePageChange}
-              onSizeChange={handleSizeChange}
+              onPageChange={handlePageChangeWithSearch}
+              onSizeChange={handleSizeChangeWithSearch}
               loading={loading}
             />
           </CardContent>

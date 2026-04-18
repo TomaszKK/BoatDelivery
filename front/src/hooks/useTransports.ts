@@ -53,6 +53,29 @@ export const useTransports = () => {
     }
   };
 
+  const searchTransports = async (query: string = "", newPage: number = 0, newSize: number = 10) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.searchTransports(query, newPage, newSize);
+      const data = response.data as PaginatedResponse<Transport>;
+      setTransports(data.content || []);
+      setPage(data.page);
+      setSize(data.size);
+      setTotalCount(data.totalElements);
+      setTotalPages(data.totalPages);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Nie udało się wyszukać pojazdów";
+      setError(errorMessage);
+      console.error("Error searching transports:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchTransportsPaged(0, size);
   }, [size]);
@@ -174,6 +197,7 @@ export const useTransports = () => {
     totalPages,
     fetchTransports,
     fetchTransportsPaged,
+    searchTransports,
     createTransport,
     updateTransport,
     deleteTransport,

@@ -109,6 +109,7 @@
     "lastName": "Nazwisko",
     "email": "Adres e-mail",
     "phone": "Numer telefonu",
+    "fillTestData": "Wypełnij danymi testowymi",
     "loadingProfile": "Pobieranie danych użytkownika...",
     "noAddress": "Brak adresu",
     "trackingHistory": "Historia śledzenia",
@@ -223,6 +224,26 @@
       "of": "z",
       "showing": "Wyświetlanie"
     },
+    "users": {
+      "title": "Zarządzanie Użytkownikami",
+      "manageDesc": "Zarządzaj użytkownikami systemu, dodawaj, edytuj i usuwaj konta",
+      "totalUsers": "Razem Użytkowników",
+      "customers": "Klienci",
+      "couriers": "Kurierzy",
+      "admins": "Administratorzy",
+      "customersDesc": "Lista wszystkich zarejestrowanych klientów",
+      "couriersDesc": "Lista wszystkich zarejestrowanych kurierów",
+      "search": "Szukaj po imieniu, nazwisku lub emailu...",
+      "id": "ID",
+      "firstName": "Imię",
+      "lastName": "Nazwisko",
+      "email": "Email",
+      "phoneNumber": "Telefon",
+      "createdAt": "Data Utworzenia",
+      "noUsers": "Brak użytkowników",
+      "deleteWarning": "Czy na pewno chcesz usunąć tego użytkownika",
+      "deleteWarningDetails": "? Ta operacja nie może być cofnięta."
+    },
     "logs": {
       "title": "Logi Powiadomień",
       "description": "Historia komunikacji wychodzącej z systemu (E-mail oraz SMS).",
@@ -240,7 +261,9 @@
       "emptySms": "Brak wysłanych powiadomień SMS.",
       "fetchError": "Nie udało się pobrać logów z serwera powiadomień. Sprawdź konsolę.",
       "errorPrefix": "Błąd:",
-      "noContent": "Brak treści"
+      "noContent": "Brak treści",
+      "searchEmail": "Szukaj po e-mailu lub numerze paczki...",
+      "searchPhone": "Szukaj po numerze telefonu lub paczki..."
     }
   },
   "courier": {

@@ -100,6 +100,7 @@
     "lastName": "Last Name",
     "email": "Email Address",
     "phone": "Phone Number",
+    "fillTestData": "Fill with test data",
     "loadingProfile": "Loading user profile data...",
     "noAddress": "No address provided",
     "trackingHistory": "Tracking History",
@@ -166,6 +167,7 @@
       "admins": "Administrators",
       "customersDesc": "List of all registered customers",
       "couriersDesc": "List of all registered couriers",
+      "search": "Search by first name, last name or email...",
       "noUsers": "No users",
       "filterByFirstName": "Search by first name...",
       "filterByLastName": "Search by last name...",
@@ -232,7 +234,9 @@
       "emptySms": "No SMS notifications sent.",
       "fetchError": "Failed to fetch logs from the notification server. Check the console.",
       "errorPrefix": "Error:",
-      "noContent": "No content"
+      "noContent": "No content",
+      "searchEmail": "Search by e-mail or tracking number...",
+      "searchPhone": "Search by phone or tracking number..."
     }
   },
   "courier": {

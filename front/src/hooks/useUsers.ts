@@ -26,7 +26,54 @@ export const useUsers = () => {
           ? err.message
           : "Nie udało się pobrać użytkowników";
       setError(errorMessage);
-      console.error("Error fetching users:", err);
+      console.error("Error fetching users by type:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchUsers = async (query: string = "", newPage: number = 0, newSize: number = 10) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.searchUsers(query, newPage, newSize);
+      const data = response.data as PaginatedResponse<User>;
+      setUsers(data.content || []);
+      setPage(data.page);
+      setSize(data.size);
+      setTotalCount(data.totalElements);
+      setTotalPages(data.totalPages);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Nie udało się wyszukać użytkowników";
+      setError(errorMessage);
+      console.error("Error searching users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const searchUsersByType = async (userType: string, query: string = "", newPage: number = 0, newSize: number = 10) => {
+    setCurrentUserType(userType);
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.searchUsersByType(userType, query, newPage, newSize);
+      const data = response.data as PaginatedResponse<User>;
+      setUsers(data.content || []);
+      setPage(data.page);
+      setSize(data.size);
+      setTotalCount(data.totalElements);
+      setTotalPages(data.totalPages);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Nie udało się wyszukać użytkowników";
+      setError(errorMessage);
+      console.error("Error searching users by type:", err);
     } finally {
       setLoading(false);
     }
@@ -155,6 +202,8 @@ export const useUsers = () => {
     refetch: fetchUsers,
     fetchUsersPaged,
     fetchUsersByTypePaged,
+    searchUsers,
+    searchUsersByType,
     fetchUserCountByType,
     handlePageChange,
     handleSizeChange,
