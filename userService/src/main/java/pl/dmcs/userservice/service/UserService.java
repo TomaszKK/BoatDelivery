@@ -62,6 +62,22 @@ public class UserService {
         return userRepository.findByUserType(userType, pageable);
     }
 
+    public Page<User> searchUsers(String searchTerm, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return userRepository.findAll(pageable);
+        }
+        return userRepository.searchUsers(searchTerm, pageable);
+    }
+
+    public Page<User> searchUsersByType(String searchTerm, UserType userType, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return userRepository.findByUserType(userType, pageable);
+        }
+        return userRepository.searchUsersByType(searchTerm, userType, pageable);
+    }
+
     public UserCountByTypeDTO getUserCountByType() {
         long totalUsers = userRepository.count();
         long customerCount = userRepository.countByUserType(UserType.CUSTOMER);

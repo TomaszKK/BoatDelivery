@@ -139,6 +139,36 @@ public class TransportController {
         return ResponseEntity.ok(transportService.getTotalTransportCount());
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<PaginatedResponse<TransportResponse>> searchTransports(
+            @RequestParam(required = false, defaultValue = "") String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        // Validate size
+        if (size <= 0 || size > 100) {
+            size = 10;
+        }
+
+        Page<Transport> transportsPage = transportService.searchTransports(query, page, size);
+        List<TransportResponse> responses = transportsPage.getContent().stream()
+                .map(transportMapper::toResponse)
+                .collect(Collectors.toList());
+
+        PaginatedResponse<TransportResponse> response = PaginatedResponse.<TransportResponse>builder()
+                .content(responses)
+                .page(transportsPage.getNumber())
+                .size(transportsPage.getSize())
+                .totalElements(transportsPage.getTotalElements())
+                .totalPages(transportsPage.getTotalPages())
+                .numberOfElements(transportsPage.getNumberOfElements())
+                .hasNext(transportsPage.hasNext())
+                .hasPrevious(transportsPage.hasPrevious())
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/courier/{courierId}")
     @Transactional
     public ResponseEntity<TransportResponse> createTestTransport(

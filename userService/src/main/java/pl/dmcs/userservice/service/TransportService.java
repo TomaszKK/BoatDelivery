@@ -77,6 +77,14 @@ public class TransportService {
         return transportRepository.count();
     }
 
+    public Page<Transport> searchTransports(String searchTerm, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return transportRepository.findAll(pageable);
+        }
+        return transportRepository.searchTransports(searchTerm, pageable);
+    }
+
     @Transactional
     public Transport createTransport(UUID courierId, Transport transport) {
         log.info("Próba dodania transportu dla courier ID: {}", courierId);
