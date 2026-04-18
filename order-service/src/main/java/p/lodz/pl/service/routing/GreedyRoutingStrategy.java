@@ -23,6 +23,27 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
             return problem;
         }
 
+        RoutePlan solution = new RoutePlan();
+        solution.routes = new ArrayList<>();
+        solution.stops = new ArrayList<>();
+
+        for (Route origRoute : problem.routes) {
+            Route clonedRoute = new Route();
+            clonedRoute.id = origRoute.id;
+            clonedRoute.maxCargoCapacity = origRoute.maxCargoCapacity != null ? origRoute.maxCargoCapacity : 1000.0;
+            clonedRoute.stops = new ArrayList<>();
+            solution.routes.add(clonedRoute);
+        }
+
+        List<RouteStop> unassignedStops = new ArrayList<>();
+        for (RouteStop origStop : problem.stops) {
+            RouteStop clonedStop = new RouteStop();
+            clonedStop.id = origStop.id;
+            clonedStop.order = origStop.order;
+            solution.stops.add(clonedStop);
+            unassignedStops.add(clonedStop);
+        }
+
         Map<Route, Location> currentCourierLocations = new HashMap<>();
         Map<Route, Integer> courierSequences = new HashMap<>();
         Map<Route, Double> routePeakLoad = new HashMap<>();
@@ -30,30 +51,19 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
 
         Location depot = DailyRouteScheduler.createDepotLocation();
 
-        for (Route r : problem.routes) {
-            if (r.stops != null) {
-                r.stops.clear();
-            } else {
-                r.stops = new ArrayList<>();
-            }
-            currentCourierLocations.put(r, depot);
-            courierSequences.put(r, 0);
-            routePeakLoad.put(r, 0.0);
-            routeEndLoad.put(r, 0.0);
-
-            if (r.maxCargoCapacity == null) {
-                r.maxCargoCapacity = 1000.0;
-            }
+        for (Route cr : solution.routes) {
+            currentCourierLocations.put(cr, depot);
+            courierSequences.put(cr, 0);
+            routePeakLoad.put(cr, 0.0);
+            routeEndLoad.put(cr, 0.0);
         }
-
-        List<RouteStop> unassignedStops = new ArrayList<>(problem.stops);
 
         while (!unassignedStops.isEmpty()) {
             Route bestRoute = null;
             RouteStop bestStop = null;
             double minDistance = Double.MAX_VALUE;
 
-            for (Route candidateRoute : problem.routes) {
+            for (Route candidateRoute : solution.routes) {
                 Location currentLoc = currentCourierLocations.get(candidateRoute);
                 double maxCapacity = candidateRoute.maxCargoCapacity;
 
@@ -68,9 +78,8 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
                     double predictedPeak = routePeakLoad.get(candidateRoute);
                     double predictedEnd = routeEndLoad.get(candidateRoute);
 
-                    // Symulacja załadunku dla Greedy (uproszczona)
                     if (isDelivery) {
-                        predictedPeak += orderWeight; // Trzeba wziąć z bazy
+                        predictedPeak += orderWeight;
                     } else {
                         predictedEnd += orderWeight;
                         predictedPeak = Math.max(predictedPeak, predictedEnd);
@@ -96,7 +105,7 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
 
             if (bestStop == null || bestRoute == null) {
                 bestStop = unassignedStops.getFirst();
-                bestRoute = problem.routes.getFirst();
+                bestRoute = solution.routes.getFirst();
             }
 
             double addedWeight = 0.0;
@@ -124,7 +133,7 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
             unassignedStops.remove(bestStop);
         }
 
-        return problem;
+        return solution;
     }
 
     @Override

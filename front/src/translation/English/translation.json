@@ -148,6 +148,7 @@
     "archiveOrderFail": "Failed to archive order. Please try again.",
     "tableActions": "Actions",
     "archiveOrderAction": "Archive",
+    "fetchStatsFail": "Failed to fetch statistics.",
     "users": {
       "id": "ID",
       "name": "Name",
@@ -369,5 +370,19 @@
       "COURIER_ORDER_CANCELED": "Route update! Package canceled: {{data}}.",
       "PAYMENT_PAID": "Payment for order {{data}} was successful. The invoice has been sent."
     }
+  },
+  "status": {
+    "WAITING_FOR_PAYMENT": "Awaiting Payment",
+    "ORDER_CREATED": "New (Awaiting pickup route)",
+    "CALCULATING_ROUTE_RECEIVE": "Calculating Route (Pickup)",
+    "ROUTE_ASSIGNED_RECEIVE": "Courier Assigned (Pickup)",
+    "IN_TRANSIT_FOR_PACKAGE": "Courier en route to pickup",
+    "ORDER_RECEIVED_FROM_CUSTOMER": "Received from customer",
+    "IN_SORTING_CENTER": "In Sorting Center (Awaiting delivery route)",
+    "CALCULATING_ROUTE_DELIVERY": "Calculating Route (Delivery)",
+    "ROUTE_ASSIGNED_DELIVERY": "Courier Assigned (Delivery)",
+    "IN_TRANSIT_TO_CUSTOMER": "Out for delivery",
+    "DELIVERY_COMPLETED": "Delivered",
+    "ORDER_CANCELED": "Canceled"
   }
 }

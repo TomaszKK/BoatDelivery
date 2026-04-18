@@ -5,26 +5,17 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { trackPromise } from "react-promise-tracker";
 import type { AlgorithmType } from "@/types/RoutingTypes";
-
-interface DashboardStats {
-  pendingPickups: number;
-  inSortingCenter: number;
-  delivered: number;
-}
+import type { OrderStatus } from "@/types/OrderType";
 
 export const useAdminRouting = () => {
   const { t } = useTranslation();
 
   const [currentAlgorithm, setCurrentAlgorithm] =
     useState<AlgorithmType | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({
-    pendingPickups: 0,
-    inSortingCenter: 0,
-    delivered: 0,
-  });
+  const [stats, setStats] = useState<Record<OrderStatus, number>>({} as Record<OrderStatus, number>);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
-  const [sortingCenterOrders, setSortingCenterOrders] = useState<any[]>([]); // Zmień any na OrderResponseDTO
+  const [sortingCenterOrders, setSortingCenterOrders] = useState<any[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
   const fetchAlgorithm = useCallback(async () => {

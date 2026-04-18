@@ -117,6 +117,7 @@
   },
   "admin": {
     "forceOptimize": "Wymuś optymalizację tras",
+    "fetchStatsFail": "Nie udało się pobrać statystyk.",
     "forceOptimizeDesc": "Ręcznie uruchom optymalizację tras dla wszystkich aktywnych dostaw.",
     "forceOptimizeWarning": "Ta operacja może zająć trochę czasu. Czy na pewno chcesz kontynuować?",
     "algorithmSelectionDesc": "Wybierz algorytm do optymalizacji tras.",
@@ -373,5 +374,19 @@
       "COURIER_ORDER_CANCELED": "Zmiana w trasie! Anulowano paczkę: {{data}}.",
       "PAYMENT_PAID": "Płatność za zlecenie {{data}} zakończona sukcesem. Wysłano fakturę."
     }
+  },
+  "status": {
+    "WAITING_FOR_PAYMENT": "Oczekiwanie na płatność",
+    "ORDER_CREATED": "Nowe (Oczekujące na trasę odbioru)",
+    "CALCULATING_ROUTE_RECEIVE": "Kalkulacja trasy (Odbiór)",
+    "ROUTE_ASSIGNED_RECEIVE": "Przypisano kuriera (Odbiór)",
+    "IN_TRANSIT_FOR_PACKAGE": "Kurier w drodze po odbiór",
+    "ORDER_RECEIVED_FROM_CUSTOMER": "Odebrano od klienta",
+    "IN_SORTING_CENTER": "W sortowni (Oczekujące na trasę dostawy)",
+    "CALCULATING_ROUTE_DELIVERY": "Kalkulacja trasy (Dostawa)",
+    "ROUTE_ASSIGNED_DELIVERY": "Przypisano kuriera (Dostawa)",
+    "IN_TRANSIT_TO_CUSTOMER": "Wydane do doręczenia",
+    "DELIVERY_COMPLETED": "Dostarczone",
+    "ORDER_CANCELED": "Anulowane"
   }
 }

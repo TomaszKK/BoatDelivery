@@ -1,29 +1,28 @@
 package p.lodz.pl.service;
 
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.ForbiddenException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import p.lodz.pl.dto.OrderMinimalizedResponseDTO;
-import p.lodz.pl.dto.OrderRequestDTO;
-import p.lodz.pl.dto.OrderResponseDTO;
-import p.lodz.pl.dto.PageResponseDTO;
+import org.eclipse.microprofile.rest.client.inject.RestClient;
+import p.lodz.pl.client.UserServiceClient;
+import p.lodz.pl.dto.*;
 import p.lodz.pl.dto.maps.HerePosition;
 import p.lodz.pl.exception.BadRequestException;
 import p.lodz.pl.exception.ResourceNotFoundException;
 import p.lodz.pl.mapper.OrderMapper;
+import p.lodz.pl.messaging.OrderEventPublisher;
 import p.lodz.pl.model.Location;
 import p.lodz.pl.model.Order;
+import p.lodz.pl.model.RouteStop;
 import p.lodz.pl.model.enums.OrderStatus;
 import p.lodz.pl.repository.OrderRepository;
-import p.lodz.pl.messaging.OrderEventPublisher;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static p.lodz.pl.util.Util.generateTrackingNumber;
@@ -33,6 +32,10 @@ public class OrderService {
 
     @Inject
     OrderMapper orderMapper;
+
+    @Inject
+    @RestClient
+    UserServiceClient userServiceClient;
 
     @Inject
     JsonWebToken jwt;
@@ -105,7 +108,6 @@ public class OrderService {
     public OrderMinimalizedResponseDTO getOrderByTrackingNumberMinimalized(String trackingNumber) {
         Order order = Order.<Order>find("trackingNumber", trackingNumber).firstResultOptional()
                 .orElseThrow(() -> new ResourceNotFoundException("Order with tracking number " + trackingNumber + " not found"));
-        // Nie sprawdzamy właściciela - to endpoint publiczny (@PermitAll)
         return orderMapper.toMinimalizedDto(order);
     }
 
@@ -187,40 +189,114 @@ public class OrderService {
     }
 
     @Transactional
-    public PageResponseDTO<OrderResponseDTO> getOrdersPaged(int page, int size, OrderStatus status) {
-        io.quarkus.hibernate.orm.panache.PanacheQuery<Order> query;
+    public PageResponseDTO<OrderResponseDTO> getOrdersPaged(int page, int size, OrderStatus status, String search) {
+        PanacheQuery<Order> query;
+        Map<String, Object> params = new HashMap<>();
+
+        StringBuilder queryBuilder = new StringBuilder("1=1");
 
         if (status != null) {
-            query = orderRepository.find("status", status);
-        } else {
-            query = orderRepository.findAll();
+            queryBuilder.append(" AND status = :status");
+            params.put("status", status);
         }
 
-        query.page(io.quarkus.panache.common.Page.of(page, size));
+        if (search != null && !search.trim().isEmpty()) {
+            queryBuilder.append(" AND lower(trackingNumber) LIKE :search");
+            params.put("search", "%" + search.trim().toLowerCase() + "%");
+        }
+
+        query = orderRepository.find(queryBuilder.toString(), params);
+        query.page(Page.of(page, size));
 
         List<OrderResponseDTO> content = query.stream()
                 .map(orderMapper::toDto)
                 .collect(Collectors.toList());
 
+        List<OrderResponseDTO> enrichedContent = enrichOrdersWithCourierData(content);
+
         return new PageResponseDTO<>(
-                content,
+                enrichedContent,
                 page,
                 query.pageCount(),
                 query.count()
         );
     }
 
+    private List<OrderResponseDTO> enrichOrdersWithCourierData(List<OrderResponseDTO> dtoList) {
+        if (dtoList == null || dtoList.isEmpty()) return dtoList;
+
+        Map<String, CourierInfoDTO> couriersMap = new HashMap<>();
+        try {
+            List<UserDTO> couriers = userServiceClient.getCouriers();
+
+            for (UserDTO user : couriers) {
+                CourierInfoDTO c = new CourierInfoDTO(
+                        String.valueOf(user.id()),
+                        user.firstName(),
+                        user.lastName(),
+                        user.email(),
+                        null
+                );
+                couriersMap.put(c.id(), c);
+            }
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+
+        List<OrderResponseDTO> enrichedList = new ArrayList<>();
+
+        for (OrderResponseDTO dto : dtoList) {
+            UUID courierId = null;
+            CourierInfoDTO courierInfo = null;
+
+            Order orderEntity = Order.findById(dto.id());
+            if (orderEntity != null) {
+                RouteStop stop = RouteStop.find("order", orderEntity).firstResult();
+                if (stop != null && stop.route != null && stop.route.courierId != null) {
+                    courierId = stop.route.courierId;
+                }
+            }
+
+            if (courierId != null && couriersMap.containsKey(courierId.toString())) {
+                courierInfo = couriersMap.get(courierId.toString());
+            }
+
+            OrderResponseDTO enrichedDto = new OrderResponseDTO(
+                    dto.id(),
+                    dto.trackingNumber(),
+                    dto.customerId(),
+                    dto.status(),
+                    dto.weight(),
+                    dto.volume(),
+                    dto.createdAt(),
+                    dto.recipientFirstName(),
+                    dto.recipientLastName(),
+                    dto.recipientEmail(),
+                    dto.recipientPhone(),
+                    dto.pickupLocation(),
+                    dto.deliveryLocation(),
+                    courierInfo
+            );
+
+            enrichedList.add(enrichedDto);
+        }
+
+        return enrichedList;
+    }
+
     @Transactional
     public Map<String, Long> getAdminStatistics() {
+        List<Object[]> results = orderRepository.find("SELECT status, COUNT(*) FROM Order GROUP BY status").project(Object[].class).list();
         Map<String, Long> stats = new HashMap<>();
+        for (OrderStatus status : OrderStatus.values()) {
+            stats.put(status.name(), 0L);
+        }
 
-        long pendingPickups = orderRepository.count("status", OrderStatus.ORDER_CREATED);
-        long inSortingCenter = orderRepository.count("status", OrderStatus.IN_SORTING_CENTER);
-        long delivered = orderRepository.count("status", OrderStatus.DELIVERY_COMPLETED);
-
-        stats.put("pendingPickups", pendingPickups);
-        stats.put("inSortingCenter", inSortingCenter);
-        stats.put("delivered", delivered);
+        for (Object[] result : results) {
+            OrderStatus status = (OrderStatus) result[0];
+            Long count = (Long) result[1];
+            stats.put(status.name(), count);
+        }
 
         return stats;
     }

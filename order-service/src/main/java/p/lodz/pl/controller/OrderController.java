@@ -116,9 +116,9 @@ public class OrderController {
     public Response getOrders(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size,
-            @QueryParam("status") OrderStatus status) {
-
-        return Response.ok(orderService.getOrdersPaged(page, size, status)).build();
+            @QueryParam("status") OrderStatus status,
+            @QueryParam("search") String search) {
+        return Response.ok(orderService.getOrdersPaged(page, size, status, search)).build();
     }
 
     @GET

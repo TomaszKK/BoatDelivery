@@ -28,13 +28,21 @@ export interface LocationResponseDTO {
   country: string;
 }
 
+export interface CourierInfoDTO {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+}
+
 export interface OrderRequestDTO {
   customerId: string;
   weight: number;
   volume: number;
   recipientFirstName: string;
   recipientLastName: string
-    recipientEmail: string;
+  recipientEmail: string;
   recipientPhone: string;
   pickupLocation: LocationRequestDTO;
   deliveryLocation: LocationRequestDTO;
@@ -48,12 +56,13 @@ export interface OrderResponseDTO {
   weight: number;
   volume: number;
   createdAt: string;
-    recipientFirstName: string;
-    recipientLastName: string
-    recipientEmail: string;
-    recipientPhone: string;
+  recipientFirstName: string;
+  recipientLastName: string
+  recipientEmail: string;
+  recipientPhone: string;
   pickupLocation: LocationResponseDTO;
   deliveryLocation: LocationResponseDTO;
+  courierInfo?: CourierInfoDTO;
 }
 
 export interface TrackedOrder {
