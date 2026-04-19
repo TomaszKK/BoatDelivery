@@ -27,26 +27,38 @@ public class BruteForceRoutingStrategy implements RoutingStrategy {
             return problem;
         }
 
-        for (Route r : problem.routes) {
-            if (r.stops != null) {
-                r.stops.clear();
-            } else {
-                r.stops = new ArrayList<>();
-            }
+        RoutePlan solution = new RoutePlan();
+        solution.routes = new ArrayList<>();
+        solution.stops = new ArrayList<>();
+
+        for (Route origRoute : problem.routes) {
+            Route clonedRoute = new Route();
+            clonedRoute.id = origRoute.id;
+            clonedRoute.maxCargoCapacity = origRoute.maxCargoCapacity != null ? origRoute.maxCargoCapacity : 0.0;
+            clonedRoute.stops = new ArrayList<>();
+            solution.routes.add(clonedRoute);
         }
 
-        List<RouteStop> allStops = new ArrayList<>(problem.stops);
+        List<RouteStop> clonedStops = new ArrayList<>();
+        for (RouteStop origStop : problem.stops) {
+            RouteStop clonedStop = new RouteStop();
+            clonedStop.id = origStop.id;
+            clonedStop.order = origStop.order;
+            clonedStops.add(clonedStop);
+            solution.stops.add(clonedStop);
+        }
+
         List<List<RouteStop>> courierAssignments = new ArrayList<>();
-        for (int i = 0; i < problem.routes.size(); i++) {
+        for (int i = 0; i < solution.routes.size(); i++) {
             courierAssignments.add(new ArrayList<>());
         }
 
-        for (int i = 0; i < allStops.size(); i++) {
-            courierAssignments.get(i % problem.routes.size()).add(allStops.get(i));
+        for (int i = 0; i < clonedStops.size(); i++) {
+            courierAssignments.get(i % solution.routes.size()).add(clonedStops.get(i));
         }
 
-        for (int i = 0; i < problem.routes.size(); i++) {
-            Route currentRoute = problem.routes.get(i);
+        for (int i = 0; i < solution.routes.size(); i++) {
+            Route currentRoute = solution.routes.get(i);
             List<RouteStop> assignedStops = courierAssignments.get(i);
             List<RouteStop> finalOptimizedStops = new ArrayList<>();
 
@@ -71,7 +83,7 @@ public class BruteForceRoutingStrategy implements RoutingStrategy {
             currentRoute.stops.addAll(finalOptimizedStops);
         }
 
-        return problem;
+        return solution;
     }
 
     private void generatePermutations(List<RouteStop> arr, int k) {
