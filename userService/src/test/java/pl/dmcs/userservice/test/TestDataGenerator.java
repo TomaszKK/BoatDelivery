@@ -1,4 +1,4 @@
-ów package pl.dmcs.userservice.test;
+package pl.dmcs.userservice.test;
 
 import com.github.javafaker.Faker;
 import pl.dmcs.userservice.dto.request.UserRequest;
