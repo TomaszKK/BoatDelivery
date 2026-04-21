@@ -20,7 +20,6 @@ public class InternalUserWebhookController {
     private final UserRepository userRepository;
     private final String expectedSecret;
 
-    // Automatyczne wstrzykiwanie klucza z application.properties
     public InternalUserWebhookController(
             UserRepository userRepository,
             @Value("${app.webhook.keycloak-secret}") String expectedSecret) {
@@ -35,7 +34,6 @@ public class InternalUserWebhookController {
 
         log.info("Otrzymano webhook z Keycloak dla usera: {}", request.getEmail());
 
-        // Dynamiczna walidacja klucza
         if (providedSecret == null || !expectedSecret.equals(providedSecret)) {
             log.warn("Odrzucono webhook: nieprawidlowy klucz! Otrzymano: {}", providedSecret);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -59,7 +57,6 @@ public class InternalUserWebhookController {
             }
         } catch (Exception e) {
             log.error("Blad podczas zapisu uzytkownika z webhooka: {}", e.getMessage(), e);
-            // Zwracamy błąd serwera, żeby Keycloak (lub logi) wiedział, że coś poszło nie tak z bazą
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 

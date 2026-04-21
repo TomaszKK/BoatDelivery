@@ -9,11 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // Definiowanie nazw kolejki i centrali
     public static final String QUEUE_NAME = "notification.email.queue";
     public static final String EXCHANGE_NAME = "boatdelivery.exchange";
-
-    // Klucz routingu, obojetnie co bedzie po order.[costam]
     public static final String ROUTING_KEY = "order.#";
 
     @Bean

@@ -45,7 +45,6 @@ export const useProfileUpdate = (onSuccess?: () => Promise<void>) => {
           data,
         );
 
-        // Wywołaj callback jeśli została dostarczona (np. refreshToken)
         if (onSuccess) {
           await onSuccess();
         }

@@ -86,7 +86,6 @@ export const useTransports = () => {
       await fetchTransportsPaged(page, size);
       return { success: true, data: response.data };
     } catch (err: unknown) {
-      // Sprawdzaj czy błąd ma fieldErrors z serwera
       if (err instanceof Error) {
         const errorData = (err as any).response?.data;
         if (errorData?.fieldErrors) {
@@ -113,7 +112,6 @@ export const useTransports = () => {
       await fetchTransportsPaged(page, size);
       return { success: true, data: response.data };
     } catch (err: unknown) {
-      // Sprawdzaj czy błąd ma fieldErrors z serwera
       if (err instanceof Error) {
         const errorData = (err as any).response?.data;
         if (errorData?.fieldErrors) {

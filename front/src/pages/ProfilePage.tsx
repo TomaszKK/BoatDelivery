@@ -20,7 +20,6 @@ export const ProfilePage = () => {
   const { isCourier } = useUserRoles();
   const { t } = useTranslation();
 
-  // Protect route - jeśli nie zalogowany, redirect
   if (isInitialized && !keycloak.isLogged) {
     navigate("/");
     return null;

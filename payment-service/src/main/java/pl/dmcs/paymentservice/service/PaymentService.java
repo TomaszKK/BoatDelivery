@@ -44,8 +44,7 @@ public class PaymentService {
 
     @Transactional
     public String createPaymentSession(PaymentRequest request) throws StripeException {
-
-        PaymentTransaction transaction = transactionRepository.findByOrderId(request.orderId()).orElse(null); // Szukanie zamowienia w bazie
+        PaymentTransaction transaction = transactionRepository.findByOrderId(request.orderId()).orElse(null);
 
         if (transaction != null) {
             if (transaction.getStatus() == PaymentStatus.PAID) {
@@ -187,8 +186,6 @@ public class PaymentService {
             } else {
                 System.err.println("Blad: Obiekt sesji to null po deserializacji.");
             }
-        } else {
-            //System.out.println("Zignorowano zdarzenie Stripe typu: " + event.getType());
         }
     }
 }

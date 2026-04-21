@@ -19,20 +19,20 @@ public class NotificationLog {
     @GeneratedValue(strategy = GenerationType.UUID)                         // Id bazowe
     private UUID id;
 
-    @Column(name = "order_id", nullable = false)                            // Id zamowienia systemowe
+    @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    @Column(name = "tracking_number", nullable = false)                    // Numer zamowienia paczki dla klienta
+    @Column(name = "tracking_number", nullable = false)
     private String trackingNumber;
 
-    @Column(name = "recipient_email", nullable = false)                     // Adres email odbiorcy
+    @Column(name = "recipient_email", nullable = false)
     private String recipientEmail;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)                              // Status wysylki (error, success)
+    @Column(name = "status", nullable = false)
     private NotificationStatus status;
 
-    @Column(name = "message_content", columnDefinition = "TEXT")            // Tresc wiadomosci
+    @Column(name = "message_content", columnDefinition = "TEXT")
     private String messageContent;
 
     @Column(name = "error_message", columnDefinition = "TEXT")              // Blad wysylki

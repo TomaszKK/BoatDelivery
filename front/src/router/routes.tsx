@@ -34,7 +34,6 @@ export const publicRoutes: RouteType[] = [
   },
 ];
 
-// NOWA TABLICA: Strony dostępne dla każdego ZALOGOWANEGO usera, niezależnie od roli
 export const sharedProtectedRoutes: RouteType[] = [
   {
     path: Pathnames.customer.profile,

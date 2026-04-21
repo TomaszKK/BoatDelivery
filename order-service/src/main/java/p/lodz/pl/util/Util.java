@@ -13,9 +13,6 @@ public class Util {
         return "BD-" + randomPart.substring(0, 4) + "-" + randomPart.substring(4, 8);
     }
 
-// Tylko i wylacznie dlatego, ze chce ograniczyc calle do api google
-// mapsow/hereapi to odlegloc przy liczeniu bedzie obliczana w linii prostej
-// z lng i lat a dopiero na koncu droga bedzie generowana juz po mapach
     public static int calculateDistance(Location loc1, Location loc2) {
         if (loc1 == null || loc2 == null) return 0;
 

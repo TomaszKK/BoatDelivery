@@ -311,6 +311,7 @@ services:
       timeout: 5s
       retries: 10
 
+#Użyte do celów testowych - dodania userow przez keycloaka do bazy
   keycloak-init:
     image: curlimages/curl:latest
     container_name: keycloak-init

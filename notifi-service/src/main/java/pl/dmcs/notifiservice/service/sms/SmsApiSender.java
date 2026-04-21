@@ -35,7 +35,6 @@ public class SmsApiSender implements SmsSender {
         }
 
         try {
-            // Api akcpetuje bez +, walidacja numeru telefonu
             String cleanPhone = phoneNumber.replace("+", "").replaceAll("\\s+", "");
 
             String requestBody = String.format("to=%s&from=%s&message=%s&format=json",

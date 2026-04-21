@@ -95,7 +95,6 @@ public class EmailSenderService {
         return text;
     }
 
-    // --- PROCES ODBIORCY PACZKI ---
 
     public String sendRecipientOrderCreatedEmail(String to, String ref, String recipientName, String senderName) {
         String subject = "Ktoś nadał do Ciebie paczkę! Nr: " + ref;
