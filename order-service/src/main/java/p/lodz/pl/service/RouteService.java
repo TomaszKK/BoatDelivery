@@ -62,9 +62,9 @@ public class RouteService {
 
     private int getRoutePriority(RouteStatus status) {
         if (status == null) return 4;
-        if (status == RouteStatus.IN_PROGRESS) return 1; // Priorytet nr 1: Obecnie realizowana
-        if (status == RouteStatus.PENDING) return 2;     // Priorytet nr 2: Do zrobienia
-        if (status == RouteStatus.COMPLETED) return 3;   // Priorytet nr 3: Zakończona (spada na dół)
+        if (status == RouteStatus.IN_PROGRESS) return 1;
+        if (status == RouteStatus.PENDING) return 2;
+        if (status == RouteStatus.COMPLETED) return 3;
         return 4;
     }
 

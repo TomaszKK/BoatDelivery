@@ -81,7 +81,6 @@ public class KeycloakSyncService {
             updateData.put("lastName", user.getLastName() != null ? user.getLastName() : "");
             updateData.put("email", user.getEmail() != null ? user.getEmail() : "");
 
-            // Telefon jako attribute
             Map<String, Object> attributes = new HashMap<>();
             if (user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()) {
                 attributes.put("phoneNumber", user.getPhoneNumber());
@@ -114,9 +113,6 @@ public class KeycloakSyncService {
         }
     }
 
-    /**
-     * Usuwa użytkownika z Keycloaka
-     */
     public void deleteUserFromKeycloak(java.util.UUID userId) {
         if (!syncEnabled) {
             log.debug("Synchronizacja do Keycloaka wyłączona - usuwanie z Keycloaka pominięte");

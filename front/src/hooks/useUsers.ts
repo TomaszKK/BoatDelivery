@@ -139,7 +139,6 @@ export const useUsers = () => {
     let isMounted = true;
 
     const initializeData = async () => {
-      // Pobierz tylko statystyki na start, rzeczywiste dane pobierze się po kliknięciu zakladki
       if (isMounted) {
         fetchUserCountByType();
       }
@@ -155,7 +154,6 @@ export const useUsers = () => {
   const deleteUser = async (userId: string) => {
     try {
       await api.deleteUser(userId);
-      // Przeładuj dane odpowiedniego typu
       if (currentUserType) {
         await fetchUsersByTypePaged(currentUserType, page, size);
       } else {

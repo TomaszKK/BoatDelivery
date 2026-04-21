@@ -69,11 +69,9 @@ public class OrderEventPublisher {
         String pickup = order.pickupLocation.streetAddress + ", " + order.pickupLocation.city;
         String delivery = order.deliveryLocation.streetAddress + ", " + order.deliveryLocation.city;
 
-        // Określenie odbiorców komunikatu
         List<String> targetAudience = new ArrayList<>();
         targetAudience.add("CUSTOMER");
 
-        // Zawsze wysyłamy info do odbiorcy, jeśli podano jego maila
         if (order.recipientEmail != null && !order.recipientEmail.isBlank()) {
             targetAudience.add("RECIPIENT");
         }

@@ -10,7 +10,6 @@ public class TestDataGenerator {
 
     private static final Faker faker = new Faker();
 
-    // Prawidłowe polskie prefiksy operatorów komórkowych
     private static final String[] VALID_POLISH_PREFIXES = {
             "50", "51", "53", "60", "66", "69", "72", "73", "78", "79", "88"
     };

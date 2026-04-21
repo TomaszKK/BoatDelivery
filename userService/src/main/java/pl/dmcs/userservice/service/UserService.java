@@ -114,10 +114,7 @@ public class UserService {
         User existingUser = getUserById(id);
         userMapper.updateEntityFromDto(updateRequest, existingUser);
         User updatedUser = userRepository.save(existingUser);
-
-        // Synchronizuj zmienione dane do Keycloaka
         keycloakSyncService.syncUserToKeycloak(updatedUser);
-
         return updatedUser;
     }
 
@@ -125,8 +122,6 @@ public class UserService {
     public void deleteUser(UUID id) {
         User user = getUserById(id);
         userRepository.deleteById(id);
-
-        // Synchronizuj usuwanie do Keycloaka
         keycloakSyncService.deleteUserFromKeycloak(id);
     }
 
@@ -150,13 +145,7 @@ public class UserService {
 
         return userRepository.findById(keycloakId)
                 .orElseGet(() -> {
-                    // Log all claims from JWT for debugging
-                    logger.info("=== JWT Claims Debug ===");
-                    logger.info("Subject: {}", jwt.getSubject());
-                    jwt.getClaims().forEach((key, value) ->
-                        logger.info("Claim [{}]: {}", key, value)
-                    );
-                    logger.info("======================");
+                    logger.info("User not found with ID: {}", keycloakId);
 
                     String phoneNumber = jwt.getClaimAsString("phone_number");
                     logger.info("Extracted phone_number: {}", phoneNumber);

@@ -24,7 +24,6 @@ public class TransportResponse {
     private String licensePlate;
     private String color;
 
-    // Nested DTO dla kuriera bez transportów
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor

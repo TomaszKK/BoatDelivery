@@ -51,10 +51,6 @@ public class KeycloakAdminClient {
         this.tokenExpiryTime = 0;
     }
 
-    /**
-     * Pobiera token admin z Keycloaka
-     * Uwzględnia cache - token jest ważny przez ~5 minut
-     */
     public String getAdminToken() {
         // Jeśli mamy cachedToken i nie wygasł - zwróć go
         if (cachedToken != null && System.currentTimeMillis() < tokenExpiryTime) {
@@ -88,7 +84,6 @@ public class KeycloakAdminClient {
             String token = jsonNode.get("access_token").asText();
             long expiresIn = jsonNode.get("expires_in").asLong();
 
-            // Cache token na 90% jego czasu życia
             this.cachedToken = token;
             this.tokenExpiryTime = System.currentTimeMillis() + (expiresIn * 900L);
 

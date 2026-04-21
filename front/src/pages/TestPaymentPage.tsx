@@ -2,7 +2,6 @@ import React from "react";
 import PaymentButton from "@/components/payment/PaymentButton";
 
 const TestPaymentPage: React.FC = () => {
-  // Dane testowe
   const testOrderId = "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d";
   const testAmount = 299.0;
   const testEmail = "test@gmail.com";

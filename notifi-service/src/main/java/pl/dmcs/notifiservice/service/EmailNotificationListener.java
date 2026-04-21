@@ -144,7 +144,6 @@ public class EmailNotificationListener {
                 }
             }
 
-            // Obsługa wiadomości do kuriera
             if (event.targetAudience() != null && event.targetAudience().contains(Audience.COURIER.name())) {
                 if (event.courierEmail() != null && !event.targetAudience().contains(Audience.CUSTOMER.name())) {
                     logRecipientEmail = event.courierEmail();
@@ -175,7 +174,6 @@ public class EmailNotificationListener {
             System.err.println("Błąd wysyłki powiadomienia: " + errorMessage);
         }
 
-        // Zapis logow emaili
         try {
             NotificationLog dbLog = NotificationLog.builder()
                     .orderId(event.orderId())

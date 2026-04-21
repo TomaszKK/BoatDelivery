@@ -5,22 +5,22 @@ import java.util.List;
 import java.util.UUID;
 
 public record OrderEvent(
-        String eventType,            // Statusy paczek
-        UUID orderId,                // Numer zlecenia w systemie
-        String trackingNumber,      // Numer paczki dla klienta
-        List<String> targetAudience, // CUSTOMOER LUB COURIER
-        BigDecimal totalDistanceKm,  // Dystans w kilometrach trasy kuriera
-        Integer estimatedDurationMin,// Czas trasy kuriera w minetach?
-        String customerEmail,        // E-mail klienta
-        String courierEmail,         // E-mail kuriera
-        String recipientEmail,        // E-mail odbiorcy paczki
-        String customerPhone,        // Telefon klienta
-        String courierPhone,         // Telefon kuriera
-        String recipientPhone,        // Telefon odbiorcy paczki
+        String eventType,
+        UUID orderId,
+        String trackingNumber,
+        List<String> targetAudience,
+        BigDecimal totalDistanceKm,
+        Integer estimatedDurationMin,
+        String customerEmail,
+        String courierEmail,
+        String recipientEmail,
+        String customerPhone,
+        String courierPhone,
+        String recipientPhone,
         String firstName,
         String lastName,
         String recipientFirstName,
         String recipientLastName,
-        String pickupAddress,        // Adres nadania
-        String deliveryAddress       // Adres docelowy
+        String pickupAddress,
+        String deliveryAddress
 ) {}
