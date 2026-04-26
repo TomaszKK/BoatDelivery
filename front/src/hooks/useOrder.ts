@@ -15,9 +15,7 @@ export const useOrder = () => {
   const getMineOrders = async () => {
     try {
       const response = await trackPromise(api.getMineOrders());
-
       const data = response.data;
-
       setOrders(data);
       return data;
     } catch (e) {
@@ -37,9 +35,7 @@ export const useOrder = () => {
   const getAllOrders = async () => {
     try {
       const response = await trackPromise(api.getOrders());
-
       const data = response.data;
-
       setOrders(data);
       return data;
     } catch (e) {
@@ -58,10 +54,7 @@ export const useOrder = () => {
 
   const getOrderByTrackingNumber = async (trackingNumber: string) => {
     try {
-      const response = await trackPromise(
-        api.getOrderByTrackingNumber(trackingNumber),
-      );
-
+      const response = await trackPromise(api.getOrderByTrackingNumber(trackingNumber));
       const data = response.data;
       setOrder(data);
       return data;
@@ -79,14 +72,9 @@ export const useOrder = () => {
     }
   };
 
-  const getMininalizedOrderByTrackingNumber = async (
-    trackingNumber: string,
-  ) => {
+  const getMininalizedOrderByTrackingNumber = async (trackingNumber: string) => {
     try {
-      const response = await trackPromise(
-        api.getMininalizedOrderByTrackingNumber(trackingNumber),
-      );
-
+      const response = await trackPromise(api.getMininalizedOrderByTrackingNumber(trackingNumber));
       const data = response.data;
       return data;
     } catch (e) {
@@ -106,13 +94,9 @@ export const useOrder = () => {
   const createOrder = async (orderData: OrderRequestDTO) => {
     try {
       const response = await trackPromise(api.createOrder(orderData));
-
       const newOrder = response.data;
-
       setOrders([newOrder, ...(orders || [])]);
-
       toast.success(t("orders.createSuccess"));
-
       return newOrder;
     } catch (e) {
       if (e instanceof AxiosError) {
@@ -124,7 +108,27 @@ export const useOrder = () => {
       } else {
         toast.error(t("orders.createFail"));
       }
+      throw e;
+    }
+  };
 
+  
+  const chatAboutOrder = async (trackingNumber: string, message: string) => {
+    try {
+      const response = await trackPromise(api.chatAboutOrder(trackingNumber, message));
+      return response.data;
+    } catch (e) {
+      toast.error(t("ai.chatFail", "Błąd podczas komunikacji z asystentem AI."));
+      throw e;
+    }
+  };
+
+  const extractOrderData = async (text: string) => {
+    try {
+      const response = await trackPromise(api.extractOrderData(text));
+      return response.data;
+    } catch (e) {
+      toast.error(t("ai.extractFail", "Błąd podczas ekstrakcji danych z tekstu."));
       throw e;
     }
   };
@@ -139,5 +143,7 @@ export const useOrder = () => {
     createOrder,
     getOrderByTrackingNumber,
     getMininalizedOrderByTrackingNumber,
+    chatAboutOrder,
+    extractOrderData,
   };
 };

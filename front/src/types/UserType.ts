@@ -17,3 +17,25 @@ export interface User {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface PaymentSessionResponse {
+  checkoutUrl: string;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  numberOfElements: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface UserCountByType {
+  totalUsers: number;
+  customerCount: number;
+  courierCount: number;
+  adminCount: number;
+}

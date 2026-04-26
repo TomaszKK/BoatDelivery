@@ -12,6 +12,9 @@ import {
   Package,
   CheckCircle2,
   XCircle,
+  BotMessageSquare,
+  Send,
+  UserCircle2
 } from "lucide-react";
 import type { TrackedOrder } from "@/types/OrderType";
 import { useOrder } from "@/hooks/useOrder";
@@ -49,34 +52,60 @@ export const HomePage = () => {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [trackedOrder, setTrackedOrder] = useState<TrackedOrder | null>(null);
-  const { getMininalizedOrderByTrackingNumber } = useOrder();
+  
+  const [aiMessage, setAiMessage] = useState("");
+  const [lastQuestion, setLastQuestion] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const { getMininalizedOrderByTrackingNumber, chatAboutOrder } = useOrder();
 
   const handleTrackPackage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!trackingNumber.trim()) return;
 
     setIsLoading(true);
-    // 1. Zawsze czyścimy poprzedni wynik na starcie nowego zapytania
     setTrackedOrder(null);
+    setAiResponse("");
+    setLastQuestion("");
 
     try {
       const data = (await getMininalizedOrderByTrackingNumber(
         trackingNumber.trim(),
       )) as TrackedOrder;
 
-      // 2. TARCZA OCHRONNA: Ustawiamy paczkę TYLKO, jeśli obiekt ma trackingNumber
       if (data && data.trackingNumber) {
         setTrackedOrder(data);
       }
     } catch (error: any) {
-      // 3. Na wypadek błędu upewniamy się na 100%, że stan to null (karta się ukryje)
       setTrackedOrder(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Definicja głównych kroków widocznych dla klienta
+  const handleAiChat = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiMessage.trim() || !trackedOrder?.trackingNumber) return;
+
+    const questionToAsk = aiMessage.trim();
+    setLastQuestion(questionToAsk);
+    setAiMessage("");
+    setAiResponse("");
+    setIsAiLoading(true);
+
+    try {
+      const res = await chatAboutOrder(trackedOrder.trackingNumber, questionToAsk);
+      if (res && res.response) {
+        setAiResponse(res.response);
+      }
+    } catch (error) {
+      setAiResponse(t("ai.error", "Przepraszam, wystąpił problem z pobraniem odpowiedzi. Spróbuj ponownie."));
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   const steps = [
     t("home.stepCreated"),
     t("home.stepPickedUp"),
@@ -90,7 +119,6 @@ export const HomePage = () => {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center space-y-12 p-6 text-center">
-      {/* SEKCJA HERO */}
       <div className="mt-8 space-y-4">
         <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl">
           {t("home.welcomeTo")}{" "}
@@ -101,7 +129,6 @@ export const HomePage = () => {
         </p>
       </div>
 
-      {/* WIDŻET ŚLEDZENIA PACZEK */}
       <div className="bg-card border-border/50 mx-auto w-full max-w-xl rounded-2xl border p-2 shadow-lg">
         <form onSubmit={handleTrackPackage} className="flex gap-2">
           <div className="relative flex-1">
@@ -128,9 +155,8 @@ export const HomePage = () => {
         </form>
       </div>
 
-      {/* WYNIK WYSZUKIWANIA PACZKI Z OSIĄ CZASU */}
       {trackedOrder && (
-        <div className="animate-in slide-in-from-bottom-4 fade-in w-full max-w-3xl duration-300">
+        <div className="animate-in slide-in-from-bottom-4 fade-in w-full max-w-3xl space-y-6 duration-300">
           <Card
             className={`${isCanceled ? "border-red-500/30 bg-red-500/5" : "border-blue-500/30 bg-blue-500/5"} shadow-md`}
           >
@@ -152,7 +178,6 @@ export const HomePage = () => {
                 </h3>
               </div>
 
-              {/* OŚ CZASU (TIMELINE) */}
               {isCanceled ? (
                 <div className="flex flex-col items-center justify-center py-6 text-red-500">
                   <XCircle className="mb-2 h-12 w-12 opacity-80" />
@@ -162,10 +187,7 @@ export const HomePage = () => {
                 </div>
               ) : (
                 <div className="relative mx-auto mt-4 flex w-full max-w-2xl justify-between">
-                  {/* Linia tła */}
                   <div className="bg-muted absolute top-4 left-0 h-1 w-full -translate-y-1/2 rounded-full"></div>
-
-                  {/* Pasek postępu */}
                   <div
                     className="absolute top-4 left-0 h-1 -translate-y-1/2 rounded-full bg-blue-500 transition-all duration-500 ease-in-out"
                     style={{
@@ -173,16 +195,12 @@ export const HomePage = () => {
                     }}
                   ></div>
 
-                  {/* Kropki i etykiety */}
                   {steps.map((step, index) => {
                     const isCompleted = index <= currentIndex;
                     const isActive = index === currentIndex;
 
                     return (
-                      <div
-                        key={step}
-                        className="relative z-10 flex flex-col items-center gap-2"
-                      >
+                      <div key={step} className="relative z-10 flex flex-col items-center gap-2">
                         <div
                           className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors duration-300 ${
                             isCompleted
@@ -198,9 +216,7 @@ export const HomePage = () => {
                         </div>
                         <span
                           className={`max-w-[80px] text-center text-xs leading-tight font-medium ${
-                            isActive
-                              ? "text-foreground font-bold"
-                              : "text-muted-foreground"
+                            isActive ? "text-foreground font-bold" : "text-muted-foreground"
                           }`}
                         >
                           {step}
@@ -212,10 +228,64 @@ export const HomePage = () => {
               )}
             </CardContent>
           </Card>
+
+          <Card className="border-indigo-100 bg-indigo-50/30 shadow-sm text-left">
+            <CardHeader className="pb-2 border-b border-indigo-100/50 bg-indigo-50/50">
+              <CardTitle className="text-indigo-800 text-lg flex items-center gap-2">
+                <BotMessageSquare className="h-5 w-5" />
+                {t("ai.chatTitle", "Asystent BoatDelivery")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              
+              {lastQuestion && (
+                <div className="mb-6 space-y-4">
+                  <div className="flex flex-col items-end animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="bg-indigo-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-sm text-sm shadow-sm max-w-[85%] text-left">
+                      {lastQuestion}
+                    </div>
+                    <span className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                      <UserCircle2 className="h-3 w-3" /> Ty
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-start animate-in fade-in slide-in-from-left-4 duration-300">
+                    {isAiLoading ? (
+                      <div className="bg-white border border-indigo-100 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm text-sm text-indigo-500 flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" /> {t("ai.typing", "AI pisze...")}
+                      </div>
+                    ) : (
+                      <div className="bg-white border border-indigo-100 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm text-sm text-indigo-950 whitespace-pre-wrap max-w-[95%]">
+                        {aiResponse}
+                      </div>
+                    )}
+                    <span className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                      <BotMessageSquare className="h-3 w-3" /> BoatDelivery AI
+                    </span>
+                  </div>
+                </div>
+              )}
+              
+              <form onSubmit={handleAiChat} className="flex gap-2">
+                <Input 
+                  value={aiMessage}
+                  onChange={(e) => setAiMessage(e.target.value)}
+                  placeholder={t("ai.chatPlaceholder", "Napisz wiadomość... Np. Kiedy paczka do mnie dotrze?")}
+                  className="bg-white border-indigo-200 focus-visible:ring-indigo-500"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isAiLoading || !aiMessage.trim()}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* SEKCJA KART */}
       <div className="grid w-full gap-6 pt-8 pb-12 md:grid-cols-3">
         <Card className="bg-card/50 border-border/50 hover:bg-card/80 transition-colors">
           <CardHeader className="pb-2 text-center">
