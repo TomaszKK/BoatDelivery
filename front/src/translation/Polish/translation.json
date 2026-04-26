@@ -411,5 +411,19 @@
     "IN_TRANSIT_TO_CUSTOMER": "Wydane do doręczenia",
     "DELIVERY_COMPLETED": "Dostarczone",
     "ORDER_CANCELED": "Anulowane"
+  },
+  "ai": {
+    "chatFail": "Błąd podczas komunikacji z asystentem AI.",
+    "extractFail": "Błąd podczas ekstrakcji danych z tekstu.",
+    "placeholder": "Wklej tekst do przeanalizowania.",
+    "analyzing": "Analizowanie tekstu...",
+    "lazyOrderTitle": "Leniwe tworzenie zamówienia",
+    "lazyOrderDesc": "Nie masz ochoty wypełniać formularza? Po prostu opisz szczegóły paczki i dostawy własnymi słowami, a nas asystent AI postara się wyciągnąć niezbędne informacje i wypełnić formularz za Ciebie! Na przykład, możesz napisać: \"Muszę wysłać paczkę 5kg z Warszawy do Krakowa. Odbiorcą jest Jan Kowalski, numer telefonu 123456789, email john.doe@example.com\"",
+    "chatTitle": "Czat z asystentem AI",
+    "chatPlaceholder": "Zadaj pytanie dotyczące Twojej paczki, np. 'Gdzie jest moja paczka?' lub 'Kiedy zostanie dostarczona?'",
+    "fillForm": "Wypełnij formularz automatycznie",
+    "askAi": "Zapytaj AI",
+    "error": "Przepraszam, wystąpił problem z pobraniem odpowiedzi. Spróbuj ponownie.",
+    "success": "Odpowiedź AI otrzymana pomyślnie!"
   }
 }
