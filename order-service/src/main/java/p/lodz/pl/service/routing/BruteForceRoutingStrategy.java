@@ -12,6 +12,8 @@ import p.lodz.pl.util.Util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @ApplicationScoped
 public class BruteForceRoutingStrategy implements RoutingStrategy {
@@ -45,7 +47,6 @@ public class BruteForceRoutingStrategy implements RoutingStrategy {
             clonedStop.id = origStop.id;
             clonedStop.order = origStop.order;
             clonedStops.add(clonedStop);
-            solution.stops.add(clonedStop);
         }
 
         List<List<RouteStop>> courierAssignments = new ArrayList<>();
@@ -53,10 +54,59 @@ public class BruteForceRoutingStrategy implements RoutingStrategy {
             courierAssignments.add(new ArrayList<>());
         }
 
-        for (int i = 0; i < clonedStops.size(); i++) {
-            courierAssignments.get(i % solution.routes.size()).add(clonedStops.get(i));
+        Map<Integer, Double> courierLoads = new HashMap<>();
+        Map<Integer, Double> courierTimes = new HashMap<>();
+        Map<Integer, Location> courierLocations = new HashMap<>();
+        Location depot = DailyRouteScheduler.createDepotLocation();
+
+        for (int i = 0; i < solution.routes.size(); i++) {
+            courierLoads.put(i, 0.0);
+            courierTimes.put(i, 0.0);
+            courierLocations.put(i, depot);
         }
 
+        // 1. Wstępny podział uwzględniający ładowność i limit czasu (8h = 480 min)
+        for (RouteStop stop : clonedStops) {
+            int startIdx = Math.abs(stop.id != null ? stop.id.hashCode() : stop.hashCode()) % solution.routes.size();
+
+            for (int offset = 0; offset < solution.routes.size(); offset++) {
+                int courierIdx = (startIdx + offset) % solution.routes.size();
+                Route candidateRoute = solution.routes.get(courierIdx);
+
+                if (candidateRoute.maxCargoCapacity <= 0) continue;
+
+                double weight = stop.order != null && stop.order.weight != null ? stop.order.weight.doubleValue() : 0.0;
+                double currentLoad = courierLoads.get(courierIdx);
+
+                if (currentLoad + weight > candidateRoute.maxCargoCapacity) {
+                    continue; // Przekroczono pojemność
+                }
+
+                Location targetLoc = DailyRouteScheduler.getTargetLocation(stop.order);
+                Location currentLoc = courierLocations.get(courierIdx);
+                double distance = (currentLoc != null && targetLoc != null) ? Util.calculateDistance(currentLoc, targetLoc) : 0.0;
+                double distanceToDepot = targetLoc != null ? Util.calculateDistance(targetLoc, depot) : 0.0;
+
+                double travelTime = (distance / 1000.0) * 2.0;
+                double returnTime = (distanceToDepot / 1000.0) * 2.0;
+                double projectedTime = courierTimes.get(courierIdx) + travelTime + returnTime + 10.0;
+
+                if (projectedTime > 480.0) {
+                    continue; // Przekroczono limit czasu pracy
+                }
+
+                // Przypisanie
+                courierLoads.put(courierIdx, currentLoad + weight);
+                courierTimes.put(courierIdx, courierTimes.get(courierIdx) + travelTime + 10.0);
+                courierLocations.put(courierIdx, targetLoc);
+
+                courierAssignments.get(courierIdx).add(stop);
+                solution.stops.add(stop); // Dodanie do finalnego rozwiązania
+                break;
+            }
+        }
+
+        // 2. Optymalizacja przydzielonych paczek w porcjach (Chunks)
         for (int i = 0; i < solution.routes.size(); i++) {
             Route currentRoute = solution.routes.get(i);
             List<RouteStop> assignedStops = courierAssignments.get(i);
@@ -71,7 +121,9 @@ public class BruteForceRoutingStrategy implements RoutingStrategy {
 
                 generatePermutations(chunk, 0);
 
-                finalOptimizedStops.addAll(bestRouteStops);
+                if (bestRouteStops != null) {
+                    finalOptimizedStops.addAll(bestRouteStops);
+                }
             }
 
             for (int k = 0; k < finalOptimizedStops.size(); k++) {

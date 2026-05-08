@@ -60,8 +60,8 @@ export const api = {
   forceOptimize: () =>
     apiForAuthenticated.post("/orders/admin/routing/force-optimize"),
 
-  resetOrdersToDefaults: () =>
-    apiForAuthenticated.post("/orders/admin/routing/reset-orders"),
+  resetOrdersToDefaults: (count: number = 1000) =>
+      apiForAuthenticated.post(`/orders/admin/routing/reset-orders?count=${count}`),
 
   getRoutes: () =>
     apiForAuthenticated.get<RouteResponseDTO[]>("/orders/routes"),

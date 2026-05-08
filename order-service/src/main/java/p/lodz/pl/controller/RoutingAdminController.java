@@ -58,9 +58,10 @@ public class RoutingAdminController {
 
     @POST
     @Path("/reset-orders")
-    public Response resetOrdersToDefaults() {
+    public Response resetOrdersToDefaults(@QueryParam("count") @DefaultValue("1000") int count) {
         try {
-            long updated = orderResetService.resetOrdersToDefaults();
+            // Przekazujemy parametr 'count' do serwisu
+            long updated = orderResetService.resetOrdersToDefaults(count);
             return Response.ok("{\"message\": \"Orders reset\", \"updated\": " + updated + "}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)

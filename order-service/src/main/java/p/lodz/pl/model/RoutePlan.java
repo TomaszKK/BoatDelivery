@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class RoutePlan {
     public List<RouteStop> stops;
 
     @PlanningScore
-    public HardSoftScore score;
+    public HardSoftLongScore score;
 
     public RoutePlan() {}
 

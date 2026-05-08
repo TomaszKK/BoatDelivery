@@ -70,22 +70,13 @@ export const useAdminRouting = () => {
     }
   };
 
-  const resetOrdersToDefaults = async () => {
+  const resetOrdersToDefaults = async (orderCount: number) => {
     try {
-      await trackPromise(api.resetOrdersToDefaults());
-      toast.success(
-        t(
-          "admin.resetOrdersSuccess",
-          "Paczki zostały zresetowane do statusów domyślnych.",
-        ),
-      );
-    } catch (e) {
-      toast.error(
-        t(
-          "admin.resetOrdersFail",
-          "Wystąpił błąd podczas resetu paczek.",
-        ),
-      );
+      // Wywołanie metody z api.ts
+      await api.resetOrdersToDefaults(orderCount);
+      toast.success(t("admin.resetSuccess", `Pomyślnie zresetowano system (utworzono ${orderCount} paczek).`));
+    } catch (error) {
+      toast.error(t("admin.resetFailed", "Nie udało się zresetować systemu."));
     }
   };
 

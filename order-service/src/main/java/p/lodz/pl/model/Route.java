@@ -31,7 +31,7 @@ public class Route extends ControlledEntity {
     @Column(name = "estimated_duration_min")
     public Integer estimatedDurationMin;
 
-    @PlanningListVariable(valueRangeProviderRefs = "stopRange")
+    @PlanningListVariable(valueRangeProviderRefs = "stopRange", allowsUnassignedValues = true)
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<RouteStop> stops = new ArrayList<>();
 

@@ -27,7 +27,6 @@ import java.util.UUID;
 @ApplicationScoped
 public class OrderResetService {
 
-    private static final int TARGET_ORDERS = 1000; // Zwiększono do 1000
     private static final String ADDRESSES_RESOURCE = "seed/addresses.csv";
 
     @Inject
@@ -47,7 +46,7 @@ public class OrderResetService {
     EntityManager entityManager;
 
     @Transactional
-    public long resetOrdersToDefaults() {
+    public long resetOrdersToDefaults(int targetOrders) { // ZMIANA: Dodano parametr
         hardDeleteAll();
 
         List<UserDTO> customers = userServiceClient.getCustomers();
@@ -60,16 +59,15 @@ public class OrderResetService {
             throw new IllegalStateException("Need at least 2 addresses for reset");
         }
 
-        Random random = new Random(); // Inicjalizacja generatora losowego
+        Random random = new Random();
 
-        for (int i = 1; i <= TARGET_ORDERS; i++) {
+        // ZMIANA: Pętla działa do wartości przekazanej w parametrze
+        for (int i = 1; i <= targetOrders; i++) {
             UserDTO customer = customers.get((i - 1) % customers.size());
 
-            // Losowanie różnych adresów dla pickup i delivery
             int pickupIndex = random.nextInt(addresses.size());
             int deliveryIndex = random.nextInt(addresses.size());
 
-            // Upewniamy się, że punkt odbioru i dostawy to nie to samo miejsce
             while (deliveryIndex == pickupIndex) {
                 deliveryIndex = random.nextInt(addresses.size());
             }
@@ -96,7 +94,7 @@ public class OrderResetService {
             orderRepository.persist(order);
         }
 
-        return TARGET_ORDERS;
+        return targetOrders;
     }
 
     private void hardDeleteAll() {
@@ -145,7 +143,7 @@ public class OrderResetService {
             return List.of();
         }
 
-        List<AddressRecord> result = new ArrayList<>();
+        List<AddressRecord> baseAddresses = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line = reader.readLine();
             if (line == null) {
@@ -161,19 +159,43 @@ public class OrderResetService {
                 if (parts.length < 6) {
                     continue;
                 }
-                result.add(new AddressRecord(
-                        parts[0].trim(),
-                        parts[1].trim(),
-                        parts[2].trim(),
-                        parts[3].trim(),
-                        Double.parseDouble(parts[4].trim()),
-                        Double.parseDouble(parts[5].trim())
+                baseAddresses.add(new AddressRecord(
+                        parts[0].trim(), parts[1].trim(), parts[2].trim(), parts[3].trim(),
+                        Double.parseDouble(parts[4].trim()), Double.parseDouble(parts[5].trim())
                 ));
             }
         } catch (Exception ex) {
             return List.of();
         }
-        return result;
+
+        if (baseAddresses.isEmpty()) {
+            return List.of();
+        }
+
+        List<AddressRecord> expandedAddresses = new ArrayList<>();
+        java.util.Random random = new java.util.Random();
+        int targetAddressCount = 800;
+
+        for (int i = 0; i < targetAddressCount; i++) {
+            AddressRecord base = baseAddresses.get(random.nextInt(baseAddresses.size()));
+
+            String streetNameOnly = base.streetAddress.replaceAll("\\d.*", "").trim();
+            String newStreet = streetNameOnly + " " + (random.nextInt(250) + 1);
+
+            double latOffset = (random.nextDouble() - 0.5) * 0.012;
+            double lngOffset = (random.nextDouble() - 0.5) * 0.012;
+
+            expandedAddresses.add(new AddressRecord(
+                    newStreet,
+                    base.postalCode,
+                    base.city,
+                    base.country,
+                    base.latitude + latOffset,
+                    base.longitude + lngOffset
+            ));
+        }
+
+        return expandedAddresses;
     }
 
     private static final class AddressRecord {

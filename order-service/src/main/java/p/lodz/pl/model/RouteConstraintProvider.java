@@ -1,6 +1,6 @@
 package p.lodz.pl.model;
 
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoftlong.HardSoftLongScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
@@ -23,7 +23,7 @@ public class RouteConstraintProvider implements ConstraintProvider {
     private Constraint minimizeTotalDistance(ConstraintFactory factory) {
         return factory.forEach(Route.class)
                 .filter(route -> route.stops != null && !route.stops.isEmpty())
-                .penalize(HardSoftScore.ONE_SOFT, this::calculateDistanceForRoute)
+                .penalize(HardSoftLongScore.ONE_SOFT, this::calculateDistanceForRoute)
                 .asConstraint("Minimize Total Distance");
     }
 
@@ -59,7 +59,7 @@ public class RouteConstraintProvider implements ConstraintProvider {
                     }
                     return peakLoad > route.maxCargoCapacity;
                 })
-                .penalize(HardSoftScore.ONE_HARD)
+                .penalize(HardSoftLongScore.ONE_HARD)
                 .asConstraint("Vehicle Capacity Exceeded");
     }
 
@@ -97,7 +97,7 @@ public class RouteConstraintProvider implements ConstraintProvider {
     private Constraint balanceCourierLoad(ConstraintFactory factory) {
         return factory.forEach(Route.class)
                 .filter(route -> route.stops != null && !route.stops.isEmpty())
-                .penalize(HardSoftScore.ofSoft(10000), route -> route.stops.size() * route.stops.size())
+                .penalize(HardSoftLongScore.ofSoft(10000L), route -> Math.toIntExact((long) route.stops.size() * route.stops.size()))
                 .asConstraint("Balance Courier Load");
     }
 }

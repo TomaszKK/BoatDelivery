@@ -41,7 +41,6 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
             RouteStop clonedStop = new RouteStop();
             clonedStop.id = origStop.id;
             clonedStop.order = origStop.order;
-            solution.stops.add(clonedStop);
             unassignedStops.add(clonedStop);
         }
 
@@ -50,6 +49,10 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
         Map<Route, Double> routePeakLoad = new HashMap<>();
         Map<Route, Double> routeEndLoad = new HashMap<>();
 
+        // NOWE: Śledzenie czasu i dystansu
+        Map<Route, Double> routeDistance = new HashMap<>();
+        Map<Route, Integer> routeStopsCount = new HashMap<>();
+
         Location depot = DailyRouteScheduler.createDepotLocation();
 
         for (Route cr : solution.routes) {
@@ -57,6 +60,8 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
             courierSequences.put(cr, 0);
             routePeakLoad.put(cr, 0.0);
             routeEndLoad.put(cr, 0.0);
+            routeDistance.put(cr, 0.0);
+            routeStopsCount.put(cr, 0);
         }
 
         while (!unassignedStops.isEmpty()) {
@@ -74,12 +79,9 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
                 Location currentLoc = currentCourierLocations.get(candidateRoute);
 
                 for (RouteStop candidateStop : unassignedStops) {
-                    double orderWeight = 0.0;
-                    if (candidateStop.order != null && candidateStop.order.weight != null) {
-                        orderWeight = candidateStop.order.weight.doubleValue();
-                    }
+                    double orderWeight = candidateStop.order != null && candidateStop.order.weight != null
+                            ? candidateStop.order.weight.doubleValue() : 0.0;
 
-                    assert candidateStop.order != null;
                     boolean isDelivery = DailyRouteScheduler.isDelivery(candidateStop.order);
                     double predictedPeak = routePeakLoad.get(candidateRoute);
                     double predictedEnd = routeEndLoad.get(candidateRoute);
@@ -91,6 +93,7 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
                         predictedPeak = Math.max(predictedPeak, predictedEnd);
                     }
 
+                    // SPRAWDZENIE 1: Ładowność
                     if (predictedPeak > maxCapacity) {
                         continue;
                     }
@@ -101,6 +104,18 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
                         distance = Util.calculateDistance(currentLoc, candidateLoc);
                     }
 
+                    // SPRAWDZENIE 2: Czas pracy (Max 8h = 480 minut)
+                    double distanceToDepot = candidateLoc != null ? Util.calculateDistance(candidateLoc, depot) : 0;
+                    double projectedDistance = routeDistance.get(candidateRoute) + distance + distanceToDepot;
+                    int projectedStops = routeStopsCount.get(candidateRoute) + 1;
+
+                    // Szacowanie czasu: (dystans(km) * 2 min) + (paczki * 10 min)
+                    double projectedTimeMinutes = (projectedDistance / 1000.0) * 2.0 + (projectedStops * 10);
+
+                    if (projectedTimeMinutes > 480.0) {
+                        continue; // Trasa potrwa za długo, pomijamy!
+                    }
+
                     if (distance < minDistance) {
                         minDistance = distance;
                         bestRoute = candidateRoute;
@@ -109,24 +124,13 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
                 }
             }
 
+            // OSTATECZNE ZABEZPIECZENIE: Brak dostępnych kurierów (brak czasu lub miejsca)
             if (bestStop == null || bestRoute == null) {
-                bestStop = unassignedStops.getFirst();
-
-                bestRoute = solution.routes.stream()
-                        .filter(r -> r.maxCargoCapacity > 0)
-                        .min(Comparator.comparingDouble(routePeakLoad::get))
-                        .orElse(null);
-
-                if (bestRoute == null) {
-                    break;
-                }
+                break; // PRZERYWAMY PĘTLĘ! Pozostałe paczki nie dostaną przypisania
             }
 
-            double addedWeight = 0.0;
-            if (bestStop.order != null && bestStop.order.weight != null) {
-                addedWeight = bestStop.order.weight.doubleValue();
-            }
-            assert bestStop.order != null;
+            double addedWeight = bestStop.order != null && bestStop.order.weight != null
+                    ? bestStop.order.weight.doubleValue() : 0.0;
             boolean isDelivery = DailyRouteScheduler.isDelivery(bestStop.order);
 
             if (isDelivery) {
@@ -137,13 +141,25 @@ public class GreedyRoutingStrategy implements RoutingStrategy {
                 routePeakLoad.put(bestRoute, Math.max(routePeakLoad.get(bestRoute), newEndLoad));
             }
 
+            // Aktualizacja dystansu i liczników trasy
+            Location bestCurrentLoc = currentCourierLocations.get(bestRoute);
+            Location bestTargetLoc = DailyRouteScheduler.getTargetLocation(bestStop.order);
+            double addedDistance = (bestCurrentLoc != null && bestTargetLoc != null)
+                    ? Util.calculateDistance(bestCurrentLoc, bestTargetLoc) : 0.0;
+
+            routeDistance.put(bestRoute, routeDistance.get(bestRoute) + addedDistance);
+            routeStopsCount.put(bestRoute, routeStopsCount.get(bestRoute) + 1);
+
             int sequence = courierSequences.get(bestRoute);
             bestStop.route = bestRoute;
             bestStop.stopSequence = sequence;
             bestRoute.stops.add(bestStop);
 
+            // Dodajemy pomyślnie przypisaną paczkę do wyniku
+            solution.stops.add(bestStop);
+
             courierSequences.put(bestRoute, sequence + 1);
-            currentCourierLocations.put(bestRoute, DailyRouteScheduler.getTargetLocation(bestStop.order));
+            currentCourierLocations.put(bestRoute, bestTargetLoc);
             unassignedStops.remove(bestStop);
         }
 

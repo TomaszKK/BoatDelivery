@@ -197,6 +197,7 @@ public class DailyRouteScheduler {
         RoutePlan optimizedPlan = routeOptimizationService.optimizeRoutes(problem, currentAlgo);
         Location depot = createDepotLocation();
 
+        // 1. Zapisywanie zaktualizowanych tras
         for (Route optRoute : optimizedPlan.routes) {
             Route realRoute = routeRepository.findById(optRoute.id);
             if (realRoute == null) continue;
@@ -264,6 +265,38 @@ public class DailyRouteScheduler {
                     Instant.now().truncatedTo(ChronoUnit.DAYS).plus(6, ChronoUnit.HOURS),
                     currentTime
             );
+        }
+
+        // 2. CZYSZCZENIE: Pobieranie wszystkich przystanków, które zmieściły się w zoptymalizowanym planie
+        java.util.Set<java.util.UUID> assignedStopIds = new java.util.HashSet<>();
+        if (optimizedPlan.routes != null) {
+            for (Route optRoute : optimizedPlan.routes) {
+                if (optRoute.stops != null) {
+                    for (RouteStop optStop : optRoute.stops) {
+                        assignedStopIds.add(optStop.id);
+                    }
+                }
+            }
+        }
+
+        // 3. Cofanie paczek, na które nie było miejsca (odrzucenie przez wymogi czasu/pojemności)
+        for (RouteStop stop : stops) {
+            if (!assignedStopIds.contains(stop.id)) {
+                LOG.infof("Order %s was left UNASSIGNED due to capacity/time limits. Reverting status.", stop.order.trackingNumber);
+
+                // Cofnięcie statusu
+                if (stop.order.status == OrderStatus.CALCULATING_ROUTE_RECEIVE) {
+                    stop.order.status = OrderStatus.ORDER_CREATED;
+                } else if (stop.order.status == OrderStatus.CALCULATING_ROUTE_DELIVERY) {
+                    stop.order.status = OrderStatus.IN_SORTING_CENTER;
+                }
+
+                // Usunięcie przystanku w trasie (aby paczka po ponownym uruchomieniu mogła otrzymać nową szansę)
+                if (stop.route != null && stop.route.stops != null) {
+                    stop.route.stops.remove(stop);
+                }
+                routeStopRepository.delete(stop);
+            }
         }
 
         routeStopRepository.flush();
