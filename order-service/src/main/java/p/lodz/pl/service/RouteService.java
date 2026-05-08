@@ -174,4 +174,26 @@ public class RouteService {
             }
         }
     }
+
+    @Transactional
+    public List<Route> getRoutesForCourier(java.util.UUID courierId) {
+        List<Route> routes = routeRepository.list("courierId", courierId);
+        routes.sort((r1, r2) -> {
+            int priority1 = getRoutePriority(r1.status);
+            int priority2 = getRoutePriority(r2.status);
+            return Integer.compare(priority1, priority2);
+        });
+        for (Route route : routes) {
+            if (route.stops != null) {
+                route.stops.sort(Comparator.comparingInt(s -> s.stopSequence != null ? s.stopSequence : 0));
+            }
+        }
+        return routes;
+    }
+
+    @Transactional
+    public Route getPreferredRouteForCourier(java.util.UUID courierId) {
+        List<Route> routes = getRoutesForCourier(courierId);
+        return routes.isEmpty() ? null : routes.get(0);
+    }
 }

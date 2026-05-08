@@ -70,6 +70,25 @@ export const useAdminRouting = () => {
     }
   };
 
+  const resetOrdersToDefaults = async () => {
+    try {
+      await trackPromise(api.resetOrdersToDefaults());
+      toast.success(
+        t(
+          "admin.resetOrdersSuccess",
+          "Paczki zostały zresetowane do statusów domyślnych.",
+        ),
+      );
+    } catch (e) {
+      toast.error(
+        t(
+          "admin.resetOrdersFail",
+          "Wystąpił błąd podczas resetu paczek.",
+        ),
+      );
+    }
+  };
+
   const fetchStats = useCallback(async () => {
     setIsLoadingStats(true);
     try {
@@ -106,6 +125,7 @@ export const useAdminRouting = () => {
     fetchAlgorithm,
     changeAlgorithm,
     forceOptimize,
+    resetOrdersToDefaults,
     stats,
     isLoadingStats,
     fetchStats,

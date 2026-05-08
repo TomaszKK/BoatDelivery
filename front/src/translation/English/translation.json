@@ -8,7 +8,9 @@
     "cancel": "Cancel",
     "confirmDelete": "Confirm Delete",
     "save": "Save",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "yes": "Yes",
+    "no": "No"
   },
   "allRightsReserved": "All rights reserved.",
   "polish": "Polish",
@@ -111,6 +113,10 @@
     "forceOptimize": "Force Route Optimization",
     "forceOptimizeDesc": "This will immediately trigger the route optimization process for all pending deliveries. Use this if you want to see the effect of a new algorithm or if you have urgent deliveries that need to be assigned.",
     "forceOptimizeWarning": "This operation may take some time. Are you sure you want to continue?",
+    "resetOrdersDesc": "Clear route assignments and restore packages to their default statuses.",
+    "resetOrdersButton": "Reset Packages",
+    "resetOrdersSuccess": "Packages were reset to default statuses.",
+    "resetOrdersFail": "Failed to reset packages.",
     "algorithmSelectionDesc": "Choose an algorithm for route optimization.",
     "algorithmSelection": "Algorithm Selection",
     "timefoldDesc": "Timefold is a powerful optimization engine that can find efficient routes for complex delivery scenarios.",
@@ -237,6 +243,25 @@
       "noContent": "No content",
       "searchEmail": "Search by e-mail or tracking number...",
       "searchPhone": "Search by phone or tracking number..."
+    },
+    "routes": {
+      "title": "Courier route",
+      "noCourier": "No courier selected",
+      "transport": "Vehicle",
+      "license": "License",
+      "capacity": "Capacity",
+      "summary": "Route summary",
+      "status": "Status",
+      "stops": "Packages",
+      "totalWeight": "Total weight",
+      "packages": "Packages on route",
+      "tracking": "Tracking",
+      "weight": "Weight",
+      "address": "Address",
+      "noRoute": "No active route for this courier.",
+      "noTransport": "No assigned vehicle",
+      "showMap": "Show map",
+      "hasRoute": "Has route"
     }
   },
   "courier": {

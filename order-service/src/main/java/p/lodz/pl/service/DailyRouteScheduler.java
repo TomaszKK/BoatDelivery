@@ -108,6 +108,10 @@ public class DailyRouteScheduler {
         List<Route> activeRoutes = new ArrayList<>();
 
         for (UserDTO courier : couriers) {
+            if (courier.transport() == null || courier.transport().cargoCapacity() == null || courier.transport().cargoCapacity() <= 0) {
+                continue;
+            }
+
             Route existingRoute = routeRepository.find("courierId = ?1 and status = ?2",
                     courier.id(), RouteStatus.PENDING).firstResult();
 
@@ -115,16 +119,16 @@ public class DailyRouteScheduler {
                 existingRoute = new Route();
                 existingRoute.courierId = courier.id();
                 existingRoute.status = RouteStatus.PENDING;
-
-                if (courier.transport() != null && courier.transport().cargoCapacity() != null) {
-                    existingRoute.maxCargoCapacity = courier.transport().cargoCapacity();
-                } else {
-                    existingRoute.maxCargoCapacity = 1000.0;
-                }
+                existingRoute.maxCargoCapacity = courier.transport().cargoCapacity();
 
                 routeRepository.persist(existingRoute);
             }
             activeRoutes.add(existingRoute);
+        }
+
+        if (activeRoutes.isEmpty()) {
+            LOG.warn("System did not find any couriers with valid transport. Cannot route orders.");
+            return;
         }
 
         int routeIndex = 0;

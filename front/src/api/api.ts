@@ -27,7 +27,7 @@ export const api = {
   extractOrderData: (text: string) =>
     apiForAuthenticated.post(`/orders/ai/extract`, { text }),
 
-getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: string) => {
+  getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: string) => {
     let url = `/orders?page=${page}&size=${size}`;
     if (status) {
       url += `&status=${status}`;
@@ -60,8 +60,17 @@ getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: 
   forceOptimize: () =>
     apiForAuthenticated.post("/orders/admin/routing/force-optimize"),
 
+  resetOrdersToDefaults: () =>
+    apiForAuthenticated.post("/orders/admin/routing/reset-orders"),
+
   getRoutes: () =>
     apiForAuthenticated.get<RouteResponseDTO[]>("/orders/routes"),
+
+  getCouriersRouteStatus: () =>
+    apiForAuthenticated.get("/orders/admin/couriers/routes-status"),
+
+  getCourierRouteDetails: (courierId: string) =>
+    apiForAuthenticated.get(`/orders/admin/couriers/${courierId}/route-details`),
 
   startRoute: (routeId: string) =>
     apiForAuthenticated.post(`/orders/routes/${routeId}/start`),
@@ -94,6 +103,12 @@ getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: 
   getUsersByTypePaged: (userType: string, page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
     apiForAuthenticated.get(`/user/paginated/by-type?userType=${userType}&page=${page}&size=${size}`),
 
+  searchUsers: (query: string = "", page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
+    apiForAuthenticated.get(`/user/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`),
+
+  searchUsersByType: (userType: string, query: string = "", page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<User>> =>
+    apiForAuthenticated.get(`/user/search/by-type?userType=${userType}&query=${encodeURIComponent(query)}&page=${page}&size=${size}`),
+
   getUserCountByType: (): ApiResponseType<UserCountByType> =>
     apiForAuthenticated.get("/user/stats/count-by-type"),
 
@@ -106,6 +121,9 @@ getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: 
 
   getAllTransportsPaged: (page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<Transport>> =>
     apiForAuthenticated.get(`/transport/paginated?page=${page}&size=${size}`),
+
+  searchTransports: (query: string = "", page: number = 0, size: number = 10): ApiResponseType<PaginatedResponse<Transport>> =>
+    apiForAuthenticated.get(`/transport/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`),
 
   getTransportById: (id: string): ApiResponseType<Transport> =>
     apiForAuthenticated.get(`/transport/${id}`),

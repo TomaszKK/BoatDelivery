@@ -240,6 +240,23 @@ public class UserController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/internal/customers")
+    public ResponseEntity<List<UserResponse>> getCustomers(
+            @RequestHeader(value = "X-Keycloak-Secret", required = false) String providedSecret) {
+
+        if (providedSecret == null || !expectedSecret.equals(providedSecret)) {
+            log.warn("Wrong secret!!!: {}", providedSecret);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<User> users = userService.getAllUsers();
+        List<UserResponse> responses = users.stream()
+                .filter(user -> UserType.CUSTOMER.equals(user.getUserType()))
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
+
     @GetMapping("/internal/{id}")
     public ResponseEntity<UserResponse> getUserByIdInternal(
             @PathVariable UUID id,
@@ -310,5 +327,28 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/internal/courier/{id}")
+    public ResponseEntity<UserResponse> getCourierByIdInternal(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Keycloak-Secret", required = false) String providedSecret) {
+
+        if (providedSecret == null || !expectedSecret.equals(providedSecret)) {
+            log.warn("Wrong secret for internal courier fetch!!!: {}", providedSecret);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        User user = userService.getUserById(id);
+        UserResponse response = userMapper.toResponse(user);
+        try {
+            List<Transport> transports = transportService.getTransportsByCourierId(user.getId());
+            if (transports != null && !transports.isEmpty()) {
+                response.setTransport(transportMapper.toResponse(transports.get(0)));
+            }
+        } catch (Exception e) {
+            log.debug("Courier {} do not have any transport", user.getId());
+        }
+        return ResponseEntity.ok(response);
     }
 }

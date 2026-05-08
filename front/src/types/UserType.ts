@@ -1,3 +1,5 @@
+import type { Transport } from "./TransportType";
+
 export const UserType = {
   CUSTOMER: "CUSTOMER",
   COURIER: "COURIER",
@@ -16,6 +18,7 @@ export interface User {
   userType?: UserType;
   createdAt?: string;
   updatedAt?: string;
+  transport?: Transport | null;
 }
 
 export interface PaymentSessionResponse {
