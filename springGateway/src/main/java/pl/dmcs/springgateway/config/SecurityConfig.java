@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/user/internal/couriers").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/orders/tracking/minimalized/**").permitAll()
+                        .pathMatchers(HttpMethod.POST, "/api/orders/ai/track/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/notifications/stream").permitAll()
                         .anyExchange().authenticated()
                 )

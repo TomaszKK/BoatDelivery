@@ -4,29 +4,9 @@ import type { OrderResponseDTO, TrackedOrder } from "@/types/OrderType";
 import type { User } from "@/types/UserType";
 import type { RouteResponseDTO } from "@/types/RoutingTypes";
 import type { Transport } from "@/types/TransportType";
-import type { NotificationLog } from "@/types/NotificationType";
-
-export interface PaymentSessionResponse {
-  checkoutUrl: string;
-}
-
-export interface PaginatedResponse<T> {
-  content: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  numberOfElements: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-}
-
-export interface UserCountByType {
-  totalUsers: number;
-  customerCount: number;
-  courierCount: number;
-  adminCount: number;
-}
+import type { EmailLog, SmsLog } from "@/types/NotificationType";
+import type { PaginatedResponse, UserCountByType } from "@/types/UserType";
+import type { PaymentSessionResponse } from "@/types/UserType";
 
 export const api = {
   getMineOrders: (): ApiResponseType<OrderResponseDTO[]> =>
@@ -40,6 +20,12 @@ export const api = {
 
   archiveOrder: (trackingNumber: string) =>
     apiForAuthenticated.delete(`/orders/${trackingNumber}`),
+
+  chatAboutOrder: (trackingNumber: string, message: string) =>
+    apiForAnon.post(`/orders/ai/track/${trackingNumber}`, { message }),
+
+  extractOrderData: (text: string) =>
+    apiForAuthenticated.post(`/orders/ai/extract`, { text }),
 
 getOrdersPaged: (page: number = 0, size: number = 10, status?: string, search?: string) => {
     let url = `/orders?page=${page}&size=${size}`;

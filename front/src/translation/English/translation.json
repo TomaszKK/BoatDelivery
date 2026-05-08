@@ -388,5 +388,19 @@
     "IN_TRANSIT_TO_CUSTOMER": "Out for delivery",
     "DELIVERY_COMPLETED": "Delivered",
     "ORDER_CANCELED": "Canceled"
+  },
+  "ai": {
+    "chatFail": "Error communicating with AI assistant.",
+    "extractFail": "Error extracting data from text.",
+    "lazyOrderTitle": "Lazy order creation",
+    "lazyOrderDesc": "Don't feel like filling out the form? Just describe the package and delivery details in your own words, and our AI assistant will do its best to extract the necessary information and fill out the form for you! For example, you can write: \"I need to send a 5kg package from Warsaw to Krakow. The recipient is John Doe, phone number 123456789, email john.doe@example.com\"",
+    "analyzing": "Analyzing text...",
+    "placeholder": "Paste text to analyze.",
+    "chatTitle": "Chat with AI Assistant",
+    "chatPlaceholder": "Ask a question about your package, e.g., 'Where is my package?' or 'When will it be delivered?'",
+    "fillForm": "Fill Form Automatically",
+    "askAi": "Ask AI",
+    "error": "Sorry, there was a problem getting the AI response. Please try again.",
+    "success": "AI response received successfully!"
   }
 }
