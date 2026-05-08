@@ -27,7 +27,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { api } from "@/api/api";
+import { RouteMapModal } from "@/components/RouteMapModal";
+import type { RouteResponseDTO, CourierRouteStatusDTO, CourierRouteDetailsResponse } from "@/types/RoutingTypes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Trash2, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, MapPinned } from "lucide-react";
 
 type SortField = "firstName" | "lastName" | "email" | "phoneNumber";
 type SortOrder = "asc" | "desc" | null;
@@ -45,6 +55,10 @@ const UserTable = ({
   onPageChange,
   onSizeChange,
   loading,
+  activeTab,
+  onViewRoute,
+  routesLoading,
+  hasRouteMap,
 }: {
   users: any[];
   onDelete: (user: any) => void;
@@ -57,6 +71,10 @@ const UserTable = ({
   onPageChange: (page: number) => void;
   onSizeChange: (size: number) => void;
   loading: boolean;
+  activeTab: TabType;
+  onViewRoute: (user: any) => void;
+  routesLoading: boolean;
+  hasRouteMap: Record<string, boolean>;
 }) => {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
@@ -171,6 +189,9 @@ const UserTable = ({
                 </button>
               </TableHead>
               <TableHead>{t("admin.users.createdAt") || "Data Utworzenia"}</TableHead>
+              {activeTab === "couriers" && (
+                <TableHead>{t("admin.routes.hasRoute", "Ma trasę")}</TableHead>
+              )}
               <TableHead className="text-right">{t("common.actions") || "Akcje"}</TableHead>
             </TableRow>
           </TableHeader>
@@ -188,21 +209,38 @@ const UserTable = ({
                       ? new Date(user.createdAt).toLocaleDateString("pl-PL")
                       : "-"}
                   </TableCell>
+                  {activeTab === "couriers" && (
+                    <TableCell>
+                      {hasRouteMap[user.id] ? t("common.yes", "Tak") : t("common.no", "Nie")}
+                    </TableCell>
+                  )}
                   <TableCell className="text-right">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => onDelete(user)}
-                      disabled={isDeleting === user.id}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      {activeTab === "couriers" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onViewRoute(user)}
+                          disabled={routesLoading}
+                        >
+                          <MapPinned className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => onDelete(user)}
+                        disabled={isDeleting === user.id}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-muted-foreground text-center">
+                <TableCell colSpan={activeTab === "couriers" ? 8 : 7} className="text-muted-foreground text-center">
                   {t("admin.users.noUsers") || "Brak użytkowników"}
                 </TableCell>
               </TableRow>
@@ -288,12 +326,70 @@ export const AdminPage = () => {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [routesByCourierId, setRoutesByCourierId] = useState<Record<string, RouteResponseDTO>>({});
+  const [routesLoading, setRoutesLoading] = useState(false);
+  const [routeDialogOpen, setRouteDialogOpen] = useState(false);
+  const [selectedCourier, setSelectedCourier] = useState<any | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<RouteResponseDTO | null>(null);
+  const [mapOpen, setMapOpen] = useState(false);
+  const [hasRouteMap, setHasRouteMap] = useState<Record<string, boolean>>({});
+
+  const fetchRoutesStatus = async () => {
+    try {
+      const response = await api.getCouriersRouteStatus();
+      const data = (response.data || []) as CourierRouteStatusDTO[];
+      const map: Record<string, boolean> = {};
+      data.forEach((entry) => {
+        map[entry.courierId] = entry.hasRoute;
+      });
+      setHasRouteMap(map);
+    } catch (err) {
+      console.error("Failed to fetch route status:", err);
+      setHasRouteMap({});
+    }
+  };
+
+  const fetchRouteDetails = async (courierId: string) => {
+    setRoutesLoading(true);
+    try {
+      const response = await api.getCourierRouteDetails(courierId);
+      const data = response.data as CourierRouteDetailsResponse;
+      setSelectedRoute(data.route || null);
+      setSelectedCourier((prev: any) => ({
+        ...prev,
+        transport: data.transport || null,
+      }));
+    } catch (err) {
+      console.error("Failed to fetch route details:", err);
+      setSelectedRoute(null);
+    } finally {
+      setRoutesLoading(false);
+    }
+  };
+
+  const handleViewRoute = (courier: any) => {
+    setSelectedCourier(courier);
+    setSelectedRoute(null);
+    setRouteDialogOpen(true);
+    fetchRouteDetails(courier.id);
+  };
+
+  const totalRouteWeight = useMemo(() => {
+    if (!selectedRoute?.stops) return 0;
+    return selectedRoute.stops.reduce((sum, stop) => sum + (stop.order?.weight || 0), 0);
+  }, [selectedRoute]);
+
+  const transportCapacity = selectedCourier?.transport?.cargoCapacity ?? null;
+  const isOverloaded = transportCapacity != null && totalRouteWeight > transportCapacity;
 
   // Pobierz użytkowników po typie gdy zmienia się aktywna zakladka
   useEffect(() => {
     const userType = activeTab === "customers" ? "CUSTOMER" : "COURIER";
     setSearchTerm("");
     fetchUsersByTypePaged(userType, 0, size);
+    if (userType === "COURIER") {
+      fetchRoutesStatus();
+    }
   }, [activeTab]);
 
   // Wyszukuj użytkowników gdy zmienia się searchTerm - z debouncing
@@ -479,6 +575,10 @@ export const AdminPage = () => {
               onPageChange={handlePageChangeWithSearch}
               onSizeChange={handleSizeChangeWithSearch}
               loading={loading}
+              activeTab={activeTab}
+              onViewRoute={handleViewRoute}
+              routesLoading={routesLoading}
+              hasRouteMap={hasRouteMap}
             />
           </CardContent>
         </Card>
@@ -507,10 +607,116 @@ export const AdminPage = () => {
               onPageChange={handlePageChangeWithSearch}
               onSizeChange={handleSizeChangeWithSearch}
               loading={loading}
+              activeTab={activeTab}
+              onViewRoute={handleViewRoute}
+              routesLoading={routesLoading}
+              hasRouteMap={hasRouteMap}
             />
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={routeDialogOpen} onOpenChange={setRouteDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{t("admin.routes.title", "Trasa kuriera")}</DialogTitle>
+            <DialogDescription>
+              {selectedCourier
+                ? `${selectedCourier.firstName || ""} ${selectedCourier.lastName || ""} · ${selectedCourier.email}`
+                : t("admin.routes.noCourier", "Nie wybrano kuriera")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-lg border p-4">
+                <p className="text-sm font-semibold">{t("admin.routes.transport", "Pojazd")}</p>
+                {selectedCourier?.transport ? (
+                  <div className="mt-2 space-y-1 text-sm">
+                    <p>{selectedCourier.transport.brand} {selectedCourier.transport.model}</p>
+                    <p>{selectedCourier.transport.transportType}</p>
+                    <p>{t("admin.routes.license", "Rejestracja")}: {selectedCourier.transport.licensePlate || "-"}</p>
+                    <p>{t("admin.routes.capacity", "Ładowność")}: {selectedCourier.transport.cargoCapacity ?? "-"}</p>
+                  </div>
+                ) : (
+                  <p className="mt-2 text-sm text-amber-600">{t("admin.routes.noTransport", "Brak przypisanego pojazdu")}</p>
+                )}
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-sm font-semibold">{t("admin.routes.summary", "Podsumowanie trasy")}</p>
+                <div className="mt-2 space-y-1 text-sm">
+                  <p>{t("admin.routes.status", "Status")}: {selectedRoute?.status || t("admin.routes.noRoute", "Brak")}</p>
+                  <p>{t("admin.routes.stops", "Liczba paczek")}: {selectedRoute?.stops?.length || 0}</p>
+                  {selectedRoute?.estimatedDurationMin !== undefined && (
+                      <p>
+                        {t("admin.routes.duration", "Przewidywany czas")}:{" "}
+                        <span className="font-medium">
+                          {selectedRoute.estimatedDurationMin >= 60
+                            ? `${Math.floor(selectedRoute.estimatedDurationMin / 60)}h ${selectedRoute.estimatedDurationMin % 60}min`
+                            : `${selectedRoute.estimatedDurationMin} min`}
+                        </span>
+                      </p>
+                  )}
+                  <p className={isOverloaded ? "text-red-600 font-semibold" : ""}>
+                    {t("admin.routes.totalWeight", "Suma wag")}: {totalRouteWeight.toFixed(2)}
+                  </p>
+                  {transportCapacity != null && (
+                    <p className={isOverloaded ? "text-red-600 font-semibold" : ""}>
+                      {t("admin.routes.capacity", "Ładowność")}: {transportCapacity}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <p className="text-sm font-semibold">{t("admin.routes.packages", "Paczki na trasie")}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMapOpen(true)}
+                  disabled={!selectedRoute}
+                >
+                  {t("admin.routes.showMap", "Pokaż mapę")}
+                </Button>
+              </div>
+              {selectedRoute?.stops?.length ? (
+                <div className="mt-3 max-h-64 overflow-auto text-sm">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("admin.routes.tracking", "Tracking")}</TableHead>
+                        <TableHead>{t("admin.routes.status", "Status")}</TableHead>
+                        <TableHead>{t("admin.routes.weight", "Waga")}</TableHead>
+                        <TableHead>{t("admin.routes.address", "Adres")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedRoute.stops
+                        .sort((a, b) => a.stopSequence - b.stopSequence)
+                        .map((stop) => (
+                          <TableRow key={stop.id}>
+                            <TableCell>{stop.order.trackingNumber}</TableCell>
+                            <TableCell>{stop.order.status}</TableCell>
+                            <TableCell>{stop.order.weight}</TableCell>
+                            <TableCell>{stop.order.pickupLocation.streetAddress}</TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {t("admin.routes.noRoute", "Brak aktywnej trasy dla tego kuriera.")}
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <RouteMapModal isOpen={mapOpen} onClose={() => setMapOpen(false)} route={selectedRoute} />
 
       {/* Delete User Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

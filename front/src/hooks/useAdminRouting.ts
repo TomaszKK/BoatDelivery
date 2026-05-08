@@ -70,6 +70,16 @@ export const useAdminRouting = () => {
     }
   };
 
+  const resetOrdersToDefaults = async (orderCount: number) => {
+    try {
+      // Wywołanie metody z api.ts
+      await api.resetOrdersToDefaults(orderCount);
+      toast.success(t("admin.resetSuccess", `Pomyślnie zresetowano system (utworzono ${orderCount} paczek).`));
+    } catch (error) {
+      toast.error(t("admin.resetFailed", "Nie udało się zresetować systemu."));
+    }
+  };
+
   const fetchStats = useCallback(async () => {
     setIsLoadingStats(true);
     try {
@@ -106,6 +116,7 @@ export const useAdminRouting = () => {
     fetchAlgorithm,
     changeAlgorithm,
     forceOptimize,
+    resetOrdersToDefaults,
     stats,
     isLoadingStats,
     fetchStats,

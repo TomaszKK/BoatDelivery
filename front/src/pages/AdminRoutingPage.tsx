@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminRouting } from "@/hooks/useAdminRouting";
 
@@ -12,9 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-import { Settings2, Zap, BrainCircuit, Route, Swords } from "lucide-react";
+import { Settings2, Zap, BrainCircuit, Route, Swords, RotateCcw } from "lucide-react";
 import type { AlgorithmType } from "@/types/RoutingTypes";
 import { t } from "i18next";
+import {Input} from "@/components/ui/input.tsx";
 
 const algorithms: {
   type: AlgorithmType;
@@ -44,8 +45,9 @@ const algorithms: {
 
 export const AdminRoutingPage = () => {
   const { t } = useTranslation();
-  const { currentAlgorithm, fetchAlgorithm, changeAlgorithm, forceOptimize } =
+  const { currentAlgorithm, fetchAlgorithm, changeAlgorithm, forceOptimize, resetOrdersToDefaults } =
     useAdminRouting();
+  const [orderCount, setOrderCount] = useState<number>(1000);
 
   useEffect(() => {
     fetchAlgorithm();
@@ -120,6 +122,29 @@ export const AdminRoutingPage = () => {
                     </div>
                   );
                 })}
+              </div>
+              <div className="border-muted/60 space-y-3 border-t pt-4">
+                <p className="text-muted-foreground text-xs">
+                  {t("admin.resetOrdersDesc", "Zresetuj paczki do ustawień początkowych. Wybierz żądaną liczbę paczek.")}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                      type="number"
+                      min={10}
+                      max={5000}
+                      value={orderCount}
+                      onChange={(e) => setOrderCount(Number(e.target.value))}
+                      className="w-24"
+                  />
+                  <Button
+                      onClick={() => resetOrdersToDefaults(orderCount)}
+                      variant="outline"
+                      className="flex-1 gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    {t("admin.resetOrdersButton", "Zresetuj zamówienia")}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

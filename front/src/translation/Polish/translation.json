@@ -8,7 +8,9 @@
     "cancel": "Anuluj",
     "confirmDelete": "Potwierdzenie usunięcia",
     "save": "Zapisz",
-    "saving": "Zapisywanie..."
+    "saving": "Zapisywanie...",
+    "yes": "Tak",
+    "no": "Nie"
   },
   "allRightsReserved": "Wszystkie prawa zastrzeżone.",
   "polish": "Polski",
@@ -121,6 +123,10 @@
     "fetchStatsFail": "Nie udało się pobrać statystyk.",
     "forceOptimizeDesc": "Ręcznie uruchom optymalizację tras dla wszystkich aktywnych dostaw.",
     "forceOptimizeWarning": "Ta operacja może zająć trochę czasu. Czy na pewno chcesz kontynuować?",
+    "resetOrdersDesc": "Wyczyść przypisania tras i przywróć paczki do statusów domyślnych.",
+    "resetOrdersButton": "Resetuj paczki",
+    "resetOrdersSuccess": "Paczki zostały zresetowane do statusów domyślnych.",
+    "resetOrdersFail": "Wystąpił błąd podczas resetu paczek.",
     "algorithmSelectionDesc": "Wybierz algorytm do optymalizacji tras.",
     "algorithmSelection": "Wybór algorytmu",
     "timefoldDesc": "Timefold to potężny silnik optymalizacji, który może znaleźć efektywne trasy dla złożonych scenariuszy dostawy.",
@@ -264,6 +270,25 @@
       "noContent": "Brak treści",
       "searchEmail": "Szukaj po e-mailu lub numerze paczki...",
       "searchPhone": "Szukaj po numerze telefonu lub paczki..."
+    },
+    "routes": {
+      "title": "Trasa kuriera",
+      "noCourier": "Nie wybrano kuriera",
+      "transport": "Pojazd",
+      "license": "Rejestracja",
+      "capacity": "Ładowność",
+      "summary": "Podsumowanie trasy",
+      "status": "Status",
+      "stops": "Liczba paczek",
+      "totalWeight": "Suma wag",
+      "packages": "Paczki na trasie",
+      "tracking": "Tracking",
+      "weight": "Waga",
+      "address": "Adres",
+      "noRoute": "Brak aktywnej trasy dla tego kuriera.",
+      "noTransport": "Brak przypisanego pojazdu",
+      "showMap": "Pokaż mapę",
+      "hasRoute": "Ma trasę"
     }
   },
   "courier": {

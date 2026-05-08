@@ -20,3 +20,14 @@ export interface RouteResponseDTO {
   estimatedDurationMin: number;
   stops: RouteStopDTO[];
 }
+
+export interface CourierRouteStatusDTO {
+  courierId: string;
+  hasRoute: boolean;
+}
+
+export interface CourierRouteDetailsResponse {
+  hasRoute: boolean;
+  route: RouteResponseDTO | null;
+  transport: import("./TransportType").Transport | null;
+}

@@ -28,4 +28,16 @@ public interface UserServiceClient {
     @Produces(MediaType.APPLICATION_JSON)
     @ClientHeaderParam(name = "X-Keycloak-Secret", value = "${internal.api.secret}")
     UserDTO getUserById(@PathParam("id") UUID id);
+
+    @GET
+    @Path("/internal/customers")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ClientHeaderParam(name = "X-Keycloak-Secret", value = "${internal.api.secret}")
+    List<UserDTO> getCustomers();
+
+    @GET
+    @Path("/internal/courier/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ClientHeaderParam(name = "X-Keycloak-Secret", value = "${internal.api.secret}")
+    UserDTO getCourierById(@PathParam("id") UUID id);
 }

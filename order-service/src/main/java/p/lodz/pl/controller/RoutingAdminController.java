@@ -8,6 +8,7 @@ import jakarta.ws.rs.core.Response;
 import p.lodz.pl.model.enums.AlgorithmType;
 import p.lodz.pl.service.AlgorithmSettingsService;
 import p.lodz.pl.service.DailyRouteScheduler;
+import p.lodz.pl.service.OrderResetService;
 
 import java.util.concurrent.ExecutionException;
 
@@ -22,6 +23,9 @@ public class RoutingAdminController {
 
     @Inject
     DailyRouteScheduler dailyRouteScheduler;
+
+    @Inject
+    OrderResetService orderResetService;
 
     @GET
     @Path("/settings/algorithm")
@@ -48,6 +52,20 @@ public class RoutingAdminController {
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity("{\"error\": \"Error: " + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("/reset-orders")
+    public Response resetOrdersToDefaults(@QueryParam("count") @DefaultValue("1000") int count) {
+        try {
+            // Przekazujemy parametr 'count' do serwisu
+            long updated = orderResetService.resetOrdersToDefaults(count);
+            return Response.ok("{\"message\": \"Orders reset\", \"updated\": " + updated + "}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("{\"error\": \"Reset failed: " + e.getMessage() + "\"}")
                     .build();
         }
     }

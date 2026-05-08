@@ -11,6 +11,7 @@ public record RouteResponseDTO(
         RouteStatus status,
         BigDecimal totalDistanceKm,
         Integer estimatedDurationMin,
-        List<RouteStopDTO> stops
+        List<RouteStopDTO> stops,
+        Integer totalDurationMinutes
 ) {
 }
